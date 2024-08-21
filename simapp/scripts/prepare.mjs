@@ -14,11 +14,11 @@ useOldVersionDependencies()
 function useOldVersionDependencies () {
   // desktop
   const desktopDir = path.join(rootDir, 'desktop')
-  execSync('npm i electron@14.2.6', { cwd: desktopDir })
+  execSync('cnpm i electron@14.2.6', { cwd: desktopDir })
 
   // map-editor
   const mapEditorDir = path.join(rootDir, 'map-editor')
-  execSync('npm i three@0.144.0', { cwd: mapEditorDir })
+  execSync('cnpm i three@0.144.0', { cwd: mapEditorDir })
 
   // scene-editor have been resolved. @joybee007 2024/8/20
   // const sceneEditorDir = path.join(rootDir, 'scene-editor')
