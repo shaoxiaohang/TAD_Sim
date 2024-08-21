@@ -2,6 +2,9 @@
 
 set -e
 
+export http_proxy=http://127.0.0.1:7897
+export https_proxy=http://127.0.0.1:7897
+
 # Get & set ENABLE_ENCRYPTION_TIMESTAMP
 if [ -n "$1" ]; then
     ENABLE_ENCRYPTION_TIMESTAMP="$1"

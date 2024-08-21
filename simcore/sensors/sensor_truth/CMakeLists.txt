@@ -317,6 +317,7 @@ target_link_libraries("${OUT_NAME}SensorTruth_test"
   ${DEP_LIBS_PROTO}
   ${DEP_LIBS_SYS}
   ${DEP_LIBS_FLANN}
+  "-llz4"
 )
 
 # gtest_discover_tests("${OUT_NAME}SensorTruth_test")

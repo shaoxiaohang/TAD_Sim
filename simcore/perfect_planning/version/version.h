@@ -22,9 +22,8 @@
 
 // generate file version
 #define FILE_VERSION_STR(branch, commit_id) \
-  "V" Stringizing(branch) "." Stringizing(commit_id) "-" "20240730" "-" "011122"
+  "V" Stringizing(branch) "." Stringizing(commit_id) "-" "20240821" "-" "163654"
 
 // generate product version
 #define PRODUCT_VERSION_STR(major, minor, build, revision) \
-  "V" Stringizing(major) "." Stringizing(minor) "." Stringizing(build) ".\
-  " Stringizing(revision) "-" "20240730" "T" "011122"
+  "V" Stringizing(major) "." Stringizing(minor) "." Stringizing(build) "." Stringizing(revision) "-" "20240821" "T" "163654"

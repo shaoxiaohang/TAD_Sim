@@ -2,6 +2,9 @@
 
 set -e
 
+unset http_proxy
+unset https_proxy
+
 # 检查 python3 命令是否存在
 if command -v python3 >/dev/null 2>&1; then
     PYTHON=python3
@@ -52,8 +55,8 @@ source "$EXCEL2ASAM_BUILD/myvenv/bin/activate"
 $PYTHON -m pip install --upgrade pip
 
 # 安装第三方依赖库 & 使用 PyInstaller 打包 Python 脚本
-$PYTHON -m pip install pyinstaller
-$PYTHON -m pip install -r requirements.txt
+$PYTHON -m pip install pyinstaller -i https://pypi.hobot.cc/simple --extra-index-url https://pypi.hobot.cc/hobot-local/simple
+$PYTHON -m pip install -r requirements.txt -i https://pypi.hobot.cc/simple --extra-index-url https://pypi.hobot.cc/hobot-local/simple
 pyinstaller --onefile \
             --nowindow \
             --distpath="$EXCEL2ASAM_BUILD_DIST" \

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export http_proxy=http://10.9.1.251:8838
+export https_proxy=http://10.9.1.251:8838
+
 # Setting build parmameters
 V2X_ROOT="$(cd "$(dirname "$0")";pwd)"
 V2X_BUILD="$V2X_ROOT/build"

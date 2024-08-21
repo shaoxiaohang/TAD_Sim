@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export http_proxy=http://10.9.1.251:8838
+export https_proxy=http://10.9.1.251:8838
+
 # Setting build parmameters
 RADAR_ROOT="$(cd "$(dirname "$0")";pwd)"
 RADAR_BUILD="$RADAR_ROOT/build"

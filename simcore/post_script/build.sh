@@ -1,5 +1,8 @@
 #!/bin/bash
 
+unset http_proxy
+unset https_proxy
+
 # 检查 python3 命令是否存在
 if command -v python3 >/dev/null 2>&1; then
     PYTHON=python3
@@ -35,18 +38,18 @@ cp "$PATHDIR_SOURCE_MESSAGE/generate_python_by_grpcio.sh" "$SCRIPT_BUILD_MESSAGE
 # 在 SCRIPT_BUILD 文件夹中创建虚拟环境 & 激活虚拟环境 & 升级 pip
 $PYTHON -m venv "$SCRIPT_BUILD/myvenv"
 source "$SCRIPT_BUILD/myvenv/bin/activate"
-$PYTHON -m pip install --upgrade pip
+$PYTHON -m pip install --upgrade pip -i https://pypi.hobot.cc/simple --extra-index-url https://pypi.hobot.cc/hobot-local/simple
 
 # ============================ gen proto python ============================
 # 安装第三方依赖库 & gen proto python
-$PYTHON -m pip install grpcio-tools
+$PYTHON -m pip install grpcio-tools -i https://pypi.hobot.cc/simple --extra-index-url https://pypi.hobot.cc/hobot-local/simple
 cd "$SCRIPT_BUILD_MESSAGE"
 ./generate_python_by_grpcio.sh
 
 cd "$SCRIPT_ROOT"
 # =============================== vissim 后处理脚本 ===============================
 # 增量安装第三方依赖库 & 使用 PyInstaller 打包 Python 脚本
-$PYTHON -m pip install glog pyinstaller
+$PYTHON -m pip install glog pyinstaller -i https://pypi.hobot.cc/simple --extra-index-url https://pypi.hobot.cc/hobot-local/simple
 pyinstaller --onefile \
             --nowindow \
             --distpath="$SCRIPT_BUILD_DIST" \
@@ -57,7 +60,7 @@ pyinstaller --onefile \
 
 # =============================== grading 后处理脚本 ===============================
 # 增量安装第三方依赖库 & 使用 PyInstaller 打包 Python 脚本
-$PYTHON -m pip install xlsxwriter xlrd
+$PYTHON -m pip install xlsxwriter xlrd -i https://pypi.hobot.cc/simple --extra-index-url https://pypi.hobot.cc/hobot-local/simple
 pyinstaller --onefile \
             --nowindow \
             --distpath="$SCRIPT_BUILD_DIST" \

@@ -1,5 +1,10 @@
 #!/bin/bash
 
+set -e
+
+export http_proxy=http://10.9.1.251:8838
+export https_proxy=http://10.9.1.251:8838
+
 # 1 OPENDRIVE IO
 echo "start build Opendrive IO"
 
@@ -24,6 +29,8 @@ mkdir -p build
 cd build
 cmake  -DCMAKE_BUILD_TYPE=Release ..
 make -j
+
+
 
 # 3 SERVICE
 cd ../../../service

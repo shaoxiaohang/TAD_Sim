@@ -16,7 +16,9 @@
     "build:map": "npm run build -w map-editor",
     "lint": "eslint --fix ."
   },
-  "dependencies": {},
+  "dependencies": {
+    "@vue/shared": "^3.4.38"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "2.18.0",
     "@types/node": "^20.8.10",

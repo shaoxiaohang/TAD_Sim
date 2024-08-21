@@ -125,6 +125,7 @@ target_link_libraries(${OUT_NAME}_test
   ${DEP_LIBS_SYS}
   ${DEP_LIBS_FLANN}
   ${LIB_GTEST}
+  "-llz4"
 )
 
 if(WIN32)

@@ -328,9 +328,9 @@ RUN tar xf Python-${PYTHON_VERSION}.tgz \
 RUN ln -sf /usr/local/bin/python${PIP_VERSION} /usr/local/bin/python3 \
     && ln -sf /usr/local/bin/pip${PIP_VERSION} /usr/local/bin/pip3 \
     # config pip
-    && echo "[global]\nindex-url = https://mirrors.tencent.com/tencent_pypi/simple" > /etc/pip.conf \
-    && /usr/local/bin/python${PIP_VERSION} -m pip install -i https://mirrors.tencent.com/pypi/simple/ --upgrade pip \
-    && pip install -i https://mirrors.tencent.com/pypi/simple/ wheel pyinstaller breathe exhale sphinx_rtd_theme pybind11 \
+    && echo "[global]\nindex-url = https://pypi.hobot.cc/simple" > /etc/pip.conf \
+    && /usr/local/bin/python${PIP_VERSION} -m pip install -i https://pypi.hobot.cc/simple --upgrade pip \
+    && pip install -i https://pypi.hobot.cc/simple wheel pyinstaller breathe exhale sphinx_rtd_theme pybind11 \
     && rm -rf /root/.cache/pip
 
 # Install Chrono
@@ -367,8 +367,6 @@ RUN ldconfig \
 
 RUN npm install -g cnpm --registry=https://registry.npmmirror.com
 
-#ENV http_proxy=http://10.9.1.251:8838
-#ENV https_proxy=http://10.9.1.251:8838
 
 RUN cnpm install -g cmake-js node-addon-api
 
@@ -398,6 +396,8 @@ ENV GLIBC_TUNABLES=glibc.rtld.dynamic_sort=2
 
 
 RUN apt-get install -y --no-install-recommends xdg-user-dirs libnss3 libatk1.0-0 libatk-bridge2.0-0 libdrm2 libxkbcommon-x11-0 libgbm-dev libasound2 libxshmfence1 libglu1 libgtk-3-0 libcanberra-gtk-module libcanberra-gtk3-module
+
+RUN python3 -m pip install glog grpcio-tools pyinstaller -i https://pypi.hobot.cc/simple --extra-index-url https://pypi.hobot.cc/hobot-local/simple
 
 #
 ENV PATH="$PATH:/usr/local/go/bin"

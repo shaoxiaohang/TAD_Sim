@@ -45,24 +45,26 @@ TADSIM_BUILD="$TADSIM_ROOT/build"
 TADSIM_BUILD_SERVICE="$TADSIM_BUILD/service"
 TADSIM_BUILD_SCENARIO="$TADSIM_BUILD/scenario"
 
+#./build.sh > log.txt 2>&1
+
 # ====== Clean ======
-echo "=== Begin clean"
-find . -type f -iname "*.sh" -exec chmod +x {} \;
-find . -type d \( -name "build" -o -name "node_modules" \) -exec rm -rf {} + 2>/dev/null
-[ -d "$TADSIM_BUILD" ] && rm -rf "$TADSIM_BUILD" || true
-echo "=== End clean"
+# echo "=== Begin clean"
+# find . -type f -iname "*.sh" -exec chmod +x {} \;
+# find . -type d \( -name "build" -o -name "node_modules" \) -exec rm -rf {} + 2>/dev/null
+# [ -d "$TADSIM_BUILD" ] && rm -rf "$TADSIM_BUILD" || true
+# echo "=== End clean"
 
 # ====== Start compiling ======
-build_project "simapp" "build.sh"
-# build_project "common" "build.sh"
-# build_project "simcore" "build.sh"
-# build_project "co_simulation" "build.sh"
-# build_project "adapter" "build.sh"
+#build_project "simapp" "build.sh"
+#build_project "common" "build.sh"
+#build_project "simcore" "build.sh"
+#build_project "co_simulation" "build.sh"
+#build_project "adapter" "build.sh"
 
-# # ====== pack ======
-# echo "=== Begin pack"
+# ====== pack ======
+echo "=== Begin pack"
 
-# # 前端迁移整合
+# 前端迁移整合
 # echo "=== Begin pack simapp"
 # mkdir -p "$TADSIM_BUILD"
 # cp -rf "$TADSIM_ROOT/simapp/desktop/web-config.json" "$TADSIM_BUILD/"
@@ -212,41 +214,41 @@ build_project "simapp" "build.sh"
 # cp "$TADSIM_BUILD_SERVICE/simdeps/libjsoncpp.so."* "$TADSIM_BUILD_SERVICE/simdeps/nodedeps/"
 # echo "=== End pack service"
 
-# # 系统默认自带 scenario 的迁移整合
-# echo "=== Begin pack scenario"
-# mkdir -p "$TADSIM_BUILD_SCENARIO"
-# cp -rf "$TADSIM_ROOT/datas/default/"* "$TADSIM_BUILD_SCENARIO/"
-# echo "=== End pack scenario"
+# 系统默认自带 scenario 的迁移整合
+echo "=== Begin pack scenario"
+mkdir -p "$TADSIM_BUILD_SCENARIO"
+cp -rf "$TADSIM_ROOT/datas/default/"* "$TADSIM_BUILD_SCENARIO/"
+echo "=== End pack scenario"
 
-# # ====== 打包为可执行程序应用 ======
-# echo "=== Begin gen"
-# cd "$TADSIM_ROOT"
-# chmod 777 -R "$TADSIM_BUILD"
-# cd "$TADSIM_BUILD"
-# export electron_mirror=https://registry.npmmirror.com/-/binary/electron/
-# export electron_builder_binaries_mirror=https://mirrors.huaweicloud.com/electron-builder-binaries/
-# # # 修改版本号
-# # if command -v python >/dev/null 2>&1; then
-# #     python "$TADSIM_ROOT/tools/modify_version.py"
-# # else
-# #     # 如果 python 命令不存在，检查 python3 命令是否存在
-# #     if command -v python3 >/dev/null 2>&1; then
-# #         python3 "$TADSIM_ROOT/tools/modify_version.py"
-# #     else
-# #         # 如果 python 和 python3 命令都不存在，显示错误信息, 并不修改版本
-# #         echo "Warning: python & python3 not found. skip modify_version use default 2.0.0" >&2
-# #     fi
-# # fi
+# ====== 打包为可执行程序应用 ======
+echo "=== Begin gen"
+cd "$TADSIM_ROOT"
+chmod 777 -R "$TADSIM_BUILD"
+cd "$TADSIM_BUILD"
+export electron_mirror=https://registry.npmmirror.com/-/binary/electron/
+export electron_builder_binaries_mirror=https://mirrors.huaweicloud.com/electron-builder-binaries/
+# # 修改版本号
+# if command -v python >/dev/null 2>&1; then
+#     python "$TADSIM_ROOT/tools/modify_version.py"
+# else
+#     # 如果 python 命令不存在，检查 python3 命令是否存在
+#     if command -v python3 >/dev/null 2>&1; then
+#         python3 "$TADSIM_ROOT/tools/modify_version.py"
+#     else
+#         # 如果 python 和 python3 命令都不存在，显示错误信息, 并不修改版本
+#         echo "Warning: python & python3 not found. skip modify_version use default 2.0.0" >&2
+#     fi
+# fi
 
-# # 重新安装依赖, 拷贝后会有概率不能正常使用环境
-# npm install
+# 重新安装依赖, 拷贝后会有概率不能正常使用环境
+# cnpm install
 # # 编译, 最终结果为 build/release/tadsim_x.x.x_amd64.deb
 # npm run release
 # echo "=== End gen"
 
-# # ====== 拷贝 SDK 产物 ======
-# echo "=== Begin copy SDK zips"
-# cp -rf "$TADSIM_ROOT/simcore/grading/external_eval/txSimGradingSDK_linux.tar.gz" "$TADSIM_BUILD/release/"
-# cp -rf "$TADSIM_ROOT/simcore/framework/build/txSimSDK_linux.tar.gz" "$TADSIM_BUILD/release/"
-# cp -rf "$TADSIM_ROOT/common/map_sdk/hadmap.tar.gz" "$TADSIM_BUILD/release/txSimMapSDK_linux.tar.gz"
-# echo "=== End copy SDK zips"
+# ====== 拷贝 SDK 产物 ======
+echo "=== Begin copy SDK zips"
+cp -rf "$TADSIM_ROOT/simcore/grading/external_eval/txSimGradingSDK_linux.tar.gz" "$TADSIM_BUILD/release/"
+cp -rf "$TADSIM_ROOT/simcore/framework/build/txSimSDK_linux.tar.gz" "$TADSIM_BUILD/release/"
+cp -rf "$TADSIM_ROOT/common/map_sdk/hadmap.tar.gz" "$TADSIM_BUILD/release/txSimMapSDK_linux.tar.gz"
+echo "=== End copy SDK zips"
