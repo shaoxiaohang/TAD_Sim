@@ -162,6 +162,7 @@ async function createBrowserWindow (isMain) {
       preload,
       webSecurity: false,
       contextIsolation: true,
+      nodeIntegration: true,
       additionalArguments: [AppUserDataPath, `--need-to-upgrade=${isNeedToUpgrade()}`],
     },
   })

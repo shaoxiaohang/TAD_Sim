@@ -351,4 +351,5 @@ bool CMapObject::SetGeomsFromRoad(const hadmap::txLanePtr lanePtr, hadmap::txObj
       m_geoms.sPoints.push_back(_points);
     }
   }
+  return true;
 }

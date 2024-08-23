@@ -101,3 +101,4 @@ simcore/sensors/display/Display.sln
 
 simapp/desktop/service
 docker/apps
+log
