@@ -13,8 +13,8 @@ useOldVersionDependencies()
  */
 function useOldVersionDependencies () {
   // desktop
-  // const desktopDir = path.join(rootDir, 'desktop')
-  // execSync('cnpm i electron@14.2.6', { cwd: desktopDir })
+  const desktopDir = path.join(rootDir, 'desktop')
+  execSync('cnpm i electron@14.2.6', { cwd: desktopDir })
 
   // map-editor
   const mapEditorDir = path.join(rootDir, 'map-editor')

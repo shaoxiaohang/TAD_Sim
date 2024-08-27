@@ -95,6 +95,8 @@ bool ParseEgoMeasurement(const std::string& catalogpath, const char* catalog_nam
 
   ego_measurement_msg.rebuild(vgl.ByteSizeLong());
   vgl.SerializeToArray(ego_measurement_msg.data(), ego_measurement_msg.size());
+
+  return true;
 }
 
 //! @brief 函数名：ParseSimCloudCityVehicle
@@ -394,6 +396,8 @@ bool ScenarioXmlParser::ParseSimEgo(const std::string& scenario, const XMLElemen
     LOG(WARNING) << "trying parsing the measurement info of the ego vehicle error: " << e.what();
     return false;
   }
+
+  return true;
 }
 
 bool ScenarioXmlParser::ParseSimScenario(const std::string& scenario, tx_sim::impl::ModuleResetRequest& req) {

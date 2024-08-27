@@ -79,7 +79,7 @@ function startSimService () {
   const options = {
     env,
   }
-
+  console.log('start txsim local service', command, args)
   spawnService(command, args, options)
 }
 
@@ -106,12 +106,14 @@ function startScenarioService () {
     `--service_dir=${ProjectPath.serviceScenario}`,
     `--scenario_dir=${UserDataPath.scenario}`,
     `--app_dir=${AppPath}`,
+    //'-log_dir=/saturnv/log',
   ]
   const options = {
     env,
     stdio: [0, fd, fd],
   }
 
+  console.log('start txsim scenario service', command, args)
   spawnService(command, args, options)
 }
 

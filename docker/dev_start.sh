@@ -27,6 +27,7 @@ function local_volumes() {
           -v /var/run/dbus:/var/run/dbus \
           -v $UE5_ROOT:$DOCKER_HOME/ue5 \
           -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+          -v /$OUTPUT_HOME/.config:$DOCKER_HOME/.config \
           -v /usr/share/vulkan/icd.d:/usr/share/vulkan/icd.d"
   echo "$volumes"
 }
