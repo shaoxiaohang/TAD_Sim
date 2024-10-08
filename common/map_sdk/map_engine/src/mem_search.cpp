@@ -212,6 +212,7 @@ bool MemSearch::saveMap(const int type, std::string filePath) {
     outPut.saveFile(filePath.c_str());
     return true;
   }
+  return false;
 }
 
 bool MemSearch::save() {

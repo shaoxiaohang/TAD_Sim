@@ -1,0 +1,31 @@
+✔ Installed 34 packages on /saturnv/simapp/map-editor
+✔ All packages installed (used 30ms(network 29ms), speed 0B/s, json 0(0B), tarball 0B, manifests cache hit 0, etag hit 0 / miss 0)
+
+✔ Installed 33 packages on /saturnv/simapp/scene-editor
+✔ All packages installed (used 4ms(network 3ms), speed 0B/s, json 0(0B), tarball 0B, manifests cache hit 0, etag hit 0 / miss 0)
+
+✔ Installed 5 packages on /saturnv/simapp
+✔ All packages installed (used 1ms(network 1ms), speed 0B/s, json 0(0B), tarball 0B, manifests cache hit 0, etag hit 0 / miss 0)
+
+✔ Linked 1 latest versions fallback to /saturnv/simapp/node_modules/.store/node_modules
+✔ Installed 1 packages on /saturnv/simapp
+✔ All packages installed (used 47ms(network 47ms), speed 0B/s, json 0(0B), tarball 0B, manifests cache hit 1, etag hit 1 / miss 0)
+
+dependencies:
++ @vue/shared ^3.5.9
+
+
+> simapp@1.0.0 build:scene
+> npm run build -w scene-editor
+
+
+> sim-web@1.0.0 build
+> vite build
+
+vite v4.5.5 building for production...
+transforming...
+[1m[33m[@vue/compiler-sfc][0m[33m the >>> and /deep/ combinators have been deprecated. Use :deep() instead.[0m
+
+[1m[33m[@vue/compiler-sfc][0m[33m the >>> and /deep/ combinators have been deprecated. Use :deep() instead.[0m
+
+../node_modules/.store/@protobufjs+inquire@1.1.0/node_modules/@protobufjs/inquire/index.js (12:18) Use of eval in "../node_modules/.store/@protobufjs+inquire@1.1.0/node_modules/@protobufjs/inquire/index.js" is strongly discouraged as it poses security risks and may cause issues with minification.

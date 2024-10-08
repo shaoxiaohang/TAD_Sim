@@ -17,7 +17,7 @@
     "lint": "eslint --fix ."
   },
   "dependencies": {
-    "@vue/shared": "^3.4.38"
+    "@vue/shared": "^3.5.9"
   },
   "devDependencies": {
     "@antfu/eslint-config": "2.18.0",

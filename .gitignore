@@ -92,6 +92,7 @@ simcore/map_server/service/service
 simcore/sensors/display/**/Binaries
 simcore/sensors/display/**/Build
 simcore/sensors/display/**/Intermediate
+simcore/sensors/display/**/DerivedDataCache
 simcore/sensors/display/**/Saved
 simcore/sensors/display/**/fbm
 simcore/sensors/display/Display.sln
@@ -102,3 +103,4 @@ simcore/sensors/display/Display.sln
 simapp/desktop/service
 docker/apps
 log
+simcore/sensors/display/Content

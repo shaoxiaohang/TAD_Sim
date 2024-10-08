@@ -13,7 +13,8 @@ OUTPUT_HOME=$HOME
 # Main docker image
 DESKTOP_TAG=$(get_desktop_tag)
 MAIN_IMAGE="$REGISTRY/$DESKTOP_TAG"
-UE5_ROOT="/home/dpx/workspace/ue5"
+UE4_ROOT="$OUTPUT_HOME/workspace/ue4"
+UE5_ROOT="$OUTPUT_HOME/workspace/ue5"
 
 function local_volumes() {
 
@@ -25,7 +26,11 @@ function local_volumes() {
           -v /etc/localtime:/etc/localtime:ro \
           -v /etc/shadow:/etc/shadow \
           -v /var/run/dbus:/var/run/dbus \
+          -v /usr/local/cuda-11.3:/usr/local/cuda-11.3 \
+          -v /run/user/$USER_ID:/run/user/$USER_ID \
+          -v $UE4_ROOT:$DOCKER_HOME/ue4 \
           -v $UE5_ROOT:$DOCKER_HOME/ue5 \
+          -v $OUTPUT_HOME/UnrealEngine:$DOCKER_HOME/UnrealEngine \
           -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
           -v /$OUTPUT_HOME/.config:$DOCKER_HOME/.config \
           -v /usr/share/vulkan/icd.d:/usr/share/vulkan/icd.d"
@@ -88,7 +93,8 @@ function main(){
         --privileged \
         --name "$MAIN_CONTAINER_NAME" \
         -e DISPLAY="$display" \
-        -e UE5_ROOT="$UE5_ROOT" \
+        -e UE4_ROOT="$DOCKER_HOME/ue4" \
+        -e UE5_ROOT="$DOCKER_HOME/ue5" \
         -e NVIDIA_DRIVER_CAPABILITIES="$NVIDIA_DRIVER_CAPABILITIES" \
         -e DOCKER_USER="$USER" \
         -e USER="$USER" \
@@ -96,6 +102,7 @@ function main(){
         -e DOCKER_GRP="$GRP" \
         -e DOCKER_GRP_ID="$GRP_ID" \
         -e DOCKER_IMG="$MAIN_IMAGE" \
+        -e XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
         --net=host \
         --pid=host \
         $(local_volumes) \

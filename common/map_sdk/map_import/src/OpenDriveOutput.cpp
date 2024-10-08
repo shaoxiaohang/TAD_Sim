@@ -119,6 +119,7 @@ const char* HadMapLaneMark(LANE_MARK mark) {
     case LANE_MARK_Green:
       return "green";
   }
+  return "none";
 }
 
 const char* HadMapLaneColor(int mark) {

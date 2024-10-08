@@ -431,6 +431,7 @@ int pointToRectDistance(const Point2d& v1, const Point2d& leftBottom, const Poin
   } else if (v1.y < leftBottom.y) {
     return leftBottom.y - v1.y;
   }
+  return 0;
 }
 
 int isPointInRect(const hadmap::Point2d& v1, const hadmap::Point2d& leftBottom, const hadmap::Point2d& rightTop) {
