@@ -2678,9 +2678,9 @@ void AppendTriangle(FMeshDescriptionBuilder& meshDescBuilder, TArray<FVertexID> 
     for (int i = 0; i < 3; i++)
     {
         FVertexInstanceID instance = meshDescBuilder.AppendInstance(vertexIDs[vertex[i].ID]);
-        meshDescBuilder.SetInstanceNormal(instance, vertex[i].InstanceNormal);
-        meshDescBuilder.SetInstanceUV(instance, vertex[i].InstanceUV, 0);
-        meshDescBuilder.SetInstanceColor(instance, FVector4(1.0f, 1.0f, 1.0f, 1.0f));
+        meshDescBuilder.SetInstanceNormal(instance, (FVector4f)vertex[i].InstanceNormal);
+        meshDescBuilder.SetInstanceUV(instance, (FVector4f)vertex[i].InstanceUV, 0);
+        meshDescBuilder.SetInstanceColor(instance, FVector4f(1.0f, 1.0f, 1.0f, 1.0f));
         vertexInsts.Add(instance);
     }
     // 增加此三角形

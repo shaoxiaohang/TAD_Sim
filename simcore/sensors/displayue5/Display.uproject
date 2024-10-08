@@ -1,0 +1,17 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "43E0473A-712F-44B1-B0E0-85B47E94F765",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "Display",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"TargetPlatforms": [
+		"Windows",
+		"Linux"
+	]
+}

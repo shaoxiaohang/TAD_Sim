@@ -98,6 +98,16 @@ simcore/sensors/display/**/fbm
 simcore/sensors/display/Display.sln
 !simcore/sensors/display/**/ThirdParty/**
 !simcore/sensors/display/Source/Display/SimMsg/**
+simcore/sensors/displayue5/**/Binaries
+simcore/sensors/displayue5/**/Build
+simcore/sensors/displayue5/**/Intermediate
+simcore/sensors/displayue5/**/DerivedDataCache
+simcore/sensors/displayue5/**/Saved
+simcore/sensors/displayue5/**/fbm
+simcore/sensors/displayue5/Plugins/**/Content
+simcore/sensors/displayue5/Display.sln
+!simcore/sensors/displayue5/**/ThirdParty/**
+!simcore/sensors/displayue5/Source/Display/SimMsg/**
 # simapp/desktop/serice
 
 simapp/desktop/service

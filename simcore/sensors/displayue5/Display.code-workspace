@@ -1,0 +1,865 @@
+{
+	"folders": [
+		{
+			"name": "Display",
+			"path": "."
+		},
+		{
+			"name": "UE5",
+			"path": "/home/aaa/ue5"
+		}
+	],
+	"settings": {
+		"typescript.tsc.autoDetect": "off",
+		"npm.autoDetect": "off"
+	},
+	"extensions": {
+		"recommendations": [
+			"ms-vscode.cpptools",
+			"ms-dotnettools.csharp"
+		]
+	},
+	"tasks": {
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "Display Linux Debug Build",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"Linux",
+					"Debug",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display Linux Debug Rebuild",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"Linux",
+					"Debug",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"dependsOn": [
+					"Display Linux Debug Clean"
+				],
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display Linux Debug Clean",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"Linux",
+					"Debug",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex",
+					"-clean"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display Linux DebugGame Build",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"Linux",
+					"DebugGame",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display Linux DebugGame Rebuild",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"Linux",
+					"DebugGame",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"dependsOn": [
+					"Display Linux DebugGame Clean"
+				],
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display Linux DebugGame Clean",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"Linux",
+					"DebugGame",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex",
+					"-clean"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display Linux Development Build",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"Linux",
+					"Development",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display Linux Development Rebuild",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"Linux",
+					"Development",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"dependsOn": [
+					"Display Linux Development Clean"
+				],
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display Linux Development Clean",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"Linux",
+					"Development",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex",
+					"-clean"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display Linux Test Build",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"Linux",
+					"Test",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display Linux Test Rebuild",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"Linux",
+					"Test",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"dependsOn": [
+					"Display Linux Test Clean"
+				],
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display Linux Test Clean",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"Linux",
+					"Test",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex",
+					"-clean"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display Linux Shipping Build",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"Linux",
+					"Shipping",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display Linux Shipping Rebuild",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"Linux",
+					"Shipping",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"dependsOn": [
+					"Display Linux Shipping Clean"
+				],
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display Linux Shipping Clean",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"Linux",
+					"Shipping",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex",
+					"-clean"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display LinuxArm64 Debug Build",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"LinuxArm64",
+					"Debug",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display LinuxArm64 Debug Rebuild",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"LinuxArm64",
+					"Debug",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"dependsOn": [
+					"Display LinuxArm64 Debug Clean"
+				],
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display LinuxArm64 Debug Clean",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"LinuxArm64",
+					"Debug",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex",
+					"-clean"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display LinuxArm64 DebugGame Build",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"LinuxArm64",
+					"DebugGame",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display LinuxArm64 DebugGame Rebuild",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"LinuxArm64",
+					"DebugGame",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"dependsOn": [
+					"Display LinuxArm64 DebugGame Clean"
+				],
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display LinuxArm64 DebugGame Clean",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"LinuxArm64",
+					"DebugGame",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex",
+					"-clean"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display LinuxArm64 Development Build",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"LinuxArm64",
+					"Development",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display LinuxArm64 Development Rebuild",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"LinuxArm64",
+					"Development",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"dependsOn": [
+					"Display LinuxArm64 Development Clean"
+				],
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display LinuxArm64 Development Clean",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"LinuxArm64",
+					"Development",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex",
+					"-clean"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display LinuxArm64 Test Build",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"LinuxArm64",
+					"Test",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display LinuxArm64 Test Rebuild",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"LinuxArm64",
+					"Test",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"dependsOn": [
+					"Display LinuxArm64 Test Clean"
+				],
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display LinuxArm64 Test Clean",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"LinuxArm64",
+					"Test",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex",
+					"-clean"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display LinuxArm64 Shipping Build",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"LinuxArm64",
+					"Shipping",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display LinuxArm64 Shipping Rebuild",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"LinuxArm64",
+					"Shipping",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"dependsOn": [
+					"Display LinuxArm64 Shipping Clean"
+				],
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "Display LinuxArm64 Shipping Clean",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"Display",
+					"LinuxArm64",
+					"Shipping",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex",
+					"-clean"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "DisplayEditor Linux Debug Build",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"DisplayEditor",
+					"Linux",
+					"Debug",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "DisplayEditor Linux Debug Rebuild",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"DisplayEditor",
+					"Linux",
+					"Debug",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"dependsOn": [
+					"DisplayEditor Linux Debug Clean"
+				],
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "DisplayEditor Linux Debug Clean",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"DisplayEditor",
+					"Linux",
+					"Debug",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex",
+					"-clean"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "DisplayEditor Linux DebugGame Build",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"DisplayEditor",
+					"Linux",
+					"DebugGame",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "DisplayEditor Linux DebugGame Rebuild",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"DisplayEditor",
+					"Linux",
+					"DebugGame",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"dependsOn": [
+					"DisplayEditor Linux DebugGame Clean"
+				],
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "DisplayEditor Linux DebugGame Clean",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"DisplayEditor",
+					"Linux",
+					"DebugGame",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex",
+					"-clean"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "DisplayEditor Linux Development Build",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"DisplayEditor",
+					"Linux",
+					"Development",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "DisplayEditor Linux Development Rebuild",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"DisplayEditor",
+					"Linux",
+					"Development",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex"
+				],
+				"problemMatcher": "$msCompile",
+				"dependsOn": [
+					"DisplayEditor Linux Development Clean"
+				],
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			},
+			{
+				"label": "DisplayEditor Linux Development Clean",
+				"group": "build",
+				"command": "Engine/Build/BatchFiles/Linux/Build.sh",
+				"args": [
+					"DisplayEditor",
+					"Linux",
+					"Development",
+					"/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-waitmutex",
+					"-clean"
+				],
+				"problemMatcher": "$msCompile",
+				"type": "shell",
+				"options": {
+					"cwd": "/home/aaa/ue5"
+				}
+			}
+		]
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Launch Display (Debug)",
+				"request": "launch",
+				"program": "/saturnv/simcore/sensors/displayue5/Binaries/Linux/Display-Linux-Debug",
+				"preLaunchTask": "Display Linux Debug Build",
+				"args": [
+				],
+				"cwd": "/home/aaa/ue5",
+				"type": "cppdbg",
+				"visualizerFile": "/home/aaa/ue5/Engine/Extras/VisualStudioDebugging/Unreal.natvis",
+				"showDisplayString": true
+			},
+			{
+				"name": "Launch Display (DebugGame)",
+				"request": "launch",
+				"program": "/saturnv/simcore/sensors/displayue5/Binaries/Linux/Display-Linux-DebugGame",
+				"preLaunchTask": "Display Linux DebugGame Build",
+				"args": [
+				],
+				"cwd": "/home/aaa/ue5",
+				"type": "cppdbg",
+				"visualizerFile": "/home/aaa/ue5/Engine/Extras/VisualStudioDebugging/Unreal.natvis",
+				"showDisplayString": true
+			},
+			{
+				"name": "Launch Display (Development)",
+				"request": "launch",
+				"program": "/saturnv/simcore/sensors/displayue5/Binaries/Linux/Display",
+				"preLaunchTask": "Display Linux Development Build",
+				"args": [
+				],
+				"cwd": "/home/aaa/ue5",
+				"type": "cppdbg",
+				"visualizerFile": "/home/aaa/ue5/Engine/Extras/VisualStudioDebugging/Unreal.natvis",
+				"showDisplayString": true
+			},
+			{
+				"name": "Launch Display (Test)",
+				"request": "launch",
+				"program": "/saturnv/simcore/sensors/displayue5/Binaries/Linux/Display-Linux-Test",
+				"preLaunchTask": "Display Linux Test Build",
+				"args": [
+				],
+				"cwd": "/home/aaa/ue5",
+				"type": "cppdbg",
+				"visualizerFile": "/home/aaa/ue5/Engine/Extras/VisualStudioDebugging/Unreal.natvis",
+				"showDisplayString": true
+			},
+			{
+				"name": "Launch Display (Shipping)",
+				"request": "launch",
+				"program": "/saturnv/simcore/sensors/displayue5/Binaries/Linux/Display-Linux-Shipping",
+				"preLaunchTask": "Display Linux Shipping Build",
+				"args": [
+				],
+				"cwd": "/home/aaa/ue5",
+				"type": "cppdbg",
+				"visualizerFile": "/home/aaa/ue5/Engine/Extras/VisualStudioDebugging/Unreal.natvis",
+				"showDisplayString": true
+			},
+			{
+				"name": "Launch DisplayEditor (Debug)",
+				"request": "launch",
+				"program": "/home/aaa/ue5/Engine/Binaries/Linux/UnrealEditor-Linux-Debug",
+				"preLaunchTask": "DisplayEditor Linux Debug Build",
+				"args": [
+					"/saturnv/simcore/sensors/displayue5/Display.uproject"
+				],
+				"cwd": "/home/aaa/ue5",
+				"type": "cppdbg",
+				"visualizerFile": "/home/aaa/ue5/Engine/Extras/VisualStudioDebugging/Unreal.natvis",
+				"showDisplayString": true
+			},
+			{
+				"name": "Launch DisplayEditor (DebugGame)",
+				"request": "launch",
+				"program": "/home/aaa/ue5/Engine/Binaries/Linux/UnrealEditor-Linux-DebugGame",
+				"preLaunchTask": "DisplayEditor Linux DebugGame Build",
+				"args": [
+					"/saturnv/simcore/sensors/displayue5/Display.uproject"
+				],
+				"cwd": "/home/aaa/ue5",
+				"type": "cppdbg",
+				"visualizerFile": "/home/aaa/ue5/Engine/Extras/VisualStudioDebugging/Unreal.natvis",
+				"showDisplayString": true
+			},
+			{
+				"name": "Launch DisplayEditor (Development)",
+				"request": "launch",
+				"program": "/home/aaa/ue5/Engine/Binaries/Linux/UnrealEditor",
+				"preLaunchTask": "DisplayEditor Linux Development Build",
+				"args": [
+					"/saturnv/simcore/sensors/displayue5/Display.uproject"
+				],
+				"cwd": "/home/aaa/ue5",
+				"type": "cppdbg",
+				"visualizerFile": "/home/aaa/ue5/Engine/Extras/VisualStudioDebugging/Unreal.natvis",
+				"showDisplayString": true
+			},
+			{
+				"name": "Generate Project Files",
+				"type": "coreclr",
+				"request": "launch",
+				"preLaunchTask": "UnrealBuildTool Linux Development Build",
+				"program": "/home/aaa/ue5/Engine/Build/BatchFiles/RunUBT.bat",
+				"args": [
+					"-projectfiles",
+					"-vscode",
+					"-project=/saturnv/simcore/sensors/displayue5/Display.uproject",
+					"-game",
+					"-engine",
+					"-dotnet"
+				],
+				"console": "internalConsole",
+				"internalConsoleOptions": "openOnSessionStart",
+				"stopAtEntry": false,
+				"cwd": "/home/aaa/ue5"
+			}
+		]
+	}
+}
