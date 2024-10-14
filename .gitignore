@@ -114,3 +114,4 @@ simapp/desktop/service
 docker/apps
 log
 simcore/sensors/display/Content
+simcore/sensors/display/Plugins/BoostLib/deps/boost

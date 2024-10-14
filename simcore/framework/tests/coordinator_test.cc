@@ -2,6 +2,7 @@
 
 #include "coordinator/coordinator.h"
 #include "coordinator/scenario_parser.h"
+#include "utils/proc.h"
 #include "coordinator_test.h"
 #include "mocks.h"
 #include "txsim_messenger.h"
@@ -534,6 +535,37 @@ TEST_F(CodrTest, RunModuleThenScenarioStopped) {
 
   CommandInfo cmd_info(kCmdRun);
   EXPECT_EQ(tested_codr_.Execute(cmd_info), expected_cmd_result);
+}
+
+TEST_F(CodrTest, LaunchModule) {
+  std::cout << "AAAAAAAA" << std::endl;
+  std::string path = "/saturnv/simcore/sensors/displayue5/tadsim2.sh";
+  std::vector<std::string> args;
+  args.push_back("/saturnv/simcore/sensors/displayue5/tadsim2.sh");
+  args.push_back("--ip_addr_port");
+  args.push_back("127.0.0.1:21302");
+  std::vector<tx_sim::impl::StringPair> envs;
+  std::string stdout_path = "/home/aaa/.config/tadsim/log/user_log/Ego_001-ue5.log";
+
+  //auto pid = tx_sim::utils::CreateModuleProcess(path, args, envs, stdout_path);
+
+  pid_t child_pid = fork();
+  if (child_pid > 0) {  // current process, return child pid directly.
+      std::cout << "pid" << child_pid << std::endl;
+  } else if (child_pid == 0) {  // child process
+    std::cout << "path: " << path << std::endl;
+    const char **argv = new const char *[args.size() + 2];  // +2 for program name and sentinel nullptr.
+    argv[0] = path.c_str();                                 // by convention, argv[0] is program name.
+    for (size_t i = 0; i < args.size(); ++i) argv[i + 1] = args[i].c_str();
+    argv[args.size() + 1] = nullptr;
+    execve(path.c_str(), (char **)argv, environ);
+    std::cout << "cccccccccccccccc " << std::endl;
+    //exit(4);  // execve only returned on error.
+  } else {    // error
+  }
+
+  std::cout << "BBBBBBBBB" << std::endl;
+
 }
 
 }  // namespace test

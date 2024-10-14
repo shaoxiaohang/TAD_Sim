@@ -1,4 +1,4 @@
-var addon = require('./build/Debug/txsim-play-service.node');
+var addon = require('./build/Release/txsim-play-service.node');
 const util = require('util');
 
 //retCode = 0   // 指令被接受，代表指令正在执行，后续还会有数据返回，step/stop/pause不会返回此状态，只有run/setup会返回
@@ -58,12 +58,12 @@ const util = require('util');
 //}
 
 
-//addon.setAppPath("/home/nemo/.config/tadsim", "/opt/tadsim/resources/app/service");
-addon.setAppPath("C:\\Users\\mikemychen\\AppData\\Roaming\\tadsim", "E:\\tadsim\\resources\\app\\service");
+addon.setAppPath("/home/aaa/.config/tadsim", "./build/release/linux-unpacked/resources/app/service")
+//addon.setAppPath("C:\\Users\\mikemychen\\AppData\\Roaming\\tadsim", "E:\\tadsim\\resources\\app\\service");
 //addon.setAppPath("C:\\Users\\fangccheng\\AppData\\Roaming\\tadsim", "C:\\Program Files\\tadsim\\resources\\app\\service");
 
 // optional, default is tcp://127.0.0.1:8401 on Windows and uds on Linux.
-// addon.setClientEndpoint("tcp://127.0.0.1:30001");
+//addon.setClientEndpoint("ipc:///run/user/1000/tadsim-service.sock");
 
 if (process.argv.length < 3) {
   console.log("usage: node test.js cmd (see test.js switch cases for usable cmds)");
@@ -75,7 +75,7 @@ switch (process.argv[2]) {
     addon.setup((status, err) => {
       console.log("err: " + JSON.stringify(err));
       console.log("status: " + util.inspect(status, false, 3, true));
-    }, { scenarioPath: "/home/nemo/.config/tadsim/scenario/scene/AEB_straight_001.sim" });
+    }, { scenarioPath: "/home/aaa/.config/tadsim/sys/scenario/scene/Sim_Accident_01_1_convert.sim" });
     break;
   case 'un-setup':
     addon.unSetup((status, err) => {

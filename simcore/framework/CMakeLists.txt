@@ -425,7 +425,8 @@ if(NOT TXSIM_SDK_ONLY)
     tests/coordinator_test.cc
     tests/scenario_parsing_test.cc
     tests/config_mgr_test.cc
-    tests/cloud_city_test.cc)
+    tests/cloud_city_test.cc
+    )
 
   target_link_libraries(tests txsim-coordinator txsim-client ${LIB_PROTOBUF} ${LIB_ZMQ} ${LIB_SQLITE} ${LIB_XML} ${LIB_JSON} ${LIB_GLOG}
     ${LIB_BOOST_FS} ${LIB_BOOST_PO} ${LIB_BOOST_DATE_TIME} ${LIB_GTEST} ${LIB_PROJ} ${LIB_SYS} ${LIB_ABSL})

@@ -10,6 +10,7 @@ TADSIM_CONFIG_DIR="$HOME/.config/tadsim"
 TADSIM_BUILD_LOG_DIR="$TADSIM_LOG_DIR/build"
 TADSIM_TEST_LOG_DIR="$TADSIM_LOG_DIR/test"
 TADSIM_DEV_LOG_DIR="$TADSIM_LOG_DIR/dev"
+TADSIM_APP_DIR=$TADSIM_BUILD_DIR/release/linux-unpacked/resources/app
 TADSIM_DEV_SERVICE_DIR=$TADSIM_BUILD_DIR/release/linux-unpacked/resources/app/service
 TADSIM_NODE_ADDON_DIR=$TADSIM_ROOT/simcore/framework/src/node_addon
 

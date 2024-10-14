@@ -10,7 +10,6 @@ function launch_editor(){
 
 function launch_game(){
   export LD_LIBRARY_PATH="$OPENVR_LIBRARY_PATH:$DISPLAY_LIBRARY_PATH:$LD_LIBRARY_PATH"
-  #info $LD_LIBRARY_PATH
   ${DISPLAY_UNREAL_ROOT}/Binaries/Linux/Display -game -windowed -NoLoadingScreen WinX=400 WinY=100 ResX=800 ResY=600 -novsync -nosound
 }
 

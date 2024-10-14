@@ -4,7 +4,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 TADSIM_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../../.." && pwd -P )"
 DOCKER_HOME="/home/$USER"
 DISPLAY_UNREAL_ROOT=$SCRIPT_DIR
-export TADSIM="/saturnv/build"
+export TADSIM="$TADSIM_ROOT/build"
 
 OPENVR_LIBRARY_PATH=$UE4_ROOT/Engine/Source/ThirdParty/OpenVR/OpenVRv1_5_17/lib/linux64
 DISPLAY_LIBRARY_PATH=$DISPLAY_UNREAL_ROOT/Binaries/Linux/ubuntu18_20

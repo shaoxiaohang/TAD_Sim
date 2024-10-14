@@ -56,7 +56,6 @@ function package(){
                          -build \
                          -stage \
                          -prereqs \
-                         -pak \
                          -archive \
                          -archivedirectory="$DISPLAY_ROOT/Saved"
 

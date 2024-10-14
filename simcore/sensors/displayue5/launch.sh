@@ -10,7 +10,8 @@ function launch_editor(){
 
 function launch_game(){
   export LD_LIBRARY_PATH="$DISPLAY_LIBRARY_PATH:$LD_LIBRARY_PATH"
-  bash ${DISPLAY_UNREAL_ROOT}/Saved/Linux/Display.sh -game -windowed -NoLoadingScreen WinX=400 WinY=100 ResX=800 ResY=600 -novsync -nosound
+  #${DISPLAY_UNREAL_ROOT}/Binaries/Linux/Display -game -windowed -NoLoadingScreen WinX=400 WinY=100 ResX=800 ResY=600 -novsync -nosound
+  bash ${DISPLAY_UNREAL_ROOT}/Saved/Linux/Display.sh -game -windowed -NoLoadingScreen -mode=FrameSync -novsync -nosound -log -abslog=/saturnv/log/dev/ue5.log
 }
 
 while [[ $# -gt 0 ]]; do

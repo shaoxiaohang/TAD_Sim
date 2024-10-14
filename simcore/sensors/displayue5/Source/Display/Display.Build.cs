@@ -20,18 +20,17 @@ public class Display : ModuleRules
     		{"HadMap","Protobuf","BoostLib","MyUDP"});
 
 
+    PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "SimMsg"));
+
+    PublicIncludePaths.Add(ModuleDirectory);
+
     RuntimeDependencies.Add(Path.Combine(ModuleDirectory, "../../Config", "DefaultAutoRoad.ini"));
 	
     if (Target.Platform == UnrealTargetPlatform.Win64){
         PublicDependencyModuleNames.AddRange(new string[] { "RTXLidar" });
 		}
 
-		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
-		
-		// Uncomment if you are using online features
-		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
+    bEnableExceptions = true;
 
-		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
 	}
 }

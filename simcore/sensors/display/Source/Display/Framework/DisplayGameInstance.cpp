@@ -3415,40 +3415,6 @@ void UDisplayGameInstance::SimOutput(const FSimData& _Data)
 
 void UDisplayGameInstance::OnAllClientLevelLoaded()
 {
-    ULevel* Level = GetWorld()->GetCurrentLevel();
-    FString LevelName = Level->GetPathName();
-    if (!currentSimInData)
-    {
-        // Not create simmodule
-        return;
-    }
-
-    // TODO: check loaded map is correct
-
-    if (currentSimInData->name == TEXT("INIT"))
-    {
-        FSimOut OutData;
-        OutData.name = TEXT("OUTPUT_INIT");
-        SimOutput(OutData);
-    }
-    else if (currentSimInData->name == TEXT("RESET"))
-    {
-        UE_LOG(LogSimGameInstance, Log, TEXT("Reset After Load World!"));
-        // Update hadmap
-        if (hadmapHandle && hadmapHandle->IsMapReady() && hadmapHandle->GetMapMode() == hadmapue4::MapMode::ROUTINGMAP)
-        {
-            hadmapHandle->UpdateRoutingmap(StaticCast<FSimResetIn*>(currentSimInData.Get())->startLon,
-                StaticCast<FSimResetIn*>(currentSimInData.Get())->startLat,
-                StaticCast<FSimResetIn*>(currentSimInData.Get())->startAlt);
-        }
-        SimInput(*currentSimInData);
-        currentSimInData->bIsConsumed = CONSUMED_MAXTICK + 1;
-        UE_LOG(LogSimGameInstance, Log, TEXT("Execute ResetAfterLoadedWorld Over!"));
-
-        displayNetworkManager->resumeThread();
-    }
-
-    // TODO: Whew STOP
 }
 
 int32 UDisplayGameInstance::getMapIndex(const FString& mapname)
