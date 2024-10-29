@@ -11,13 +11,13 @@ public class Display : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine",
-		 "InputCore", "EnhancedInput", "AutoRoad","RuntimeMeshLoader"});
+		 "InputCore", "EnhancedInput","CinematicCamera","Networking", "Sockets", "AutoRoad","RuntimeMeshLoader"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
     //Plugin module
     PublicDependencyModuleNames.AddRange(new string[]
-    		{"HadMap","Protobuf","BoostLib","MyUDP"});
+    		{"HadMap","Protobuf","BoostLib","MyUDP", "CudaResource"});
 
 
     PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "SimMsg"));

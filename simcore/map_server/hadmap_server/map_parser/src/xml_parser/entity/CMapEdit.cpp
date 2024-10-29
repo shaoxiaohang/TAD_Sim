@@ -168,7 +168,7 @@ const char* CMapEdit::CreateHadmapString(const wchar_t* wstrSessionID) {
     SYSTEM_LOGGER_INFO("success to get hadmap!");
     return _str.data;
   } else {
-    SYSTEM_LOGGER_ERROR("fail to get hadmap!");
+    SYSTEM_LOGGER_ERROR("fail to get hadmap %s!", errorCode_CreateString.err_desc);
     std::string strInfo = errorCode_CreateString.err_desc;
     Json::Value ret;
     ret["message"] = "error";

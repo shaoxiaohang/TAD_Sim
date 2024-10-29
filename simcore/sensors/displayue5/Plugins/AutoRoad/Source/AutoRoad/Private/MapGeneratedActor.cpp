@@ -2753,6 +2753,7 @@ UStaticMesh* AMapGeneratedActor::CreateStaticMesh(const TArray<FVector>& Vertice
     staticMesh->SetIsBuiltAtRuntime(true);
 
     UStaticMesh::FBuildMeshDescriptionsParams mdParams;
+    mdParams.bFastBuild = true;
 
     if (bCreateCollision)
     {

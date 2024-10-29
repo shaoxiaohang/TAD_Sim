@@ -22,6 +22,16 @@ function build_framwork() {
   popd > /dev/null
 }
 
+function build_map_server() {
+  pushd $TADSIM_ROOT/simcore > /dev/null
+  build_project map_server build.sh
+  cp ./map_server/build/bin/libmap_parser.a  $TADSIM_DEV_SERVICE_DIR
+  cp ./map_server/build/bin/libOpenDrivePlugin.so $TADSIM_DEV_SIM_DEP_DIR
+  cp ./map_server/build/bin/libscene_wrapper.so $TADSIM_DEV_SIM_DEP_DIR
+  cp ./map_server/build/bin/txSimService $TADSIM_DEV_SERVICE_DIR
+  popd > /dev/null
+}
+
 while [[ $# -gt 0 ]]; do
   case $1 in
     -h|--help)
@@ -30,6 +40,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     framework)
       build_framwork
+      shift
+      ;;
+    map_server)
+      build_map_server
       shift
       ;;
     *)

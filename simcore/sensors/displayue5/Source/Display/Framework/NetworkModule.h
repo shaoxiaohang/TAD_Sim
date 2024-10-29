@@ -22,5 +22,14 @@ class DISPLAY_API NetworkModule : public tx_sim::SimModule {
 
  private:
   FEvent* threadSuspendedEvent = nullptr;
+  FSimUpdateIn simUpdateIn;
+
   bool asynchronousMode = false;
+
+  double time0 = 0;
+  double realstep = 0;
+
+  FString TrafficTopic = TEXT("TRAFFIC");
+  FString LocationTopic = TEXT("LOCATION");
+  FString UnionPrefixStr = TEXT("EgoUnion/");
 };

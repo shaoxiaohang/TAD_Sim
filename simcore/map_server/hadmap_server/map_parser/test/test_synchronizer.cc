@@ -11,11 +11,11 @@ using namespace std;
 #include "../database/synchronizer.h"
 
 TEST(testSynchronizer, test) {
-  CLog::Initialize("/data/hadmap_server/config/tadsim");
-  CEngineConfig& conf = CEngineConfig::Instance();
+  // CLog::Initialize("/data/hadmap_server/config/tadsim");
+  // CEngineConfig& conf = CEngineConfig::Instance();
 
-  conf.Init("/data/hadmap_server/config/tadsim", "/data/hadmap_server/installed/tadsim");
+  // conf.Init("/data/hadmap_server/config/tadsim", "/data/hadmap_server/installed/tadsim");
 
-  CDatabase& db = CDatabase::Instance();
-  CSynchronizer& ins = CSynchronizer::Instance();
+  // CDatabase& db = CDatabase::Instance();
+  // CSynchronizer& ins = CSynchronizer::Instance();
 }

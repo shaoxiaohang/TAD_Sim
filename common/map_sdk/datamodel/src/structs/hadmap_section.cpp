@@ -210,7 +210,6 @@ txLanePtr &txSection::getLane(int8_t laneid) const {
       return it;
     }
   }
-  return nullptr;
 }
 
 txLanes &txSection::getLanes() const { return instancePtr->getLanes(); }

@@ -173,9 +173,9 @@ if(UNIX)
   include_directories(src)
 endif()
 
-if(HADMAP_SVR_BUILD_TESTING)
-  add_subdirectory(test)
-endif()
+#if(HADMAP_SVR_BUILD_TESTING)
+add_subdirectory(test)
+#endif()
 
 if(HADMAP_SVR_BUILD_TOOLS)
   add_executable(xosc_convert_tool ${ROOT_DIR}/tools/xosc_convert_tool.cc)

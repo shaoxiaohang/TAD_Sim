@@ -3352,6 +3352,9 @@ bool UDisplayGameInstance::GetMapInfo(
         _MapInfo.origin_Lon = FCString::Atod(*ValueArry[0]);
         _MapInfo.origin_Lat = FCString::Atod(*ValueArry[1]);
         _MapInfo.origin_Alt = FCString::Atod(*ValueArry[2]);
+        UE_LOG(LogTemp, Display, 
+        TEXT("Map origin lon %.6f lat %.6f alt %.6f(MapIndex: %d, MapFileName: %s, MapName: %s)"), _MapIndex,
+            *_MapFileName, *_MapInfo.mapName, _MapInfo.origin_Lon, _MapInfo.origin_Lat , _MapInfo.origin_Alt);
     }
     else
     {
@@ -3415,6 +3418,38 @@ void UDisplayGameInstance::SimOutput(const FSimData& _Data)
 
 void UDisplayGameInstance::OnAllClientLevelLoaded()
 {
+    ULevel* Level = GetWorld()->GetCurrentLevel();
+    FString LevelName = Level->GetPathName();
+    if (!currentSimInData)
+    {
+        // Not create simmodule
+        return;
+    }
+
+    // TODO: check loaded map is correct
+
+    if (currentSimInData->name == TEXT("INIT"))
+    {
+        FSimOut OutData;
+        OutData.name = TEXT("OUTPUT_INIT");
+        SimOutput(OutData);
+    }
+    else if (currentSimInData->name == TEXT("RESET"))
+    {
+        UE_LOG(LogSimGameInstance, Log, TEXT("Reset After Load World!"));
+        // Update hadmap
+        if (hadmapHandle && hadmapHandle->IsMapReady() && hadmapHandle->GetMapMode() == hadmapue4::MapMode::ROUTINGMAP)
+        {
+            hadmapHandle->UpdateRoutingmap(StaticCast<FSimResetIn*>(currentSimInData.Get())->startLon,
+                StaticCast<FSimResetIn*>(currentSimInData.Get())->startLat,
+                StaticCast<FSimResetIn*>(currentSimInData.Get())->startAlt);
+        }
+        SimInput(*currentSimInData);
+        currentSimInData->bIsConsumed = CONSUMED_MAXTICK + 1;
+        UE_LOG(LogSimGameInstance, Log, TEXT("Execute ResetAfterLoadedWorld Over!"));
+
+        displayNetworkManager->resumeThread();
+    }
 }
 
 int32 UDisplayGameInstance::getMapIndex(const FString& mapname)

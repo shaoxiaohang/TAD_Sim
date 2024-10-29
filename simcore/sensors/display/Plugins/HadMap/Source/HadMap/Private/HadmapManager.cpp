@@ -180,6 +180,9 @@ bool HadmapManager::Init(double _OriginLon, double _OriginLat, double _OriginAlt
         IsSuccess = bUseDecrypt;
     }
 
+    UE_LOG(LogTemp, Display, TEXT("HadmapManager Init lon %.6f lat %.6f alt %.6f"),
+    _OriginLon, _OriginLat, _OriginAlt);
+
     bInitSuccess = IsSuccess;
     return bInitSuccess;
 }

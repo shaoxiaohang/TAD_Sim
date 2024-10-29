@@ -1342,6 +1342,27 @@ int CParserJson::JsonToXml(const char* strJson, sTagSimuTraffic& scene) {
     return -1;
   }
 
+  SYSTEM_LOGGER_INFO("2");
+
+  Json::StreamWriterBuilder builder_tmp;
+  builder_tmp.settings_["indentation"] = "  ";
+  std::unique_ptr<Json::StreamWriter> writer(builder_tmp.newStreamWriter());
+  std::stringstream ss;
+  writer->write(root, &ss);
+  std::string strUnstyledResult = ss.str();
+
+//   if (1)
+//   {
+//           FILE* f = NULL;
+//           f = fopen("/home/aaa/.config/tadsim/sys/scenario/scene_log/scene.json", "w");
+//           if (f)
+//           {
+//                   fwrite(strUnstyledResult.c_str(), strUnstyledResult.size(),
+// 1, f); fclose(f);
+//           }
+//   }
+
+
   // traffic
   Json::Value& jInfos = root["infos"];
   if (!jInfos.isNull()) {

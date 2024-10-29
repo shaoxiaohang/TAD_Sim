@@ -69,6 +69,7 @@ int CBoundingBox::parseFromJson(const Json::Value& json) {
   m_strX = std::to_string(json["center"].get("x", 0).asDouble());
   m_strY = std::to_string(json["center"].get("y", 0).asDouble());
   m_strZ = std::to_string(json["center"].get("z", 0).asDouble());
+  return 0;
 }
 
 TiXmlElement* CBoundingBox::toTixmlFromJson(const Json::Value& json) {

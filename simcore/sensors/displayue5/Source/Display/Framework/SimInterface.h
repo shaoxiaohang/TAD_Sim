@@ -15,22 +15,10 @@ enum class ESimState : uint8
     SA_UPDATE
 };
 
-USTRUCT()
-struct FClientInfo
-{
-    GENERATED_BODY()
-public:
-    FUniqueNetIdRepl uniqueNetId;
-    FString playerName;
-    bool bIsSimActionComplete = false;
-    bool bIsDeferredSimActionComplete = false;
-    FString simStat = TEXT("DATA_SENT");
-    ESimState state = ESimState::SA_DONE;
-};
-
-
+// USTRUCT()
 struct FSimData
 {
+    // GENERATED_BODY()
 public:
     virtual ~FSimData()
     {
@@ -45,68 +33,15 @@ public:
     double timeStamp_tail = 0.f;
 };
 
-struct FSimIn : public FSimData
+USTRUCT()
+struct FLocalData
 {
+    GENERATED_BODY()
 public:
-    virtual ~FSimIn()
-    {
-    }
-};
-
-struct FSimInitIn : public FSimIn
-{
-public:
-    int32 clientNum = 1;
-};
-
-struct FEgoInitInfo
-{
-    FString egoName = TEXT("suv");
-    FString egoCategory = TEXT("car");
-    FString egoType = "transport/Ego";
-    int64 EgoID;
-    double startLon;
-    double startLat;
-    double startAlt;
-    double startTheta;
-    double startSpeed;
-};
-
-struct FSimResetIn : public FSimIn
-{
-public:
-    FString tadsimPath;
-    FString configFilePath;
-    double mapOriginLon = 0.f;
-    double mapOriginLat = 0.f;
-    double mapOriginAlt = 0.f;
-
-    TArray<FEgoInitInfo> EgoInitInfoArry;
-    FString egoName = TEXT("suv");
-    FString egoCategory = TEXT("car");
-    FString egoType = "transport/Ego";
-    double startLon;
-    double startLat;
-    double startAlt;
-    double startTheta;
-    double startSpeed;
-    double endLon;
-    double endLat;
-    double endAlt;
-
-    int32 mapIndex;
-    FString mapDataBaseName;
-    FString mapDataBasePath;
-
-    FString sensorConfigPath;
-    FString envConfigPath;
-
-    FString mapName;
-    FString mapPath;
-    FString decryptFilePath;
-    FString ModelPath;
-
-    std::string sceneBuffer;
-
-    FString SceneTrafficPath;
+    // bool bIsSuccess = false;
+    double timeStamp = 0.f;
+    ESimState state = ESimState::SA_DONE;
+    FString name;
+    double timeStamp_ego = 0.f;
+    double timeStamp_tail = 0.f;
 };

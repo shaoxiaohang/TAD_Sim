@@ -103,6 +103,13 @@ if(HADMAP_SVR_BUILD_TESTING)
 endif()
 
 
+add_executable(hadmap_server_test
+test/main.cpp
+)
+
+target_link_libraries(hadmap_server_test ${LIB_PROTOBUF} ${LIB_ZMQ} ${LIB_SQLITE} ${LIB_XML} ${LIB_JSON} ${LIB_GLOG}
+${LIB_BOOST_FS} ${LIB_BOOST_PO} ${LIB_BOOST_DATE_TIME} ${LIB_GTEST} ${LIB_PROJ} ${LIB_SYS} ${LIB_ABSL})
+
 #---------------------------------------------------------------------------------------
 # Start building projects...
 #---------------------------------------------------------------------------------------

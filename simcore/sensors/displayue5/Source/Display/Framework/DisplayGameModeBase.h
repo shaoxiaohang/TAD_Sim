@@ -3,7 +3,95 @@
 #include "CoreMinimal.h"
 #include "DisplayGameInstance.h"
 #include "GameFramework/GameModeBase.h"
+#include "Managers/TransportManager.h"
+#include "Managers/SensorManager.h"
 #include "DisplayGameModeBase.generated.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogSimGameMode, Log, All)
+
+struct FSimData;
+struct FSimOut;
+
+USTRUCT()
+struct FLocalIn : public FLocalData
+{
+    GENERATED_BODY()
+public:
+};
+
+USTRUCT()
+struct FLocalOut : public FLocalData
+{
+    GENERATED_BODY()
+public:
+};
+
+USTRUCT()
+struct FLocalResetIn : public FLocalIn
+{
+    GENERATED_BODY()
+public:
+    UPROPERTY()
+    float time;
+
+    UPROPERTY()
+    FString patch;
+
+    UPROPERTY()
+    FTransportManagerConfig transportManager;
+
+    // UPROPERTY()
+    // FCreatureManagerConfig creatureManager;
+
+    // UPROPERTY()
+    // FObstacleManagerConfig obstacleManager;
+
+    // UPROPERTY()
+    // FSignalLightManagerConfig signallightManager;
+
+    UPROPERTY()
+    FSensorManagerConfig sensorManager;
+
+    // UPROPERTY()
+    // FEnvManagerConfig envManager;
+};
+
+USTRUCT()
+struct FLocalUpdateIn : public FLocalIn
+{
+    GENERATED_BODY()
+public:
+    UPROPERTY()
+    FTransportManagerIn transportManager;
+
+    //UPROPERTY()
+    //FCreatureManagerIn creatureManager;
+
+    //UPROPERTY()
+    //FObstacleManagerIn obstacleManager;
+
+    //UPROPERTY()
+    //FSignalLightManagerIn signallightManager;
+
+    //UPROPERTY()
+    //FEnvManagerIn envManager;
+
+    //UPROPERTY()
+    //FSensorManagerIn sensorManager;
+    // struct FSensorManager* privateManagerArry;
+};
+
+USTRUCT()
+struct FLocalUpdateOut : public FLocalOut
+{
+    GENERATED_BODY()
+public:
+    UPROPERTY()
+    FString message;
+
+    UPROPERTY()
+    FTransportManagerOut transportManager;
+};
 
 
 UCLASS()
@@ -12,6 +100,9 @@ class DISPLAY_API ADisplayGameModeBase : public AGameModeBase
     GENERATED_BODY()
 public:
     ADisplayGameModeBase();
+
+    // GameInstance input sim data to game mode
+    virtual void SimInput(const FSimData& Data);
 
 public:
     /* Engine Interface */
@@ -86,6 +177,13 @@ protected:
     /* Engine Interface */
     /** Overridable native event for when play begins for this actor. */
     virtual void BeginPlay();
+
+protected:
+
+    void ConvertData_SimToLocal(const FSimData& _SimData, FLocalData& _LocalData);
+
+    FString GetTypeIdDef(int32 _Id, FString _Type);
+    FString GetTypeIdDef(const FString& _TypeName);
 
 protected:
 

@@ -75,7 +75,8 @@ switch (process.argv[2]) {
     addon.setup((status, err) => {
       console.log("err: " + JSON.stringify(err));
       console.log("status: " + util.inspect(status, false, 3, true));
-    }, { scenarioPath: "/home/aaa/.config/tadsim/sys/scenario/scene/Sim_Accident_01_1_convert.sim" });
+    //}, { scenarioPath: "/home/aaa/.config/tadsim/sys/scenario/scene/Sim_Accident_01_1_convert.sim" });
+      }, { scenarioPath: "/home/aaa/.config/tadsim/data/scenario/scene/single_lane.sim" });
     break;
   case 'un-setup':
     addon.unSetup((status, err) => {

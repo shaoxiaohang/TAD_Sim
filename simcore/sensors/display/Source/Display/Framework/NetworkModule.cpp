@@ -205,7 +205,11 @@ void NetworkModule::Reset(/*const sim_msg::ResetParams& scenarioUrl*/ tx_sim::Re
         myGameInstance->SetAsynchronousMode(asynchronousMode);
         myGameInstance->bSimInDataRefreshed = true;
 
-        myGameInstance->ModuleGroupName = UTF8_TO_TCHAR(helper.group_name().c_str());
+
+        myGameInstance->ModuleGroupName = TEXT("Ego_001");
+        //UTF8_TO_TCHAR(helper.group_name().c_str());
+
+        UE_LOG(SimLogNet, Log, TEXT("ModuleGroupName %s"), *myGameInstance->ModuleGroupName);
 
         // simUpdateIn.frameID = 0;
         // myGameInstance->simRestIn->configFilePath =
@@ -370,6 +374,8 @@ void NetworkModule::Step(/*const sim_msg::SimMessage& input, sim_msg::SimMessage
             {
                 NewInPtr->egoData.Emplace(UTF8_TO_TCHAR(groupname.c_str()), locationMsg);
             }
+            UE_LOG(SimLogNet, Log, TEXT("LOCATION time %f x %.8f y %.8f z %.8f"), timestamp,
+            locationMsg.position().x(), locationMsg.position().y(),locationMsg.position().z());
         }
 
         sim_msg::Location ModuleLocation_Trailer;

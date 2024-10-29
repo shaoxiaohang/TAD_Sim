@@ -262,6 +262,11 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
             EgoConfig.type = FCString::Atoi(*(Elem.egoType.Replace(TEXT("transport/Type"), TEXT(""))));
             EgoConfig.typeName = GetTypeIdDef(Elem.egoType);
             EgoConfig.Name = Elem.egoName;
+
+            UE_LOG(LogSimSystem, Warning, TEXT("egoType %s "), *Elem.egoType);
+
+            UE_LOG(LogSimSystem, Warning, TEXT("egoName %s "), *Elem.egoName);
+
             // TODO: wheels transform
             // Location
             double x = Elem.startLon;
@@ -343,6 +348,10 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
             FVector Velocity = FVector(Location.velocity().x(), -Location.velocity().y(), Location.velocity().z());
             EgoInput.velocity = Velocity;
 
+            UE_LOG(LogSimSystem, Display, TEXT("Update ego lon %f lat %f alt %f x %f y %f z %f"),
+            Location.position().x(), Location.position().y(), Location.position().z(), 
+            EgoInput.location.X,EgoInput.location.Y,EgoInput.location.Z );
+
             // Container
             if (const sim_msg::Location* pContainerData = UpdateInPtr->egoContainerData.Find(GroupName))
             {
@@ -409,6 +418,10 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
             double y = Elem.y();
             double z = Elem.z();
             hadmapue4::HadmapManager::Get()->LonLatToLocal(x, y, z, TrafficInput.location);
+
+            UE_LOG(LogSimSystem, Display, TEXT("Update traffic vehicle %s %f %f %f"), 
+            *TrafficInput.typeName,  TrafficInput.location.X,TrafficInput.location.Y,TrafficInput.location.Z );
+
             // Rotation
             TrafficInput.rotation = FRotator(0, -Elem.heading() * 180 / PI - 90, 0);
             // Velocity

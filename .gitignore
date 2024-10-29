@@ -115,3 +115,4 @@ docker/apps
 log
 simcore/sensors/display/Content
 simcore/sensors/display/Plugins/BoostLib/deps/boost
+simcore/sensors/displayue5/Content

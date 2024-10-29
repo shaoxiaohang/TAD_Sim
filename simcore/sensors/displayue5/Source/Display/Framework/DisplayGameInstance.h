@@ -19,6 +19,7 @@
 #include "sensor_raw.pb.h"
 #include "environment.pb.h"
 #include "union.pb.h"
+#include "scene.pb.h"
 #ifdef _MSC_VER
 #include "HideWindowsPlatformTypes.h"
 #endif
@@ -32,8 +33,176 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogSimSystem, Log, All)
 DECLARE_LOG_CATEGORY_EXTERN(LogSimDebug, Log, All)
 
+namespace hadmapue4
+{
+class HadmapManager;
+}
+
 class DisplayNetworkManager;
 
+struct FLocalInitIn;
+struct FLocalInitOut;
+
+struct FLocalResetIn;
+struct FLocalResetOut;
+
+struct FLocalUpdateIn;
+struct FLocalUpdateOut;
+
+struct FSensorManagerConfig;
+
+USTRUCT()
+struct FMapInfo
+{
+    GENERATED_USTRUCT_BODY()
+public:
+    UPROPERTY()
+    FString mapPath;
+    UPROPERTY()
+    FString mapName;
+    UPROPERTY()
+    double origin_Lon = 0;
+    UPROPERTY()
+    double origin_Lat = 0;
+    UPROPERTY()
+    double origin_Alt = 0;
+    UPROPERTY()
+    FString decryptFilePath;
+
+    bool IsLegal() const
+    {
+        return true;
+        // IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+        // if (!PlatformFile.FileExists(*mapPath))
+        // FString MapPath;
+        // GConfig->GetString(TEXT("MapList"), *mapFileName, MapPath, GGameIni);
+    }
+};
+
+struct FEgoInitInfo
+{
+    FString egoName = TEXT("suv");
+    FString egoCategory = TEXT("car");
+    FString egoType = "transport/Ego";
+    int64 EgoID;
+    double startLon;
+    double startLat;
+    double startAlt;
+    double startTheta;
+    double startSpeed;
+};
+
+USTRUCT()
+struct FClientInfo
+{
+    GENERATED_BODY()
+public:
+    FUniqueNetIdRepl uniqueNetId;
+    FString playerName;
+    bool bIsSimActionComplete = false;
+    bool bIsDeferredSimActionComplete = false;
+    FString simStat = TEXT("DATA_SENT");
+    ESimState state = ESimState::SA_DONE;
+};
+
+struct FSimIn : public FSimData
+{
+public:
+    virtual ~FSimIn()
+    {
+    }
+};
+
+struct FSimOut : public FSimData
+{
+public:
+    bool bIsSent = false;
+};
+
+struct FSimInitIn : public FSimIn
+{
+public:
+    int32 clientNum = 1;
+};
+
+struct FSimInitOut : public FSimOut
+{
+public:
+    virtual ~FSimInitOut()
+    {
+    }
+
+    FString message;
+    std::vector<std::string> sensor_topic;
+};
+
+
+struct FSimResetIn : public FSimIn
+{
+public:
+    FString tadsimPath;
+    FString configFilePath;
+    double mapOriginLon = 0.f;
+    double mapOriginLat = 0.f;
+    double mapOriginAlt = 0.f;
+
+    TArray<FEgoInitInfo> EgoInitInfoArry;
+    FString egoName = TEXT("suv");
+    FString egoCategory = TEXT("car");
+    FString egoType = "transport/Ego";
+    double startLon;
+    double startLat;
+    double startAlt;
+    double startTheta;
+    double startSpeed;
+    double endLon;
+    double endLat;
+    double endAlt;
+
+    int32 mapIndex;
+    FString mapDataBaseName;
+    FString mapDataBasePath;
+
+    FString sensorConfigPath;
+    FString envConfigPath;
+
+    FString mapName;
+    FString mapPath;
+    FString decryptFilePath;
+    FString ModelPath;
+
+    std::string sceneBuffer;
+
+    FString SceneTrafficPath;
+};
+
+struct FSimResetOut : public FSimOut
+{
+public:
+    virtual ~FSimResetOut()
+    {
+    }
+    FString message;
+};
+
+struct FSimUpdateIn : public FSimIn
+{
+public:
+    virtual ~FSimUpdateIn()
+    {
+    }
+
+    int32 frameID = 0;
+    TMap<FString, sim_msg::Location> egoData;
+    TMap<FString, sim_msg::Location> egoContainerData;
+    sim_msg::Location overrideEgoLocation;
+    sim_msg::Traffic trafficData;
+    sim_msg::Trajectory trajectoryData;
+    sim_msg::PlanOutput planOutputData;
+    sim_msg::ControlSim controlSimData;
+    sim_msg::PlanStatus planStatusData;
+    sim_msg::EnvironmentalConditions environmentData;
+};
 
 UCLASS(config = Game)
 class DISPLAY_API UDisplayGameInstance : public UGameInstance
@@ -63,7 +232,15 @@ public:
     // Shutdown thread that communicate with coordinator
     void ShutdownSimModuleThread();
 
+    void SimOutput(const FSimData& _Data);
+
     void OnAllClientLevelLoaded();
+
+    /**
+     * Sim interface
+     * Trigger simulator action to GameInstance from SimModule.
+     */
+    virtual void SimInput(const FSimData& _Data);
 
     ///**
     // * Sim interface
@@ -91,6 +268,9 @@ public:
 
     void SetAsynchronousMode(bool _Active);
 
+    // if EgoGrouName is null, then find current possessed ego
+    int64 GetEgoIDByGroupName(FString EgoGroupName = TEXT(""));
+
     void SendSimData();
     void ReceiveSimData();
     void SyncSimData();
@@ -110,6 +290,12 @@ public:
 
     FString ModuleGroupName;
 
+    bool bIsFrameSync = false;
+
+    bool bAllowSync;
+
+    FVector2D nHILpos{-1, -1};
+
 protected:
 
     UPROPERTY()
@@ -123,6 +309,15 @@ private:
     // Init from simulator
     void Sim_InitBeginLoadWorld();
 
+    // Reset from simulator
+    void Sim_ResetBeginLoadWorld();
+
+    void ReadSceneFileAndConfig(FSimIn& _InData);
+
+    int32 getMapIndex(const FString& mapname);
+
+    bool GetMapInfo(int32 MapIndex, const FString& MapFileName, FMapInfo& MapInfo, FString& ErrorMessage);
+
 private:
 
     int32 clientNum = 1;
@@ -132,20 +327,29 @@ private:
     std::string moduleName = "Display";
 
     std::string modeName = "FrameAsync";
+
     bool sendVilMsg = false;
-    FVector2D nHILpos{-1, -1};
+
+    TMap<FString, int64> EgoName_ID_Mapping;
 
     // Init complete flag
     bool bInitActionComplete = false;
+    // Reset complete flag
+    bool bResetActionComplete = false;
     // Is all clients loaded world.
     bool bIsAllClientsLoadedWorld = false;
     
-    bool bIsFrameSync = false;
     bool asynchronousMode = true;
     bool syncOneFrame = false;
     bool NeedExit = false;
     int SyncModeWait = 0;
     FString mapPath_Lobby = TEXT("/Game/Basic");
+
+    // Load hadmap flag
+    bool bNeedToLoadHadmap = false;
+
+    // Module Handle
+    hadmapue4::HadmapManager* hadmapHandle = NULL;
 
     // All client configuration, include uniqueNetId, sensor config and so on.
     TArray<FClientInfo> clientConfigArry;

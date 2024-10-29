@@ -131,6 +131,8 @@ void ATransportPawn::Init(const FSimActorConfig& _Config)
         NewTransform = FTransform(TConfig->startRotation, TConfig->startLocation);
     }
     SetActorTransform(NewTransform);
+    UE_LOG(LogTemp, Warning, TEXT("Transport init origin Loc: %s(Name: %s)"), *TConfig->startLocation.ToString(),
+        *TConfig->typeName);
     UE_LOG(LogTemp, Warning, TEXT("Transport init Loc: %s(Name: %s)"), *this->GetActorLocation().ToString(),
         *TConfig->typeName);
 
@@ -183,7 +185,7 @@ void ATransportPawn::Update(const FSimActorInput& _Input, FSimActorOutput& _Outp
         {
             NewTransform = FTransform(TransportIn->rotation, TransportIn->location);
         }
-
+        UE_LOG(LogTemp, Warning, TEXT("Transport Update Loc: %s"), *NewTransform.GetTranslation().ToString());
         SetActorTransform(NewTransform);
     }
 

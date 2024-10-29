@@ -51,8 +51,8 @@ function build_editor(){
 function build_game(){
   info "Building DisplayGame..."
   make Display
-  #cp ${DISPLAY_UNREAL_ROOT}/Binaries/Linux/Display $TADSIM_ROOT/build/release/linux-unpacked/resources/app/service/Display/Display/Binaries/Linux
-  #cp ${DISPLAY_UNREAL_ROOT}/Binaries/Linux/Display.sym $TADSIM_ROOT/build/release/linux-unpacked/resources/app/service/Display/Display/Binaries/Linux
+  cp ${DISPLAY_UNREAL_ROOT}/Binaries/Linux/Display $TADSIM_ROOT/build/release/linux-unpacked/resources/app/service/Display/Display/Binaries/Linux
+  cp ${DISPLAY_UNREAL_ROOT}/Binaries/Linux/Display.sym $TADSIM_ROOT/build/release/linux-unpacked/resources/app/service/Display/Display/Binaries/Linux
   info "Done"
 }
 

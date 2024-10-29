@@ -3,7 +3,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 TADSIM_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd -P )"
 
 TADSIM_BUILD_DIR="$TADSIM_ROOT/build"
-TADSIM_SERVICE_DIR="$TADSIM_BUILD_DIR/service"
+TADSIM_SERVICE_DIR="$TADSIM_BUILD_DIR/release/linux-unpacked/resources/app/service"
 TADSIM_DEPENDENCIES_DIR="$TADSIM_SERVICE_DIR/simdeps"
 TADSIM_LOG_DIR="$TADSIM_ROOT/log"
 TADSIM_CONFIG_DIR="$HOME/.config/tadsim"
@@ -12,6 +12,7 @@ TADSIM_TEST_LOG_DIR="$TADSIM_LOG_DIR/test"
 TADSIM_DEV_LOG_DIR="$TADSIM_LOG_DIR/dev"
 TADSIM_APP_DIR=$TADSIM_BUILD_DIR/release/linux-unpacked/resources/app
 TADSIM_DEV_SERVICE_DIR=$TADSIM_BUILD_DIR/release/linux-unpacked/resources/app/service
+TADSIM_DEV_SIM_DEP_DIR=$TADSIM_BUILD_DIR/release/linux-unpacked/resources/app/service/simdeps
 TADSIM_NODE_ADDON_DIR=$TADSIM_ROOT/simcore/framework/src/node_addon
 
 

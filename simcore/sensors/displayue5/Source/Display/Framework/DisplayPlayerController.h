@@ -5,12 +5,24 @@
 
 #include "DisplayPlayerController.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnEgoViewChange, const FName& CameraName);
+
 UCLASS()
 class DISPLAY_API ADisplayPlayerController : public APlayerController
 {
     GENERATED_BODY()
 public:
     ADisplayPlayerController();
+
+    // Switch possess to ego vehicle
+    void SwitchPawnToEgo();
+    // Switch possess to ghost pawn
+    void SwitchPawnToGhost();
+
+protected:
+
+    /** Allows the PlayerController to set up custom input bindings. */
+    virtual void SetupInputComponent();
 
 private:
     UPROPERTY(Config)
@@ -20,4 +32,5 @@ public:
     UPROPERTY(Config)
     int32 id_controlled = 0;
 
+    FOnEgoViewChange OnEgoViewChange;
 };

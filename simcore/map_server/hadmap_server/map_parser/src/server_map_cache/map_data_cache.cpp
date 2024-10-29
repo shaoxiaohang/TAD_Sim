@@ -40,7 +40,11 @@
 // #include <Psapi.h>
 // #include <tchar.h>
 
-CMapDataCache::CMapDataCache() { m_wstrMapFileFormatError = L"{'err': -2, msg: 'map format error'}"; }
+CMapDataCache::CMapDataCache() {
+  m_wstrMapFileFormatError = L"{'err': -2, msg: 'map format error'}"; 
+  m_wstrSuccess = L"true";
+  m_wstrFailed = L"false";
+}
 
 CMapDataCache& CMapDataCache::Instance() {
   static CMapDataCache instance;
@@ -1704,6 +1708,8 @@ void CMapDataCache::ComposeCacheData(const wchar_t* wstrHadmapFile, CHadmap* pHa
 
     // std::string strResult = root.toStyledString();
     std::string strResult = CParserJson::ToJsonString(root);
+
+    SYSTEM_LOGGER_INFO("MAP DATA %s", strResult.c_str());
 
     // std::wstring wstrResult = CEngineConfig::Instance().MBStr2WStr(strResult.c_str());
 

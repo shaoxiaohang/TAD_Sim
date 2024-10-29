@@ -511,7 +511,7 @@ int CMapFile::ParseMapV2(const char* strMapFile, bool bReadHadmapConfig /* = tru
     CPoint3D refPoint;
     tagHadmapAttr* hadmapAttr = CEngineConfig::Instance().HadmapAttr(p.filename().string());
     if (!hadmapAttr) {
-      SYSTEM_LOGGER_ERROR("hadmap file not exist in config file!");
+      SYSTEM_LOGGER_ERROR("hadmap file %s not exist in config file!", p.filename().string().c_str());
       return -1;
     }
     refPoint.X() = hadmapAttr->m_dRefLon;
@@ -563,6 +563,7 @@ int CMapFile::Disconect() {
   if (pMapHandler) {
     return hadmap::hadmapClose(&pMapHandler);
   }
+  return 0;
 }
 void CMapFile::CalculateBox(CAABB& aabb) {
   auto min = aabb.Min();

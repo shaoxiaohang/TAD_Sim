@@ -19,6 +19,30 @@ void NetworkModule::Init(tx_sim::InitHelper& helper)
 {
     std::chrono::time_point<std::chrono::system_clock> Start, End;
     Start = std::chrono::system_clock::now();
+
+    GConfig->GetString(TEXT("MessageTopic"), TEXT("Traffic"), TrafficTopic, GGameIni);
+    GConfig->GetString(TEXT("MessageTopic"), TEXT("Location"), LocationTopic, GGameIni);
+
+    UE_LOG(SimLogNet, Log, TEXT("TRAFFIC %s "), *TrafficTopic);
+
+
+    helper.Subscribe(TCHAR_TO_ANSI(*TrafficTopic));
+
+
+    FString UnionTrafficTopic = UnionPrefixStr + LocationTopic;
+    helper.Subscribe(TCHAR_TO_ANSI(*UnionTrafficTopic));
+
+    if (!helper.GetParameter("time0").empty())
+    {
+        time0 = std::atof(helper.GetParameter("time0").c_str());
+        UE_LOG(SimLogNet, Log, TEXT("Display init time0 = %f"), time0);
+    }
+    if (!helper.GetParameter("step_size").empty())
+    {
+        realstep = std::atof(helper.GetParameter("step_size").c_str());
+        UE_LOG(SimLogNet, Log, TEXT("Display init realstep = %f"), realstep);
+    }
+
     {
         FScopeLock ScopeLock(&mutex_Input);
 
@@ -100,7 +124,8 @@ void NetworkModule::Reset(tx_sim::ResetHelper& helper)
         myGameInstance->SetAsynchronousMode(asynchronousMode);
         myGameInstance->bSimInDataRefreshed = true;
 
-        myGameInstance->ModuleGroupName = UTF8_TO_TCHAR(helper.group_name().c_str());
+        myGameInstance->ModuleGroupName = TEXT("Ego_001");
+        //UTF8_TO_TCHAR(helper.group_name().c_str());
     }
 
     myGameInstance->threadSuspendedEvent->Trigger();
@@ -118,6 +143,77 @@ void NetworkModule::Reset(tx_sim::ResetHelper& helper)
 
 void NetworkModule::Step(tx_sim::StepHelper& helper)
 {
+    UE_LOG(SimLogNet, Log, TEXT("Step begin"));
+    double timestamp = helper.timestamp();
+    double bei = realstep > 0 ? ((timestamp - time0) / realstep) : 1.0;
+    if (bei < 0 || FMath::Modf(bei, &bei) > 1e-4)
+    {
+        // UE_LOG(SimLogNet, Log, TEXT("Display step jump: %f"), timestamp);
+        return;
+    }
+
+    std::chrono::time_point<std::chrono::system_clock> Start, End;
+    std::chrono::duration<double> CostTime;
+    Start = std::chrono::system_clock::now();
+
+    {
+        FScopeLock ScopeLock(&mutex_Input);
+        simUpdateIn.timeStamp = timestamp;
+
+        std::string strUnionLocation;
+        helper.GetSubscribedMessage(TCHAR_TO_ANSI(*(UnionPrefixStr + LocationTopic)), 
+            strUnionLocation);
+        
+        std::string strTraffic;
+        helper.GetSubscribedMessage(TCHAR_TO_ANSI(*TrafficTopic), strTraffic);
+
+
+        TSharedPtr<FSimUpdateIn> NewInPtr = MakeShared<FSimUpdateIn>();
+        NewInPtr->name = TEXT("UPDATE");
+        NewInPtr->timeStamp = timestamp;
+
+        sim_msg::Union UnionLocation;
+        UnionLocation.ParseFromString(strUnionLocation);
+
+        NewInPtr->egoData.Empty(UnionLocation.messages_size());
+        for (int32 i = 0; i < UnionLocation.messages_size(); ++i)
+        {
+            const auto& msg = UnionLocation.messages(i);
+            std::string groupname = msg.groupname();
+            std::string content = msg.content();
+            sim_msg::Location locationMsg;
+            if (locationMsg.ParseFromString(content))
+            {
+                NewInPtr->egoData.Emplace(UTF8_TO_TCHAR(groupname.c_str()), locationMsg);
+            }
+            UE_LOG(SimLogNet, Log, TEXT("LOCATION time %f x %.8f y %.8f z %.8f"), timestamp,
+            locationMsg.position().x(), locationMsg.position().y(),locationMsg.position().z());
+        }
+        NewInPtr->trafficData.ParseFromString(strTraffic);
+
+        myGameInstance->simInDataArry.Add(NewInPtr);
+        myGameInstance->bSimInDataRefreshed = true;
+    }
+
+    if (myGameInstance->bIsFrameSync)
+    {
+        myGameInstance->threadSuspendedEvent->Trigger();
+    }
+
+    // End = std::chrono::system_clock::now();
+    // CostTime = End - Start;
+    // UE_LOG(SimLogNet, Log, TEXT("Display Update sync1 Cost Time: %f seconds"), CostTime.count());//*/
+    //  Wait for gameinstance complete
+    if (!asynchronousMode)
+    {
+        UE_LOG(SimLogNet, Log, TEXT("step waiting"));
+        threadSuspendedEvent->Wait();
+        UE_LOG(SimLogNet, Log, TEXT("step waiting ok"));
+    }
+
+    End = std::chrono::system_clock::now();
+    CostTime = End - Start;
+    UE_LOG(SimLogNet, Log, TEXT("Display Update Cost Time: %f seconds"), CostTime.count());//*/
 }
 
 void NetworkModule::Stop(tx_sim::StopHelper& helper)

@@ -12,9 +12,9 @@ int main(int argc, char** argv) {
   cout << "test main begin." << std::endl;
 
   //  do init.
-  CLog::Initialize("./scenario");
+  CLog::Initialize("/saturnv/log");
   CEngineConfig& ins = CEngineConfig::Instance();
-  ins.Init("./scenario", "./app");
+  ins.Init("/home/aaa/.config/tadsim/data/scenario", "/home/aaa/.config/tadsim");
 
   ::testing::InitGoogleTest(&argc, argv);
 
