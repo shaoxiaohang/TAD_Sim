@@ -76,9 +76,8 @@ public:
     //UPROPERTY()
     //FEnvManagerIn envManager;
 
-    //UPROPERTY()
-    //FSensorManagerIn sensorManager;
-    // struct FSensorManager* privateManagerArry;
+    UPROPERTY()
+    FSensorManagerIn sensorManager;
 };
 
 USTRUCT()
@@ -91,6 +90,9 @@ public:
 
     UPROPERTY()
     FTransportManagerOut transportManager;
+
+    UPROPERTY()
+    FSensorManagerOut sensorManager;
 };
 
 
@@ -173,6 +175,9 @@ public:
     // Check all login client loaded server current world.
     bool CheckAllClientLoadedCurrentWorld();
 
+    // Playercontroller output simdata to gamemode
+    virtual void SimOutput(const FLocalData& _Data, const FUniqueNetIdRepl& _ClientId);
+
 protected:
     /* Engine Interface */
     /** Overridable native event for when play begins for this actor. */
@@ -182,10 +187,14 @@ protected:
 
     void ConvertData_SimToLocal(const FSimData& _SimData, FLocalData& _LocalData);
 
+    void ConvertData_LocalToSim(const FLocalData& _LocalData, FSimData& _SimData);
+
     FString GetTypeIdDef(int32 _Id, FString _Type);
     FString GetTypeIdDef(const FString& _TypeName);
 
 protected:
+
+    TMap<FUniqueNetIdRepl, TSharedPtr<FSimOut>> clientOutputMap;
 
     int64 id_controlled = 0;
 

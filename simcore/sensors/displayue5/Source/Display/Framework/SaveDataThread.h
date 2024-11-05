@@ -40,6 +40,10 @@ public:
     virtual uint32 Run();
     virtual void Stop();
 
+    bool SaveString(const FString& _String, const FString _Path);
+
+    bool SaveJPG(const TArray64<uint8>& _DataArry, const FString _Path);
+
 private:
     FRunnableThread* Thread;
 

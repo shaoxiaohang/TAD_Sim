@@ -41,6 +41,10 @@ public:
 
     void SwitchCamera();
 
+    bool InstallCamera(const FString& _Name, class UCameraComponent* _Camera);
+
+    bool SetDefaultCamera(const FString& _Name);
+
 public:
     /* ~ ISimActorInterface~ */
 

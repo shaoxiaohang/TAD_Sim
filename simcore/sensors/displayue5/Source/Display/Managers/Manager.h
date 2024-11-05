@@ -44,6 +44,8 @@ public:
 public:
     virtual void Init(const FManagerConfig& Config);
 
+    virtual void Update(const FManagerIn& Input, FManagerOut& Output);
+
 protected:
 
     template <typename T, typename V>

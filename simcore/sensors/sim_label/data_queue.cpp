@@ -96,9 +96,14 @@ DataQueue::DataQueue() {
             pkg.frame_c = frameID_pcd;
             pkg.lidar = std::move(lid.second);
             auto timestamp = lid.second.timestamp;
-            if (this->_objects.size() == 0) continue;
-            auto fd = this->_objects.end();
-            if (this->_objects.find(timestamp) == this->_objects.end()) {
+            if (this->_objects.size() == 0) {
+                std::cout << "NO OBJECT" << std::endl;
+                continue;
+            }
+            std::cout << "HANDLE LIDAR " << timestamp << std::endl;
+            auto fd = this->_objects.find(timestamp);
+            if (fd == this->_objects.end()) {
+              std::cout << "HANDLE LIDAR 2" << std::endl;
               auto it_upper = this->_objects.upper_bound(timestamp);
               if (it_upper != this->_objects.end() && it_upper->first >= lid.second.timestamp_bg &&
                   it_upper->first <= lid.second.timestamp_ed) {
@@ -111,6 +116,7 @@ DataQueue::DataQueue() {
               }
             }
             if (fd == this->_objects.end()) {
+              std::cout << "HANDLE LIDAR 3" << std::endl;
               continue;
             }
             pkg.obj = fd->second;

@@ -15,7 +15,14 @@ FLocalUpdateOut ASyncSystem::SyncSimActors(const FLocalData& _Data)
         updateIn = *static_cast<const FLocalUpdateIn*>(&_Data);
         updateOut = UpdateAllManagers(updateIn);
     }
-
+    if (_Data.name == TEXT("OUTPUT_SENSOR"))
+    {
+        updateIn.sensorManager.timeStamp = _Data.timeStamp;
+        updateIn.sensorManager.timeStamp_ego = _Data.timeStamp_ego;
+        updateIn.sensorManager.timeStamp_tail = _Data.timeStamp_tail;
+        SensorManager->Update(updateIn.sensorManager, updateOut.sensorManager);
+        updateOut.message = TEXT("SUCCESS");
+    }
     return updateOut;
 }
 
@@ -101,6 +108,15 @@ void ADisplayGameStateBase::SimInput(const FLocalData& _Data)
         updateIn = *static_cast<const FLocalUpdateIn*>(&_Data);
         Multicast_Update(updateIn);
     }
+    else if (_Data.name == TEXT("OUTPUT_SENSOR"))
+    {
+        FLocalUpdateIn InData;
+        InData.timeStamp = _Data.timeStamp;
+        InData.name = _Data.name;
+        InData.timeStamp_ego = _Data.timeStamp_ego;
+        InData.timeStamp_tail = _Data.timeStamp_tail;
+        Multicast_Update(InData);
+    }
 }
 
 void ADisplayGameStateBase::Multicast_Reset_Implementation(FLocalResetIn _ResetData)
@@ -140,7 +156,19 @@ void ADisplayGameStateBase::Multicast_Update_Implementation(FLocalUpdateIn _Upda
         if (_UpdateData.name == TEXT("UPDATE"))
         {
             updateIn = _UpdateData;
-            FLocalUpdateOut UpdateOut = syncSystem->SyncSimActors(updateIn);   
+            FLocalUpdateOut UpdateOut = syncSystem->SyncSimActors(updateIn);
+            UpdateOut.timeStamp = _UpdateData.timeStamp;
+            UpdateOut.name = TEXT("UPDATE");
+            GetWorld()->GetFirstPlayerController<ADisplayPlayerController>()->Server_SimUpdateOutput(UpdateOut);
+        }
+        if (_UpdateData.name == TEXT("OUTPUT_SENSOR"))
+        {
+            FLocalUpdateOut UpdateOut = syncSystem->SyncSimActors(_UpdateData);
+            UpdateOut.name = TEXT("OUTPUT_SENSOR");
+            UpdateOut.timeStamp = _UpdateData.timeStamp;
+            UpdateOut.timeStamp_ego = _UpdateData.timeStamp_ego;
+            UpdateOut.timeStamp_tail = _UpdateData.timeStamp_tail;
+            GetWorld()->GetFirstPlayerController<ADisplayPlayerController>()->Server_SimUpdateOutput(UpdateOut);
         }
     }
 }

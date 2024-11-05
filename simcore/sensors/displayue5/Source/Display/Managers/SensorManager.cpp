@@ -1,7 +1,9 @@
 #include "SensorManager.h"
+
 #include "Kismet/KismetMathLibrary.h"
-#include "Objects/Sensors/SensorFactory.h"
 #include "Objects/Sensors/CameraSensors/CameraSensor.h"
+#include "Objects/Sensors/LidarSensors/TLidarSensor.h"
+#include "Objects/Sensors/SensorFactory.h"
 
 DEFINE_LOG_CATEGORY_STATIC(SimLogSensorManager, Log, All);
 
@@ -58,16 +60,111 @@ void ASensorManager::Init(const FManagerConfig& Config)
         UE_LOG(SimLogSensorManager, Error, TEXT("Can Not Get SensorConfig!"));
         return;
     }
+
+    // Lidar
+    for (auto& Elem : SensorConfig->lidarArry)
+    {
+        ASensorActor* NewSensor = ASensorFactory::SpawnSensor<ATLidarSensor>(
+            GetWorld(), ATLidarSensor::StaticClass(), Elem);
+
+        if (NewSensor)
+        {
+            ISimActorInterface* InstalledSimActor = NewSensor->Install(Elem);
+            if (InstalledSimActor)
+            {
+                TMap<FString, ISensorInterface*>* ExistSenorMap = sensorMap.Find(InstalledSimActor);
+                if (ExistSenorMap)
+                {
+                    FString SensorName;
+                    SensorName = Elem.typeName;
+                    SensorName += FString("_") + FString::FromInt(Elem.id);
+                    if (!ExistSenorMap->Find(SensorName))
+                    {
+                        ExistSenorMap->Add(SensorName, NewSensor);
+                    }
+                    else
+                    {
+                        NewSensor->Destroy(TEXT("Already Exist!"));
+                    }
+                }
+                else
+                {
+                    TMap<FString, ISensorInterface*> NewSenorMap;
+                    FString SensorName;
+                    SensorName = Elem.typeName;
+                    SensorName += FString("_") + FString::FromInt(Elem.id);
+                    NewSenorMap.Add(SensorName, NewSensor);
+                    sensorMap.Add(InstalledSimActor, NewSenorMap);
+                }
+            }
+            else
+            {
+                NewSensor->Destroy(TEXT("Cant Find Target!"));
+            }
+        }
+    }
+
     // Camera
     for (auto& Elem : SensorConfig->cameraArry)
     {
-        ACameraSensor* CameraSensor =
-            ASensorFactory::SpawnSensor<ACameraSensor>(GetWorld(), ACameraSensor::StaticClass(), Elem);
+        ACameraSensor* CameraSensor = ASensorFactory::SpawnSensor<ACameraSensor>(
+            GetWorld(), ACameraSensor::StaticClass(), Elem);
         if (CameraSensor)
         {
+            ISimActorInterface* InstalledSimActor = CameraSensor->Install(Elem);
+            if (InstalledSimActor)
+            {
+                TMap<FString, ISensorInterface*>* ExistSenorMap = sensorMap.Find(InstalledSimActor);
+                if (ExistSenorMap)
+                {
+                    FString SensorName;
+                    SensorName = Elem.typeName;
+                    SensorName += FString("_") + FString::FromInt(Elem.id);
+                    if (!ExistSenorMap->Find(SensorName))
+                    {
+                        ExistSenorMap->Add(SensorName, CameraSensor);
+                    }
+                    else
+                    {
+                        CameraSensor->Destroy(TEXT("Already Exist!"));
+                    }
+                }
+                else
+                {
+                    TMap<FString, ISensorInterface*> NewSenorMap;
+                    FString SensorName;
+                    SensorName = Elem.typeName;
+                    SensorName += FString("_") + FString::FromInt(Elem.id);
+                    NewSenorMap.Add(SensorName, CameraSensor);
+                    sensorMap.Add(InstalledSimActor, NewSenorMap);
+                }
+            }
+        }
+    }
+}
 
-        }   
-    }   
+void ASensorManager::Update(const FManagerIn& _Input, FManagerOut& _Output)
+{
+    // UE_LOG(LogTemp, Log, TEXT("SensorManger: update"));
+    const FSensorManagerIn* SensorManagerIn = Cast_Data<const FSensorManagerIn>(_Input);
+    FSensorManagerOut* SensorManagerOut = Cast_Data<FSensorManagerOut>(_Output);
+    SensorManagerOut->outArray.SetNum(0);
+    for (auto& Elem : sensorMap)
+    {
+        for (auto& Sensor : Elem.Value)
+        {
+            FSensorInput SensorIn;
+            FSensorOutput SensorOut;
+            SensorIn.timeStamp = SensorManagerIn->timeStamp;
+            SensorIn.timeStamp_ego = SensorManagerIn->timeStamp_ego;
+            SensorIn.timeStamp_tail = SensorManagerIn->timeStamp_tail;
+            SensorOut.id = Sensor.Value->configBase.id;
+            SensorOut.type = Sensor.Value->configBase.typeName;
+            SensorOut.timeStamp = SensorIn.timeStamp;
+            Sensor.Value->Update(SensorIn, SensorOut);
+            SensorManagerOut->outArray.Add(SensorOut);
+        }
+    }
 }
 
 FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer, int64 EgoId)
@@ -95,7 +192,6 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
 #else
         absPath = BaseSavePath.Len() > 0 && BaseSavePath[0] == TEXT('/');
 #endif    // WIN32
-
 
         if (!absPath)
             BaseSavePath = FPaths::ProjectSavedDir() + BaseSavePath;
@@ -140,8 +236,8 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
         UE_LOG(SimLogSensorManager, Log, TEXT("Find ego index %d, Id %ld"), FindEgoIndex, EgoId);
     }
 
-    UE_LOG(
-        LogTemp, Log, TEXT("SensorManger: sensors count: %d."), scene.egos(FindEgoIndex).sensor_group().sensors_size());
+    UE_LOG(LogTemp, Log, TEXT("SensorManger: sensors count: %d."),
+        scene.egos(FindEgoIndex).sensor_group().sensors_size());
 
     for (const auto& sensor : scene.egos(FindEgoIndex).sensor_group().sensors())
     {
@@ -156,7 +252,8 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
         }
         if (Base.device != device)
         {
-            UE_LOG(LogTemp, Log, TEXT("SensorManger: config skip: deivce=%s, id=%d"), *Base.device, Base.id);
+            UE_LOG(LogTemp, Log, TEXT("SensorManger: config skip: deivce=%s, id=%d"), *Base.device,
+                Base.id);
             continue;
         }
         Base.id = sensor.extrinsic().id();
@@ -195,16 +292,19 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
             FString distortion_Parameters = TEXT("");
 
             // old
-            GetPropValue(Config, FString(TEXT("CCD_Width")), NewConfig.ccd_Width);              ////---
-            GetPropValue(Config, FString(TEXT("CCD_Height")), NewConfig.ccd_Height);            ////---
-            GetPropValue(Config, FString(TEXT("Focal_Length")), NewConfig.focal_Length);        ////---
-            GetPropValue(Config, FString(TEXT("FOV_Horizontal")), NewConfig.fov_Horizontal);    ////---
-            GetPropValue(Config, FString(TEXT("FOV_Vertical")), NewConfig.fov_Vertical);        ////---
-            GetPropValue(Config, FString(TEXT("Res_Horizontal")), NewConfig.res_Horizontal);    ////---
-            GetPropValue(Config, FString(TEXT("Res_Vertical")), NewConfig.res_Vertical);        ////---
+            GetPropValue(Config, FString(TEXT("CCD_Width")), NewConfig.ccd_Width);          ////---
+            GetPropValue(Config, FString(TEXT("CCD_Height")), NewConfig.ccd_Height);        ////---
+            GetPropValue(Config, FString(TEXT("Focal_Length")), NewConfig.focal_Length);    ////---
+            GetPropValue(
+                Config, FString(TEXT("FOV_Horizontal")), NewConfig.fov_Horizontal);         ////---
+            GetPropValue(Config, FString(TEXT("FOV_Vertical")), NewConfig.fov_Vertical);    ////---
+            GetPropValue(
+                Config, FString(TEXT("Res_Horizontal")), NewConfig.res_Horizontal);         ////---
+            GetPropValue(Config, FString(TEXT("Res_Vertical")), NewConfig.res_Vertical);    ////---
             GetPropValue(Config, FString(TEXT("IntrinsicParamType")), NewConfig.paraType);
-            GetPropValue(Config, FString(TEXT("Intrinsic_Matrix")), Intrinsic_Matrix);              ////---
-            GetPropValue(Config, FString(TEXT("Distortion_Parameters")), distortion_Parameters);    /////----
+            GetPropValue(Config, FString(TEXT("Intrinsic_Matrix")), Intrinsic_Matrix);    ////---
+            GetPropValue(
+                Config, FString(TEXT("Distortion_Parameters")), distortion_Parameters);    /////----
             GetPropValue(Config, FString(TEXT("Blur_Intensity")), NewConfig.blur_Intensity);
             GetPropValue(Config, FString(TEXT("MotionBlur_Amount")), NewConfig.motionBlur_Amount);
             GetPropValue(Config, FString(TEXT("Noise_Intensity")), NewConfig.noise_Intensity);
@@ -247,7 +347,8 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
 
             if (!Intrinsic_Matrix.IsEmpty())
             {
-                Intrinsic_Matrix = Intrinsic_Matrix.Replace(*FString(" "), *FString(""));    // Remove space
+                Intrinsic_Matrix =
+                    Intrinsic_Matrix.Replace(*FString(" "), *FString(""));    // Remove space
                 FString LeftStr;
                 FString RightStr;
                 while (Intrinsic_Matrix.Split(",", &LeftStr, &RightStr))
@@ -259,7 +360,8 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
             }
             if (!distortion_Parameters.IsEmpty())
             {
-                distortion_Parameters = distortion_Parameters.Replace(*FString(" "), *FString(""));    // Remove space
+                distortion_Parameters =
+                    distortion_Parameters.Replace(*FString(" "), *FString(""));    // Remove space
                 FString LeftStr;
                 FString RightStr;
                 while (distortion_Parameters.Split(",", &LeftStr, &RightStr))
@@ -277,13 +379,59 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
                                      TEXT("/");    // TODO: set save path in a standardized way
             SensormanagerConfig.cameraArry.Add(NewConfig);
         }
+        else if (sensor.type() == sim_msg::SENSOR_TYPE_TRADITIONAL_LIDAR)
+        {
+            FLidarConfig NewConfig;
+            *(FSensorConfig*) &NewConfig = Base;
+            NewConfig.typeName = TEXT("Lidar");
+            NewConfig.targetId = EgoId;
+
+            // old
+            GetPropValue(Config, FString(TEXT("Frequency")), NewConfig.frequency);
+            GetPropValue(Config, FString(TEXT("Model")), NewConfig.model);
+            GetPropValue(Config, FString(TEXT("uChannels")), NewConfig.channels);
+            GetPropValue(Config, FString(TEXT("uRange")), NewConfig.range);
+            GetPropValue(
+                Config, FString(TEXT("uHorizontalResolution")), NewConfig.horizontalResolution);
+            GetPropValue(Config, FString(TEXT("uUpperFov")), NewConfig.upperFovLimit);
+            GetPropValue(Config, FString(TEXT("uLowerFov")), NewConfig.lowerFovLimit);
+            GetPropValue(Config, FString(TEXT("DrawPoint")), NewConfig.bDrawPoint);
+
+            // new
+            GetPropValue(Config, FString(TEXT("Type")), NewConfig.model);
+            GetPropValue(Config, FString(TEXT("IP")), NewConfig.ip);
+            GetPropValue(Config, FString(TEXT("Port")), NewConfig.port);
+            GetPropValue(Config, FString(TEXT("Attenuation")), NewConfig.Attenuation);
+            GetPropValue(Config, FString(TEXT("AngleDefinition")), NewConfig.AngleDefinition);
+            GetPropValue(Config, FString(TEXT("ExtinctionCoe")), NewConfig.ExtinctionCoe);
+            GetPropValue(Config, FString(TEXT("RayNum")), NewConfig.channels);
+            GetPropValue(Config, FString(TEXT("Radius")), NewConfig.range);
+            GetPropValue(Config, FString(TEXT("ReflectionType")), NewConfig.ReflectionType);
+            GetPropValue(Config, FString(TEXT("HorzionalRes")), NewConfig.horizontalResolution);
+            GetPropValue(Config, FString(TEXT("FovUp")), NewConfig.upperFovLimit);
+            GetPropValue(Config, FString(TEXT("FovDown")), NewConfig.lowerFovLimit);
+            GetPropValue(Config, FString(TEXT("FovStart")), NewConfig.FovStart);
+            GetPropValue(Config, FString(TEXT("FovEnd")), NewConfig.FovEnd);
+
+            NewConfig.cfgDir = FPaths::ProjectUserDir() + TEXT("XMLFiles/LidarConfig");
+            if (!FPaths::DirectoryExists(NewConfig.cfgDir))
+            {
+                NewConfig.cfgDir = FPaths::ProjectDir() + TEXT("XMLFiles/LidarConfig");
+            }
+            FString savestring;
+            GConfig->GetString(TEXT("Sensor"), TEXT("LidarSaved"), savestring, GGameIni);
+            if (!BaseSavePath.IsEmpty() && savestring == TEXT("true"))
+                NewConfig.savePath = BaseSavePath + TEXT("LidarhData/") + TEXT("Lidar_") +
+                                     FString::FromInt(NewConfig.id) + TEXT("/");
+            SensormanagerConfig.lidarArry.Add(NewConfig);
+        }
     }
 
     return SensormanagerConfig;
-
 }
 
-void ASensorManager::CoordinateTransform_RightHandToLeftHand(FVector& _Location, FRotator& _Rotation)
+void ASensorManager::CoordinateTransform_RightHandToLeftHand(
+    FVector& _Location, FRotator& _Rotation)
 {
     _Location.Y = _Location.Y * (-1.f);
     _Rotation.Pitch = _Rotation.Pitch * (-1.f);

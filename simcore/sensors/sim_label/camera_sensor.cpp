@@ -152,7 +152,7 @@ Eigen::Vector2d CameraSensor::world2pixel(const Eigen::Vector3d &wp) const {
     return Eigen::Vector2d(-1, -1);
   }
   double x = c.x() / c.z();
-  double y = c.y() / c.z();
+  double y = c.y() / c.z(); 
   Eigen::Vector3d uv = K * Eigen::Vector3d(x, y, 1);
   if (k1 != 0) {
     double r2 = x * x + y * y;

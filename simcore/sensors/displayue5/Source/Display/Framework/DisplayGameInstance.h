@@ -39,6 +39,7 @@ class HadmapManager;
 }
 
 class DisplayNetworkManager;
+class SaveDataThread;
 
 struct FLocalInitIn;
 struct FLocalInitOut;
@@ -50,6 +51,8 @@ struct FLocalUpdateIn;
 struct FLocalUpdateOut;
 
 struct FSensorManagerConfig;
+
+
 
 USTRUCT()
 struct FMapInfo
@@ -204,6 +207,42 @@ public:
     sim_msg::EnvironmentalConditions environmentData;
 };
 
+struct FSimUpdateOut : public FSimOut
+{
+public:
+    FSimUpdateOut()
+    {
+        datatype = 1;
+    }
+    virtual ~FSimUpdateOut()
+    {
+    }
+
+    int32 frameID = 0;
+    sim_msg::Location egoData;
+    sim_msg::Traffic trafficData;
+    sim_msg::DisplayPose trafficPose;
+    
+    std::string topic_egoData = "LOCATION";
+    std::string topic_trafficData = "TRAFFIC";
+};
+
+struct FSimSensorUpdateOut : public FSimOut
+{
+    // GENERATED_BODY()
+public:
+    FSimSensorUpdateOut()
+    {
+        datatype = 2;
+    }
+    virtual ~FSimSensorUpdateOut()
+    {
+    }
+
+    // 具体传感器的序列化改为传感器内部进行
+    sim_msg::SensorRaw sensorData;
+};
+
 UCLASS(config = Game)
 class DISPLAY_API UDisplayGameInstance : public UGameInstance
 {
@@ -264,6 +303,8 @@ public:
         return RuntimeMeshLoader;
     }
 
+    SaveDataThread* GetSaveDataHandle() const;
+
     FString GetGameConfig(const TCHAR* Section, const TCHAR* Key);
 
     void SetAsynchronousMode(bool _Active);
@@ -278,7 +319,10 @@ public:
 
     // store simdata
     TArray<TSharedPtr<FSimIn>> simInDataArry;
+    TArray<TSharedPtr<FSimOut>> simOutDataArry;
     TSharedPtr<FSimIn> currentSimInData;
+    TSharedPtr<FSimOut> currentSimOutData;
+    TSharedPtr<FSimOut> currentSimSensorOutData;
     // update data flag
     bool bSimInDataRefreshed = false;
 
@@ -359,6 +403,6 @@ private:
     FTSTicker::FDelegateHandle TickDelegateHandle;
 
     // save data thread
-    TSharedPtr<class SaveDataThread> savedataThreadHandle;
+    TSharedPtr<SaveDataThread> savedataThreadHandle;
 
 };

@@ -125,7 +125,11 @@ void UDisplayGameInstance::Init()
 
     // Get lobby map path
     GConfig->GetString(TEXT("GlobalSettings"), TEXT("LobbyMapPath"), mapPath_Lobby, GGameIni);
+}
 
+SaveDataThread* UDisplayGameInstance::GetSaveDataHandle() const
+{
+    return savedataThreadHandle.Get();
 }
 
 bool UDisplayGameInstance::Tick(float DeltaSeconds)
@@ -157,6 +161,22 @@ void UDisplayGameInstance::OutputData()
     if (!currentSimInData || currentSimInData->bIsConsumed > 0)
     {
         return;
+    }
+    if (currentSimInData->name == TEXT("UPDATE"))
+    {
+        FSimIn SensorInData;
+        SensorInData.name = TEXT("OUTPUT_SENSOR");
+        SensorInData.timeStamp = currentSimInData->timeStamp;
+        FSimUpdateIn* UpdateIn = StaticCast<FSimUpdateIn*>(currentSimInData.Get());
+        if (sim_msg::Location* Location = UpdateIn->egoData.Find(ModuleGroupName))
+        {
+            SensorInData.timeStamp_ego = Location->t() * 1000;
+        }
+        if (sim_msg::Location* LocationContainer = UpdateIn->egoContainerData.Find(ModuleGroupName))
+        {
+            SensorInData.timeStamp_tail = LocationContainer->t() * 1000;
+        }
+        SimInput(SensorInData);
     }
 }
 
@@ -224,10 +244,22 @@ void UDisplayGameInstance::SendSimData()
     }
     else if (currentSimInData->name == TEXT("UPDATE"))
     {
+        {
+            FScopeLock ScopeLock(&displayNetworkManager->displayModule->mutex_Output);
+            // Write output data
+            if (currentSimOutData.IsValid()){
+                simOutDataArry.Add(currentSimOutData);
+            }
+            if (currentSimSensorOutData.IsValid())
+                simOutDataArry.Add(currentSimSensorOutData);
+            currentSimOutData = nullptr;
+            currentSimSensorOutData = nullptr;
+        }
         bAllowSync = true;
 
         if (!asynchronousMode)
         {
+            // UE_LOG(LogSimSystem, Log, TEXT("displayNetworkManager resume"));
             displayNetworkManager->resumeThread();
         }
     }
@@ -249,7 +281,6 @@ void UDisplayGameInstance::SyncSimData()
     }
     if (currentSimInData->name == TEXT("UPDATE"))
     {
-        UE_LOG(LogSimSystem, Log, TEXT("UPDATE"));
         SimInput(*currentSimInData);
     }
 }
@@ -306,7 +337,17 @@ void UDisplayGameInstance::SimInput(const FSimData& Data)
 
 void UDisplayGameInstance::SimOutput(const FSimData& _Data)
 {
-    
+    if (_Data.name == TEXT("OUTPUT_SENSOR"))
+    {
+        currentSimSensorOutData = MakeShared<FSimSensorUpdateOut>();
+        *StaticCast<FSimSensorUpdateOut*>(currentSimSensorOutData.Get()) =
+            *StaticCast<const FSimSensorUpdateOut*>(&_Data);
+    }
+    else if (_Data.name == TEXT("UPDATE"))
+    {
+        currentSimOutData = MakeShared<FSimUpdateOut>();
+        *StaticCast<FSimUpdateOut*>(currentSimOutData.Get()) = *StaticCast<const FSimUpdateOut*>(&_Data);
+    }
 }
 
 FString UDisplayGameInstance::GetGameConfig(const TCHAR* Section, const TCHAR* Key)
@@ -608,7 +649,7 @@ void UDisplayGameInstance::ReadSceneFileAndConfig(FSimIn& _InData)
         UE_LOG(LogSimGameMode, Warning, TEXT("ParseFromString faild."));
         return;
     }
-    UE_LOG(LogSimGameInstance, Log, TEXT("scenesceneBuffer : %s"), UTF8_TO_TCHAR(scene.DebugString().c_str()));
+    //UE_LOG(LogSimGameInstance, Log, TEXT("scenesceneBuffer : %s"), UTF8_TO_TCHAR(scene.DebugString().c_str()));
     SimResetInPtr->mapIndex = getMapIndex(SimResetInPtr->mapDataBaseName);
     SimResetInPtr->ModelPath = UTF8_TO_TCHAR(scene.setting().model3d_pathdir().c_str());
     if (SimResetInPtr->mapIndex == 0 && !FPaths::FileExists(SimResetInPtr->mapDataBasePath))

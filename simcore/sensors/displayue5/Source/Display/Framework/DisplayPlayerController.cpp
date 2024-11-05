@@ -43,3 +43,14 @@ void ADisplayPlayerController::SwitchPawnToGhost()
 {
 
 }
+
+bool ADisplayPlayerController::Server_SimUpdateOutput_Validate(FLocalUpdateOut _OutData)
+{
+    return true;
+}
+
+void ADisplayPlayerController::Server_SimUpdateOutput_Implementation(FLocalUpdateOut _OutData)
+{
+    GetWorld()->GetAuthGameMode<ADisplayGameModeBase>()->SimOutput(
+        _OutData, GetPlayerState<ADisplayPlayerState>()->UniqueId);
+}

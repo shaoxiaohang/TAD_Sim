@@ -54,6 +54,26 @@ ATransportPawn::ATransportPawn()
     SetReplicates(false);
 }
 
+bool ATransportPawn::InstallCamera(const FString& _Name, class UCameraComponent* _Camera)
+{
+    if (_Camera)
+    {
+        if (cameraMasterComp)
+        {
+            bool bIsSuccess = cameraMasterComp->RegisterCamera(_Name, _Camera);
+            return bIsSuccess;
+        }
+    }
+    return false;
+}
+
+bool ATransportPawn::SetDefaultCamera(const FString& _Name)
+{
+    defaultCameraName = _Name;
+    return true;
+}
+
+
 void ATransportPawn::OnConstruction(const FTransform& Transform)
 {
     Super::OnConstruction(Transform);

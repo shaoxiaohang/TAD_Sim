@@ -22,6 +22,13 @@ function build_framwork() {
   popd > /dev/null
 }
 
+function build_sim_label() {
+  pushd $TADSIM_ROOT/simcore/sensors > /dev/null
+  build_project sim_label build.sh
+  cp ./sim_label/build/lib/libsim_label.so  $TADSIM_DEV_SERVICE_DIR/sim_label
+  popd > /dev/null
+}
+
 function build_map_server() {
   pushd $TADSIM_ROOT/simcore > /dev/null
   build_project map_server build.sh
@@ -44,6 +51,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     map_server)
       build_map_server
+      shift
+      ;;
+    sim_label)
+      build_sim_label
       shift
       ;;
     *)

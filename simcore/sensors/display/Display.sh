@@ -74,11 +74,13 @@ fi
 echo $OS
 echo $VER
 
+OPENVR_LIBRARY_PATH=$UE4_ROOT/Engine/Source/ThirdParty/OpenVR/OpenVRv1_5_17/lib/linux64
+
 if [[ $VER == 16.04 ]]
 then
 	export LD_LIBRARY_PATH="$UE4_PROJECT_ROOT/Display/Binaries/Linux/ubuntu16/:$LD_LIBRARY_PATH"
 else
-	export LD_LIBRARY_PATH="$UE4_PROJECT_ROOT/Display/Binaries/Linux/ubuntu18_20/:$LD_LIBRARY_PATH"
+	export LD_LIBRARY_PATH="$UE4_PROJECT_ROOT/Display/Binaries/Linux/ubuntu18_20/:$OPENVR_LIBRARY_PATH:$LD_LIBRARY_PATH"
 fi
 
 exec "$UE4_PROJECT_ROOT/Display/Binaries/Linux/Display" $@ UserDir=$UDIR -LocalLogTimes -log LOG=Display${DID}.log

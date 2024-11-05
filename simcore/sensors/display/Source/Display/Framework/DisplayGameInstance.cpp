@@ -2271,7 +2271,7 @@ void UDisplayGameInstance::ReadSceneFileAndConfig(FSimIn& _InData)
 
             return;
         }
-        UE_LOG(LogSimGameInstance, Log, TEXT("scenesceneBuffer : %s"), UTF8_TO_TCHAR(scene.DebugString().c_str()));
+        //UE_LOG(LogSimGameInstance, Log, TEXT("scenesceneBuffer : %s"), UTF8_TO_TCHAR(scene.DebugString().c_str()));
         SimResetInPtr->mapIndex = getMapIndex(SimResetInPtr->mapDataBaseName);
         SimResetInPtr->ModelPath = UTF8_TO_TCHAR(scene.setting().model3d_pathdir().c_str());
         if (SimResetInPtr->mapIndex == 0 && !FPaths::FileExists(SimResetInPtr->mapDataBasePath))

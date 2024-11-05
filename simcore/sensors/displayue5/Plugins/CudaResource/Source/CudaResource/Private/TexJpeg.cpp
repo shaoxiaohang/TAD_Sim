@@ -354,231 +354,231 @@ bool UTexJpeg::InitRTResource()
                 This->texRT->GetRenderTargetResource()->TextureRHI->GetTextureBaseRHI());
             if (RHIName == TEXT("Vulkan") && VulkanTexture)
             {
-                // int fd = -1;
-                // {
-                //     VkDeviceMemory memory = VulkanTexture->GetAllocationHandle();
-                //     VkDevice device = VulkanTexture->GetDevice()->GetInstanceHandle();
+                int fd = -1;
+                {
+                    VkDeviceMemory memory = VulkanTexture->GetAllocationHandle();
+                    VkDevice device = VulkanTexture->Device->GetInstanceHandle();
 
-                //     VkMemoryGetFdInfoKHR fdInfo = {};
-                //     fdInfo.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;
-                //     fdInfo.memory = memory;
-                //     fdInfo.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
+                    VkMemoryGetFdInfoKHR fdInfo = {};
+                    fdInfo.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;
+                    fdInfo.memory = memory;
+                    fdInfo.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT_KHR;
 
-                //     PFN_vkGetMemoryFdKHR func =
-                //         (PFN_vkGetMemoryFdKHR) (void*) VulkanRHI::vkGetDeviceProcAddr(device, "vkGetMemoryFdKHR");
-                //     if (!func)
-                //     {
-                //         UE_LOG(LogTemp, Warning, TEXT("[UTexJpeg] Failed to vkGetMemoryFdKHR func"));
-                //     }
-                //     else
-                //     {
-                //         VkResult r = func(device, &fdInfo, &fd);
-                //         if (r != VK_SUCCESS)
-                //         {
-                //             UE_LOG(LogTemp, Warning, TEXT("[UTexJpeg] Failed to vkGetMemoryFdKHR: %d"), r);
-                //         }
-                //     }
-                // }
-                // if (fd >= 0)
-                // {
-                //     cudaExternalMemoryHandleDesc exdesc = {};
-                //     memset(&exdesc, 0, sizeof(exdesc));
-                //     exdesc.type = cudaExternalMemoryHandleTypeOpaqueFd;
-                //     exdesc.handle.fd = fd;
-                //     exdesc.size = VulkanTexture->Surface.GetMemorySize();
-                //     if (checkCudaErrors(cudaImportExternalMemory(&This->extMem, &exdesc)))
-                //     {
-                //         auto getCudaChannelFormatDescForVulkanFormat = [](VkFormat format) -> cudaChannelFormatDesc
-                //         {
-                //             cudaChannelFormatDesc d;
+                    PFN_vkGetMemoryFdKHR func =
+                        (PFN_vkGetMemoryFdKHR) (void*) VulkanRHI::vkGetDeviceProcAddr(device, "vkGetMemoryFdKHR");
+                    if (!func)
+                    {
+                        UE_LOG(LogTemp, Warning, TEXT("[UTexJpeg] Failed to vkGetMemoryFdKHR func"));
+                    }
+                    else
+                    {
+                        VkResult r = func(device, &fdInfo, &fd);
+                        if (r != VK_SUCCESS)
+                        {
+                            UE_LOG(LogTemp, Warning, TEXT("[UTexJpeg] Failed to vkGetMemoryFdKHR: %d"), r);
+                        }
+                    }
+                }
+                if (fd >= 0)
+                {
+                    cudaExternalMemoryHandleDesc exdesc = {};
+                    memset(&exdesc, 0, sizeof(exdesc));
+                    exdesc.type = cudaExternalMemoryHandleTypeOpaqueFd;
+                    exdesc.handle.fd = fd;
+                    exdesc.size = VulkanTexture->GetMemorySize();
+                    if (checkCudaErrors(cudaImportExternalMemory(&This->extMem, &exdesc)))
+                    {
+                        auto getCudaChannelFormatDescForVulkanFormat = [](VkFormat format) -> cudaChannelFormatDesc
+                        {
+                            cudaChannelFormatDesc d;
 
-                //             memset(&d, 0, sizeof(d));
+                            memset(&d, 0, sizeof(d));
 
-                //             switch (format)
-                //             {
-                //                 case VK_FORMAT_R8_UINT:
-                //                     d.x = 8;
-                //                     d.y = 0;
-                //                     d.z = 0;
-                //                     d.w = 0;
-                //                     d.f = cudaChannelFormatKindUnsigned;
-                //                     break;
-                //                 case VK_FORMAT_R8_SINT:
-                //                     d.x = 8;
-                //                     d.y = 0;
-                //                     d.z = 0;
-                //                     d.w = 0;
-                //                     d.f = cudaChannelFormatKindSigned;
-                //                     break;
-                //                 case VK_FORMAT_R8G8_UINT:
-                //                     d.x = 8;
-                //                     d.y = 8;
-                //                     d.z = 0;
-                //                     d.w = 0;
-                //                     d.f = cudaChannelFormatKindUnsigned;
-                //                     break;
-                //                 case VK_FORMAT_R8G8_SINT:
-                //                     d.x = 8;
-                //                     d.y = 8;
-                //                     d.z = 0;
-                //                     d.w = 0;
-                //                     d.f = cudaChannelFormatKindSigned;
-                //                     break;
-                //                 case VK_FORMAT_R8G8B8A8_UINT:
-                //                     d.x = 8;
-                //                     d.y = 8;
-                //                     d.z = 8;
-                //                     d.w = 8;
-                //                     d.f = cudaChannelFormatKindUnsigned;
-                //                     break;
-                //                 case VK_FORMAT_R8G8B8A8_SINT:
-                //                     d.x = 8;
-                //                     d.y = 8;
-                //                     d.z = 8;
-                //                     d.w = 8;
-                //                     d.f = cudaChannelFormatKindSigned;
-                //                     break;
-                //                 case VK_FORMAT_B8G8R8A8_UNORM:
-                //                     d.x = 8;
-                //                     d.y = 8;
-                //                     d.z = 8;
-                //                     d.w = 8;
-                //                     d.f = cudaChannelFormatKindUnsigned;
-                //                     break;
-                //                 case VK_FORMAT_R16_UINT:
-                //                     d.x = 16;
-                //                     d.y = 0;
-                //                     d.z = 0;
-                //                     d.w = 0;
-                //                     d.f = cudaChannelFormatKindUnsigned;
-                //                     break;
-                //                 case VK_FORMAT_R16_SINT:
-                //                     d.x = 16;
-                //                     d.y = 0;
-                //                     d.z = 0;
-                //                     d.w = 0;
-                //                     d.f = cudaChannelFormatKindSigned;
-                //                     break;
-                //                 case VK_FORMAT_R16G16_UINT:
-                //                     d.x = 16;
-                //                     d.y = 16;
-                //                     d.z = 0;
-                //                     d.w = 0;
-                //                     d.f = cudaChannelFormatKindUnsigned;
-                //                     break;
-                //                 case VK_FORMAT_R16G16_SINT:
-                //                     d.x = 16;
-                //                     d.y = 16;
-                //                     d.z = 0;
-                //                     d.w = 0;
-                //                     d.f = cudaChannelFormatKindSigned;
-                //                     break;
-                //                 case VK_FORMAT_R16G16B16A16_UINT:
-                //                     d.x = 16;
-                //                     d.y = 16;
-                //                     d.z = 16;
-                //                     d.w = 16;
-                //                     d.f = cudaChannelFormatKindUnsigned;
-                //                     break;
-                //                 case VK_FORMAT_R16G16B16A16_SINT:
-                //                     d.x = 16;
-                //                     d.y = 16;
-                //                     d.z = 16;
-                //                     d.w = 16;
-                //                     d.f = cudaChannelFormatKindSigned;
-                //                     break;
-                //                 case VK_FORMAT_R32_UINT:
-                //                     d.x = 32;
-                //                     d.y = 0;
-                //                     d.z = 0;
-                //                     d.w = 0;
-                //                     d.f = cudaChannelFormatKindUnsigned;
-                //                     break;
-                //                 case VK_FORMAT_R32_SINT:
-                //                     d.x = 32;
-                //                     d.y = 0;
-                //                     d.z = 0;
-                //                     d.w = 0;
-                //                     d.f = cudaChannelFormatKindSigned;
-                //                     break;
-                //                 case VK_FORMAT_R32_SFLOAT:
-                //                     d.x = 32;
-                //                     d.y = 0;
-                //                     d.z = 0;
-                //                     d.w = 0;
-                //                     d.f = cudaChannelFormatKindFloat;
-                //                     break;
-                //                 case VK_FORMAT_R32G32_UINT:
-                //                     d.x = 32;
-                //                     d.y = 32;
-                //                     d.z = 0;
-                //                     d.w = 0;
-                //                     d.f = cudaChannelFormatKindUnsigned;
-                //                     break;
-                //                 case VK_FORMAT_R32G32_SINT:
-                //                     d.x = 32;
-                //                     d.y = 32;
-                //                     d.z = 0;
-                //                     d.w = 0;
-                //                     d.f = cudaChannelFormatKindSigned;
-                //                     break;
-                //                 case VK_FORMAT_R32G32_SFLOAT:
-                //                     d.x = 32;
-                //                     d.y = 32;
-                //                     d.z = 0;
-                //                     d.w = 0;
-                //                     d.f = cudaChannelFormatKindFloat;
-                //                     break;
-                //                 case VK_FORMAT_R32G32B32A32_UINT:
-                //                     d.x = 32;
-                //                     d.y = 32;
-                //                     d.z = 32;
-                //                     d.w = 32;
-                //                     d.f = cudaChannelFormatKindUnsigned;
-                //                     break;
-                //                 case VK_FORMAT_R32G32B32A32_SINT:
-                //                     d.x = 32;
-                //                     d.y = 32;
-                //                     d.z = 32;
-                //                     d.w = 32;
-                //                     d.f = cudaChannelFormatKindSigned;
-                //                     break;
-                //                 case VK_FORMAT_R32G32B32A32_SFLOAT:
-                //                     d.x = 32;
-                //                     d.y = 32;
-                //                     d.z = 32;
-                //                     d.w = 32;
-                //                     d.f = cudaChannelFormatKindFloat;
-                //                     break;
-                //             }
-                //             return d;
-                //         };
+                            switch (format)
+                            {
+                                case VK_FORMAT_R8_UINT:
+                                    d.x = 8;
+                                    d.y = 0;
+                                    d.z = 0;
+                                    d.w = 0;
+                                    d.f = cudaChannelFormatKindUnsigned;
+                                    break;
+                                case VK_FORMAT_R8_SINT:
+                                    d.x = 8;
+                                    d.y = 0;
+                                    d.z = 0;
+                                    d.w = 0;
+                                    d.f = cudaChannelFormatKindSigned;
+                                    break;
+                                case VK_FORMAT_R8G8_UINT:
+                                    d.x = 8;
+                                    d.y = 8;
+                                    d.z = 0;
+                                    d.w = 0;
+                                    d.f = cudaChannelFormatKindUnsigned;
+                                    break;
+                                case VK_FORMAT_R8G8_SINT:
+                                    d.x = 8;
+                                    d.y = 8;
+                                    d.z = 0;
+                                    d.w = 0;
+                                    d.f = cudaChannelFormatKindSigned;
+                                    break;
+                                case VK_FORMAT_R8G8B8A8_UINT:
+                                    d.x = 8;
+                                    d.y = 8;
+                                    d.z = 8;
+                                    d.w = 8;
+                                    d.f = cudaChannelFormatKindUnsigned;
+                                    break;
+                                case VK_FORMAT_R8G8B8A8_SINT:
+                                    d.x = 8;
+                                    d.y = 8;
+                                    d.z = 8;
+                                    d.w = 8;
+                                    d.f = cudaChannelFormatKindSigned;
+                                    break;
+                                case VK_FORMAT_B8G8R8A8_UNORM:
+                                    d.x = 8;
+                                    d.y = 8;
+                                    d.z = 8;
+                                    d.w = 8;
+                                    d.f = cudaChannelFormatKindUnsigned;
+                                    break;
+                                case VK_FORMAT_R16_UINT:
+                                    d.x = 16;
+                                    d.y = 0;
+                                    d.z = 0;
+                                    d.w = 0;
+                                    d.f = cudaChannelFormatKindUnsigned;
+                                    break;
+                                case VK_FORMAT_R16_SINT:
+                                    d.x = 16;
+                                    d.y = 0;
+                                    d.z = 0;
+                                    d.w = 0;
+                                    d.f = cudaChannelFormatKindSigned;
+                                    break;
+                                case VK_FORMAT_R16G16_UINT:
+                                    d.x = 16;
+                                    d.y = 16;
+                                    d.z = 0;
+                                    d.w = 0;
+                                    d.f = cudaChannelFormatKindUnsigned;
+                                    break;
+                                case VK_FORMAT_R16G16_SINT:
+                                    d.x = 16;
+                                    d.y = 16;
+                                    d.z = 0;
+                                    d.w = 0;
+                                    d.f = cudaChannelFormatKindSigned;
+                                    break;
+                                case VK_FORMAT_R16G16B16A16_UINT:
+                                    d.x = 16;
+                                    d.y = 16;
+                                    d.z = 16;
+                                    d.w = 16;
+                                    d.f = cudaChannelFormatKindUnsigned;
+                                    break;
+                                case VK_FORMAT_R16G16B16A16_SINT:
+                                    d.x = 16;
+                                    d.y = 16;
+                                    d.z = 16;
+                                    d.w = 16;
+                                    d.f = cudaChannelFormatKindSigned;
+                                    break;
+                                case VK_FORMAT_R32_UINT:
+                                    d.x = 32;
+                                    d.y = 0;
+                                    d.z = 0;
+                                    d.w = 0;
+                                    d.f = cudaChannelFormatKindUnsigned;
+                                    break;
+                                case VK_FORMAT_R32_SINT:
+                                    d.x = 32;
+                                    d.y = 0;
+                                    d.z = 0;
+                                    d.w = 0;
+                                    d.f = cudaChannelFormatKindSigned;
+                                    break;
+                                case VK_FORMAT_R32_SFLOAT:
+                                    d.x = 32;
+                                    d.y = 0;
+                                    d.z = 0;
+                                    d.w = 0;
+                                    d.f = cudaChannelFormatKindFloat;
+                                    break;
+                                case VK_FORMAT_R32G32_UINT:
+                                    d.x = 32;
+                                    d.y = 32;
+                                    d.z = 0;
+                                    d.w = 0;
+                                    d.f = cudaChannelFormatKindUnsigned;
+                                    break;
+                                case VK_FORMAT_R32G32_SINT:
+                                    d.x = 32;
+                                    d.y = 32;
+                                    d.z = 0;
+                                    d.w = 0;
+                                    d.f = cudaChannelFormatKindSigned;
+                                    break;
+                                case VK_FORMAT_R32G32_SFLOAT:
+                                    d.x = 32;
+                                    d.y = 32;
+                                    d.z = 0;
+                                    d.w = 0;
+                                    d.f = cudaChannelFormatKindFloat;
+                                    break;
+                                case VK_FORMAT_R32G32B32A32_UINT:
+                                    d.x = 32;
+                                    d.y = 32;
+                                    d.z = 32;
+                                    d.w = 32;
+                                    d.f = cudaChannelFormatKindUnsigned;
+                                    break;
+                                case VK_FORMAT_R32G32B32A32_SINT:
+                                    d.x = 32;
+                                    d.y = 32;
+                                    d.z = 32;
+                                    d.w = 32;
+                                    d.f = cudaChannelFormatKindSigned;
+                                    break;
+                                case VK_FORMAT_R32G32B32A32_SFLOAT:
+                                    d.x = 32;
+                                    d.y = 32;
+                                    d.z = 32;
+                                    d.w = 32;
+                                    d.f = cudaChannelFormatKindFloat;
+                                    break;
+                            }
+                            return d;
+                        };
 
-                //         cudaExternalMemoryMipmappedArrayDesc desc = {};
+                        cudaExternalMemoryMipmappedArrayDesc desc = {};
 
-                //         memset(&desc, 0, sizeof(desc));
-                //         desc.offset = VulkanTexture->Surface.GetAllocationOffset();
-                //         desc.formatDesc = getCudaChannelFormatDescForVulkanFormat(VulkanTexture->Surface.StorageFormat);
-                //         desc.extent.width = VulkanTexture->Surface.Width;
-                //         desc.extent.height = VulkanTexture->Surface.Height;
-                //         desc.extent.depth = 0;    // VulkanTexture->Surface.Depth;
-                //         desc.flags = cudaArrayColorAttachment;
-                //         desc.numLevels = VulkanTexture->Surface.GetNumMips();
+                        memset(&desc, 0, sizeof(desc));
+                        desc.offset = VulkanTexture->GetAllocationOffset();
+                        desc.formatDesc = getCudaChannelFormatDescForVulkanFormat(VulkanTexture->StorageFormat);
+                        desc.extent.width = VulkanTexture->GetDesc().Extent.X;
+                        desc.extent.height = VulkanTexture->GetDesc().Extent.Y;
+                        desc.extent.depth = 0;    // VulkanTexture->Surface.Depth;
+                        desc.flags = cudaArrayColorAttachment;
+                        desc.numLevels = VulkanTexture->GetDesc().NumMips;
 
-                //         if (checkCudaErrors(cudaExternalMemoryGetMappedMipmappedArray(&This->mipmap, This->extMem, &desc)))
-                //         {
-                //             if (checkCudaErrors(cudaGetMipmappedArrayLevel(&(This->TransitionArray), This->mipmap, 0)))
-                //             {
-                //                 UE_LOG(LogTemp, Log, TEXT("[UTexJpeg] succeed to init cuda resource"));
-                //                 return;
-                //             }
-                //         }
-                //     }
-                // }
-                // else
-                // {
-                //     UE_LOG(LogTemp, Warning, TEXT("[UTexJpeg] Failed to GetVulkan memory"));
-                // }
+                        if (checkCudaErrors(cudaExternalMemoryGetMappedMipmappedArray(&This->mipmap, This->extMem, &desc)))
+                        {
+                            if (checkCudaErrors(cudaGetMipmappedArrayLevel(&(This->TransitionArray), This->mipmap, 0)))
+                            {
+                                UE_LOG(LogTemp, Log, TEXT("[UTexJpeg] succeed to init cuda resource"));
+                                return;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("[UTexJpeg] Failed to GetVulkan memory"));
+                }
             }
             else
             {

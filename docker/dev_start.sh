@@ -26,7 +26,6 @@ function local_volumes() {
           -v /etc/localtime:/etc/localtime:ro \
           -v /etc/shadow:/etc/shadow \
           -v /var/run/dbus:/var/run/dbus \
-          -v /usr/local/cuda-11.3:/usr/local/cuda-11.3 \
           -v /run/user/$USER_ID:/run/user/$USER_ID \
           -v $UE4_ROOT:$DOCKER_HOME/ue4 \
           -v $UE5_ROOT:$DOCKER_HOME/ue5 \
@@ -130,7 +129,7 @@ function main(){
     docker exec -u "$USER" "$MAIN_CONTAINER_NAME" \
         bash -c 'touch ~/.sudo_as_admin_successful'
 
-    ok "Now you can enter into container using: bash devtools/main/dev_into.sh"
+    ok "Now you can enter into container using: bash docker/dev_into.sh"
 }
 
 

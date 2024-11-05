@@ -19,6 +19,10 @@ public:
     // Switch possess to ghost pawn
     void SwitchPawnToGhost();
 
+
+    UFUNCTION(Server, Reliable, WithValidation)
+    virtual void Server_SimUpdateOutput(FLocalUpdateOut _OutData);
+
 protected:
 
     /** Allows the PlayerController to set up custom input bindings. */

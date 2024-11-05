@@ -99,6 +99,26 @@ void SaveDataThread::Stop()
     }
 }
 
+bool SaveDataThread::SaveString(const FString& _String, const FString _Path)
+{
+    m_mutex.Lock();
+    FStringData& NewData = stringDataArry.Emplace_GetRef();
+    NewData.data = _String;
+    NewData.path = _Path;
+    m_mutex.Unlock();
+    return true;
+}
+
+bool SaveDataThread::SaveJPG(const TArray64<uint8>& _DataArry, const FString _Path)
+{
+    m_mutex.Lock();
+    FJPGData& NewData = jpgDataArry.Emplace_GetRef();
+    NewData.data = _DataArry;
+    NewData.path = _Path;
+    m_mutex.Unlock();
+    return true;
+}
+
 void SaveDataThread::SaveData()
 {
     TArray<FStringData> ReadyToSave_String;

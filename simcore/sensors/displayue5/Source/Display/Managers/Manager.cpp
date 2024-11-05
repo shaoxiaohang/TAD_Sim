@@ -13,6 +13,10 @@ void AManager::Init(const FManagerConfig& Config)
 {
 }
 
+void AManager::Update(const FManagerIn& Input, FManagerOut& Output)
+{
+}
+
 bool AManager::RegisterSimActor(ISimActorInterface* _Actor)
 {
     if (!_Actor)

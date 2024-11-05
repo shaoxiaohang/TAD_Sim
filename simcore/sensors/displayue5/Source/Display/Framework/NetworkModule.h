@@ -31,5 +31,9 @@ class DISPLAY_API NetworkModule : public tx_sim::SimModule {
 
   FString TrafficTopic = TEXT("TRAFFIC");
   FString LocationTopic = TEXT("LOCATION");
+  FString SensorTopic = TEXT("DISPLAYSENSOR_");
+  FString PoseTopic = TEXT("DISPLAYPOSE_");
   FString UnionPrefixStr = TEXT("EgoUnion/");
+
+  void PublicUpdateMessage(tx_sim::StepHelper& helper);
 };

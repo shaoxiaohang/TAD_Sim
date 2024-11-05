@@ -3,6 +3,11 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "Runtime/Engine/Classes/Components/SceneCaptureComponent2D.h"
 #include "TexJpeg.h"
+#include <ctime>
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <iomanip>
 
 ACameraSensor::ACameraSensor()
 {
@@ -23,6 +28,41 @@ ACameraSensor::ACameraSensor()
 
 ACameraSensor::~ACameraSensor()
 {
+}
+
+ISimActorInterface* ACameraSensor::Install(const FSensorConfig& _Config)
+{
+    ISimActorInterface* SimActor = Super::Install(_Config);
+    /* Install previewCamera */
+    if (SimActor)
+    {
+        // TODO: All simActors support install camera
+        ATransportPawn* Transport = Cast<ATransportPawn>(SimActor);
+        if (Transport)
+        {
+            if (Transport->InstallCamera(_Config.typeName + FString::FromInt(_Config.id), previewComponent))
+            {
+                // previewComponent->SetActive(true);
+                // auto hilpos = GetDisplayInstance()->nHILpos;
+                // if (hilpos.X >= 0 && hilpos.Y >= 0)
+                // {
+                //     Transport->SetDefaultCamera(_Config.typeName + FString::FromInt(_Config.id));
+
+                //     if (GEngine && GEngine->GameViewport)
+                //     {
+                //         if (GEngine->GameViewport->Viewport->IsFullscreen())
+                //         {
+                //             GEngine->GameViewport->HandleToggleFullscreenCommand();
+                //         }
+                //         GEngine->GameViewport->GetWindow()->MoveWindowTo(hilpos);
+                //         GEngine->GameViewport->HandleToggleFullscreenCommand();
+                //     }
+                // }
+            }
+            return Transport;
+        }
+    }
+    return nullptr;
 }
 
 bool ACameraSensor::Init(const FSensorConfig& _Config)
@@ -49,6 +89,7 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
         // UE_LOG(LogTemp, Warning, TEXT("CameraSensorComponent: Generate savePath."));
         FPlatformFileManager::Get().GetPlatformFile().CreateDirectoryTree(*savePath);
     }
+    UE_LOG(LogTemp, Warning, TEXT("CameraSensorComponent SavePath %s "),*savePath);
     sensorConfig = *NewCameraSensorConfig;
     imageRes0.X = NewCameraSensorConfig->res_Horizontal;
     imageRes0.Y = NewCameraSensorConfig->res_Vertical;
@@ -242,6 +283,15 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
         // 从配置文件获取图像质量设置
         GConfig->GetInt(TEXT("Sensor"), TEXT("JpegQuality"), imageQuality, GGameIni);
 
+        FString gpuid = TEXT("0");
+        if (!FParse::Value(FCommandLine::Get(), TEXT("-graphicsadapter="), gpuid))
+        {
+            gpuid = TEXT("0");
+        }
+        UE_LOG(LogTemp, Log, TEXT("CameraSensor: use gpu id: %s"), *gpuid);
+        texJpg = MakeShared<UTexJpeg>(FCString::Atoi(*gpuid));
+        FString stylemode;
+
         // 创建一个新的纹理目标2D对象
         renderTarget2D = NewObject<UTextureRenderTarget2D>();
         // 设置共享标志为true，以便可以在GPU上共享
@@ -252,24 +302,14 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
         renderTarget2D->TargetGamma = targetGamma;
         // 初始化自定义格式，设置图像大小和像素格式
         renderTarget2D->InitCustomFormat(imageRes.X, imageRes.Y, PF_B8G8R8A8, true);
-        if(gpushared)
+
+        texJpg->texRT = renderTarget2D;
+        if (!texJpg->InitResources(true, gpushared, imageRes0.X, imageRes0.Y, stylemode))
         {
-            FString stylemode;
-            FString gpuid = TEXT("0");
-            if (!FParse::Value(FCommandLine::Get(), TEXT("-graphicsadapter="), gpuid))
-            {
-                gpuid = TEXT("0");
-            }
-            UE_LOG(LogTemp, Log, TEXT("CameraSensor: use gpu id: %s"), *gpuid);
-            texJpg = MakeShared<UTexJpeg>(FCString::Atoi(*gpuid));
-            texJpg->texRT = renderTarget2D;
-            if (!texJpg->InitResources(true, gpushared, imageRes0.X, imageRes0.Y, stylemode))
-            {
-                texJpg.Reset();
-                imageRes = imageRes0;
-                renderTarget2D->InitCustomFormat(imageRes.X, imageRes.Y, PF_B8G8R8A8, true);
-                UE_LOG(LogTemp, Warning, TEXT("CameraSensor: texJpg init faild."));
-            }
+            texJpg.Reset();
+            imageRes = imageRes0;
+            renderTarget2D->InitCustomFormat(imageRes.X, imageRes.Y, PF_B8G8R8A8, true);
+            UE_LOG(LogTemp, Warning, TEXT("CameraSensor: texJpg init faild."));
         }
         // 将场景捕获组件附加到根组件上
         captureComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
@@ -315,8 +355,211 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
     }
     if (renderTarget2D)
         UE_LOG(LogTemp, Log, TEXT("CameraSensor: renderTarget2D is ok"));
+    if (texJpg)
+        UE_LOG(LogTemp, Log, TEXT("CameraSensor: texJpg is ok"));
 
     return true;
+}
+
+void ACameraSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
+{
+    if (!renderTarget2D)
+    {
+        return;
+    }
+    const FCameraInput* CameraInput = Cast_Sim<const FCameraInput>(_Input);
+    // 频率限制
+    if (frequency > 0 && (CameraInput->timeStamp - timeStamp) < 999.9999999 / frequency)
+    {
+        //UE_LOG(LogTemp, Warning, TEXT("%s: Camera frequency async, has return, Frequency %f TimeStamp is: %f Camera TimeStamp %f"), *this->GetName(),
+        //frequency, timeStamp, CameraInput->timeStamp);
+        return;
+    }
+    timeStamp = CameraInput->timeStamp;
+    double timeStamp_ego = CameraInput->timeStamp_ego;
+    // CUDA拷贝
+    bool cuda = false;
+    if (texJpg)
+    {
+        cuda = texJpg->Copy2Cuda();
+    }
+
+    std::vector<uint8>& BitData = dataBuf.buffer;
+    BitData.clear();
+
+    // 获取图像数据
+    auto getRawBuff = [&]()
+    {
+        if (!BitData.empty())
+        {
+            return;
+        }
+        if (cuda)
+        {
+            if (!texJpg->Raw(BitData))
+            {
+                UE_LOG(LogTemp, Warning, TEXT("CameraSensor: read raw image buf faild in texjpg"));
+            }
+        }
+        else
+        {
+            FReadSurfaceDataFlags ReadPixelFlags(RCM_UNorm);
+            FTextureRenderTarget2DResource* RTResource = 
+                (FTextureRenderTarget2DResource*) renderTarget2D->GetResource();
+            if (RTResource)
+            {
+                TArray<FColor> BitMap;
+                RTResource->ReadPixels(BitMap, ReadPixelFlags);
+                BitData.resize(BitMap.Num() * 4);
+                memcpy(BitData.data(), BitMap.GetData(), BitMap.Num() * 4);
+            }
+        }
+        if (BitData.empty())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("CameraSensor: read image buf faild."));
+        }
+    };
+
+    // 落盘或发布
+    TArray64<uint8_t> imgbuf;
+    if (!savePath.IsEmpty() || public_msg)
+    {
+        // jpeg图像，优先cuda编码，否则用ue自带CPU编码
+        if (imageFormat == EImageFormat::JPEG)
+        {
+            if (cuda)
+            {
+                if (!texJpg->JpegEncoding(imgbuf))
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("CameraSensor: read jpeg image buf faild in texjpg"));
+                }
+                UE_LOG(LogTemp, Display, TEXT("CameraSensor: encode cuda"));
+            }
+
+            if (imgbuf.Num() == 0)
+            {
+                getRawBuff();
+
+                if (BitData.empty())
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("CameraSensor: read image buf faild."));
+                }
+                else
+                {
+                    IImageWrapperModule& ImageWrapperModule =
+                        FModuleManager::LoadModuleChecked<IImageWrapperModule>("ImageWrapper");
+                    TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::JPEG);
+                    if (ImageWrapper->SetRaw(BitData.data(), sizeof(FColor) * imageRes0.X * imageRes0.Y, imageRes0.X,
+                            imageRes0.Y, ERGBFormat::BGRA, 8))
+                    {
+                        imgbuf = ImageWrapper->GetCompressed(imageQuality);
+                    }
+                    else
+                    {
+                        UE_LOG(LogTemp, Warning, TEXT("CameraSensor: encode jpeg faild."));
+                    }
+                }
+            }
+        }
+        // 落盘
+        if (!savePath.IsEmpty())
+        {
+            if (imgbuf.Num() > 0)
+            {
+                FString SavePath =
+                    savePath + FString::Printf(TEXT("%s_%d_%010d"), *imageName, id, (int64) timeStamp_ego);
+                if (imageFormat == EImageFormat::JPEG)
+                {
+                    SavePath += TEXT(".jpg");
+                }
+                else if (imageFormat == EImageFormat::PNG)
+                {
+                    SavePath += TEXT(".png");
+                }
+                else if (imageFormat == EImageFormat::EXR)
+                {
+                    SavePath += TEXT(".exr");
+                }
+                GetDisplayInstance()->GetSaveDataHandle()->SaveJPG(imgbuf, SavePath);
+            }
+            // 保存POSE
+            {
+                FString savePathWithName = savePath +
+                                           FString::Printf(TEXT("%s_%d_%010d"), *imageName, id, (int64) timeStamp_ego) +
+                                           TEXT(".pose");
+                std::stringstream ss;
+                ss << std::setprecision(15);
+                ss << "pose of sensor(lon lat atl roll pitch yaw), the enu reference coord(wgs84) and mat of "
+                      "world->image\n";
+                double X = 0, Y = 0, Z = 0;
+                hadmapue4::HadmapManager::Get()->LocalToLonLat(GetActorLocation(), X, Y, Z);
+                ss << X << " " << Y << " " << Z << " ";
+                auto Rot = GetActorRotation();
+                ss << Rot.Roll * PI / 180. << " " << -Rot.Pitch * PI / 180. << " " << -(Rot.Yaw + 90.f) * PI / 180.
+                   << "\n";
+                ss << hadmapue4::HadmapManager::Get()->mapOriginLon << " "
+                   << hadmapue4::HadmapManager::Get()->mapOriginLat << " "
+                   << hadmapue4::HadmapManager::Get()->mapOriginAlt << "\n";
+
+                auto loc = GetActorLocation() * 0.01f;
+                std::swap(loc.X, loc.Y);
+                loc.X *= -1.f;
+                loc.Y *= -1.f;
+                Rot.Roll *= -1.f;
+                Rot.Yaw = -(Rot.Yaw + 90.f);
+                auto rot = Rot.Quaternion() * FRotator(0, -90, 0).Quaternion() * FRotator(0, 0, 90).Quaternion();
+                FTransform tf;
+                tf.SetLocation(loc);
+                tf.SetRotation(rot);
+                auto tfmat = tf.Inverse().ToMatrixNoScale();
+                for (int i = 0; i < 4; i++)
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+                        ss << tfmat.M[j][i] << " ";
+                    }
+                }
+                GetDisplayInstance()->GetSaveDataHandle()->SaveString(
+                    ANSI_TO_TCHAR(ss.str().c_str()), savePathWithName);
+            }
+        }
+        // public msg
+        if (public_msg)
+        {
+            sim_msg::CameraRaw craw;
+            craw.set_id(id);
+            craw.set_timestamp(timeStamp_ego);
+            if (imgbuf.Num() > 0)
+            {
+                if (imageFormat == EImageFormat::JPEG)
+                {
+                    craw.set_type("JPEG");
+                }
+                else if (imageFormat == EImageFormat::PNG)
+                {
+                    craw.set_type("PNG");
+                }
+                else if (imageFormat == EImageFormat::EXR)
+                {
+                    craw.set_type("EXR");
+                }
+                craw.set_image_data(imgbuf.GetData(), imgbuf.Num());
+            }
+
+            double X = 0, Y = 0, Z = 0;
+            hadmapue4::HadmapManager::Get()->LocalToLonLat(GetActorLocation(), X, Y, Z);
+            craw.mutable_pose()->set_longitude(X);
+            craw.mutable_pose()->set_latitude(Y);
+            craw.mutable_pose()->set_altitude(Z);
+            auto Rot = GetActorRotation();
+            craw.mutable_pose()->set_roll(Rot.Roll * PI / 180.f);
+            craw.mutable_pose()->set_pitch(-Rot.Pitch * PI / 180.f);
+            craw.mutable_pose()->set_yaw(-(Rot.Yaw + 90.f) * PI / 180.f);
+            craw.set_width(imageRes0.X);
+            craw.set_height(imageRes0.Y);
+            craw.SerializeToString(&_Output.serialize_string);
+        }
+    }
 }
 
 // 后处理设置

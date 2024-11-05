@@ -206,7 +206,12 @@ void sim_label::Step(tx_sim::StepHelper &helper) {
     trafficPose_all.set_timestamp(trafficPose.timestamp());
     // Extract unique EGO IDs,
     for (const auto &obj : trafficPose.egos()) {
-      if (obj.id() == ego_id) continue;
+      // std::cout << " OBJ ID " << obj.id() << std::endl;
+      // std::cout << " EGO ID " << ego_id << std::endl;
+      if (obj.id() == ego_id) {
+        //std::cout << " SKIP " << std::endl;
+        continue;
+      }
       if (egoid.find(obj.id()) == egoid.end()) {
         *trafficPose_all.add_egos() = obj;
         egoid.insert(obj.id());
@@ -280,6 +285,7 @@ void sim_label::Step(tx_sim::StepHelper &helper) {
       } else if (sensor.type() == sim_msg::SensorRaw::TYPE_LIDAR) {
         PcInfo info;
         if (parseLidar(sensor.raw(), info)) {
+          std::cout << "ADD LIDAR " << std::endl;
           std::cout << "lidar(" << info.id << "," << info.timestamp << ")=" << info.size;
           queues->addLidar(info);
         }
@@ -557,6 +563,7 @@ void sim_label::saveImageLabel(const ImagePackage &info) {
  * @param info pcd info
  */
 void sim_label::savePcdLabel(const PcdPackage &info) {
+  std::cout << "savePcdLabel " << std::endl;
   // Get timestamp string and UTC date/time string from lidar package
   std::string tss = timeStarmString(info.lidar.timestamp);
   std::string utc = getUTC();

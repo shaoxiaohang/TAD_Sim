@@ -16,15 +16,15 @@ public:
 
     virtual bool Init(const FSensorConfig& Config);
 
-    virtual void Update(const FSensorInput& Input, FSensorOutput& Output)
-    {
-    }
+    virtual void Update(const FSensorInput& Input, FSensorOutput& Output);
 
-    virtual void Destroy(FString Reason)
-    {
+    virtual void Destroy(FString Reason);
 
-    }
+    virtual ISimActorInterface* Install(const FSensorConfig& _Config);
 
     class UDisplayGameInstance* GetDisplayInstance();
+
+protected:
+    AActor* InstalledActor = NULL;
 
 };

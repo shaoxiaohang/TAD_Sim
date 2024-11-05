@@ -102,7 +102,9 @@ public:
 
     virtual bool Init(const FSensorConfig& _Config);
 
-    // virtual ISimActorInterface* Install(const FSensorConfig& _Config){ return nullptr;}
+    virtual void Update(const FSensorInput& _Input, FSensorOutput& _Output);
+
+    virtual ISimActorInterface* Install(const FSensorConfig& _Config);
 
     void SetPostProcessSettings(const FCameraConfig& NewCameraSensorConfig, 
         FPostProcessSettings& PostProcessSettings, float screen_scale = 1.0f);

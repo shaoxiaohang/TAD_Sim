@@ -21,6 +21,8 @@ public:
     // Init SimActor
     virtual void Init(const FSimActorConfig& _Config);
 
+    // Update SimActor
+    virtual void Update(const FSimActorInput& _Input, FSimActorOutput& _Output);
 
 protected:
     UPROPERTY(config)

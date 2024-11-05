@@ -1,6 +1,5 @@
 #include "NetworkModule.h"
 
-
 DEFINE_LOG_CATEGORY_STATIC(SimLogNet, Log, All);
 TXSIM_MODULE(NetworkModule)
 
@@ -25,9 +24,7 @@ void NetworkModule::Init(tx_sim::InitHelper& helper)
 
     UE_LOG(SimLogNet, Log, TEXT("TRAFFIC %s "), *TrafficTopic);
 
-
     helper.Subscribe(TCHAR_TO_ANSI(*TrafficTopic));
-
 
     FString UnionTrafficTopic = UnionPrefixStr + LocationTopic;
     helper.Subscribe(TCHAR_TO_ANSI(*UnionTrafficTopic));
@@ -42,6 +39,21 @@ void NetworkModule::Init(tx_sim::InitHelper& helper)
         realstep = std::atof(helper.GetParameter("step_size").c_str());
         UE_LOG(SimLogNet, Log, TEXT("Display init realstep = %f"), realstep);
     }
+
+    FString device;
+    if (!FParse::Value(FCommandLine::Get(), TEXT("-topicId="), device))
+    {
+        if (!FParse::Value(FCommandLine::Get(), TEXT("-device="), device))
+        {
+            device = TEXT("0");
+        }
+    }
+    SensorTopic = TEXT("DISPLAYSENSOR_") + device;
+    PoseTopic = TEXT("DISPLAYPOSE_") + device;
+
+    helper.Publish(std::string(TCHAR_TO_ANSI(*SensorTopic)));
+    helper.Publish(std::string(TCHAR_TO_ANSI(*PoseTopic)));
+    UE_LOG(SimLogNet, Log, TEXT("Display publish topic is %s"), *SensorTopic);
 
     {
         FScopeLock ScopeLock(&mutex_Input);
@@ -78,7 +90,8 @@ void NetworkModule::Reset(tx_sim::ResetHelper& helper)
         NewInPtr->startLat = StartLoc.position().y();
         NewInPtr->startAlt = StartLoc.position().z();
         NewInPtr->startSpeed =
-            FVector(StartLoc.velocity().x(), StartLoc.velocity().y(), StartLoc.velocity().z()).Size();
+            FVector(StartLoc.velocity().x(), StartLoc.velocity().y(), StartLoc.velocity().z())
+                .Size();
         NewInPtr->startTheta = StartLoc.rpy().z();
         NewInPtr->mapDataBasePath = UTF8_TO_TCHAR(helper.map_file_path().c_str());
         NewInPtr->mapDataBasePath = NewInPtr->mapDataBasePath.Replace(TEXT("\\"), TEXT("/"));
@@ -87,7 +100,8 @@ void NetworkModule::Reset(tx_sim::ResetHelper& helper)
 
         FString tadsim_path;
         bool bUseLocalScenarioDir = false;
-        GConfig->GetBool(TEXT("Sensor"), TEXT("bUseLocalScenarioDir"), bUseLocalScenarioDir, GGameIni);
+        GConfig->GetBool(
+            TEXT("Sensor"), TEXT("bUseLocalScenarioDir"), bUseLocalScenarioDir, GGameIni);
         if (bUseLocalScenarioDir)
         {
             if (GConfig->GetString(TEXT("Sensor"), TEXT("TadsimConfigPath"), tadsim_path, GGameIni))
@@ -100,18 +114,19 @@ void NetworkModule::Reset(tx_sim::ResetHelper& helper)
             {
             }
         }
-        NewInPtr->tadsimPath =
-            FPaths::GetPath(FPaths::GetPath(FPaths::GetPath(FPaths::GetPath(NewInPtr->configFilePath))));
+        NewInPtr->tadsimPath = FPaths::GetPath(
+            FPaths::GetPath(FPaths::GetPath(FPaths::GetPath(NewInPtr->configFilePath))));
         if (!tadsim_path.IsEmpty())
         {
             tadsim_path = tadsim_path.Replace(TEXT("\\"), TEXT("/"));
 
             UE_LOG(SimLogNet, Log, TEXT("tadsim dir is %s"), *tadsim_path);
-            FString cfgStr =
-                NewInPtr->configFilePath.Right(NewInPtr->configFilePath.Len() - NewInPtr->tadsimPath.Len() - 1);
+            FString cfgStr = NewInPtr->configFilePath.Right(
+                NewInPtr->configFilePath.Len() - NewInPtr->tadsimPath.Len() - 1);
             NewInPtr->configFilePath = FPaths::Combine(tadsim_path, cfgStr);
 
-            cfgStr = NewInPtr->mapDataBasePath.Right(NewInPtr->mapDataBasePath.Len() - NewInPtr->tadsimPath.Len() - 1);
+            cfgStr = NewInPtr->mapDataBasePath.Right(
+                NewInPtr->mapDataBasePath.Len() - NewInPtr->tadsimPath.Len() - 1);
             NewInPtr->mapDataBasePath = FPaths::Combine(tadsim_path, cfgStr);
 
             NewInPtr->tadsimPath = tadsim_path;
@@ -120,12 +135,13 @@ void NetworkModule::Reset(tx_sim::ResetHelper& helper)
         NewInPtr->name = TEXT("RESET");
         NewInPtr->timeStamp = 0;
         myGameInstance->simInDataArry.Add(NewInPtr);
-        asynchronousMode = myGameInstance->GetGameConfig(TEXT("Mode"), TEXT("Asynchronous")) == TEXT("true");
+        asynchronousMode =
+            myGameInstance->GetGameConfig(TEXT("Mode"), TEXT("Asynchronous")) == TEXT("true");
         myGameInstance->SetAsynchronousMode(asynchronousMode);
         myGameInstance->bSimInDataRefreshed = true;
 
         myGameInstance->ModuleGroupName = TEXT("Ego_001");
-        //UTF8_TO_TCHAR(helper.group_name().c_str());
+        // UTF8_TO_TCHAR(helper.group_name().c_str());
     }
 
     myGameInstance->threadSuspendedEvent->Trigger();
@@ -161,12 +177,11 @@ void NetworkModule::Step(tx_sim::StepHelper& helper)
         simUpdateIn.timeStamp = timestamp;
 
         std::string strUnionLocation;
-        helper.GetSubscribedMessage(TCHAR_TO_ANSI(*(UnionPrefixStr + LocationTopic)), 
-            strUnionLocation);
-        
+        helper.GetSubscribedMessage(
+            TCHAR_TO_ANSI(*(UnionPrefixStr + LocationTopic)), strUnionLocation);
+
         std::string strTraffic;
         helper.GetSubscribedMessage(TCHAR_TO_ANSI(*TrafficTopic), strTraffic);
-
 
         TSharedPtr<FSimUpdateIn> NewInPtr = MakeShared<FSimUpdateIn>();
         NewInPtr->name = TEXT("UPDATE");
@@ -187,7 +202,7 @@ void NetworkModule::Step(tx_sim::StepHelper& helper)
                 NewInPtr->egoData.Emplace(UTF8_TO_TCHAR(groupname.c_str()), locationMsg);
             }
             UE_LOG(SimLogNet, Log, TEXT("LOCATION time %f x %.8f y %.8f z %.8f"), timestamp,
-            locationMsg.position().x(), locationMsg.position().y(),locationMsg.position().z());
+                locationMsg.position().x(), locationMsg.position().y(), locationMsg.position().z());
         }
         NewInPtr->trafficData.ParseFromString(strTraffic);
 
@@ -202,18 +217,19 @@ void NetworkModule::Step(tx_sim::StepHelper& helper)
 
     // End = std::chrono::system_clock::now();
     // CostTime = End - Start;
-    // UE_LOG(SimLogNet, Log, TEXT("Display Update sync1 Cost Time: %f seconds"), CostTime.count());//*/
+    // UE_LOG(SimLogNet, Log, TEXT("Display Update sync1 Cost Time: %f seconds"),
+    // CostTime.count());//*/
     //  Wait for gameinstance complete
     if (!asynchronousMode)
     {
-        UE_LOG(SimLogNet, Log, TEXT("step waiting"));
         threadSuspendedEvent->Wait();
-        UE_LOG(SimLogNet, Log, TEXT("step waiting ok"));
     }
+
+    PublicUpdateMessage(helper);
 
     End = std::chrono::system_clock::now();
     CostTime = End - Start;
-    UE_LOG(SimLogNet, Log, TEXT("Display Update Cost Time: %f seconds"), CostTime.count());//*/
+    UE_LOG(SimLogNet, Log, TEXT("Display Update Cost Time: %f seconds"), CostTime.count());    //*/
 }
 
 void NetworkModule::Stop(tx_sim::StopHelper& helper)
@@ -223,4 +239,38 @@ void NetworkModule::Stop(tx_sim::StopHelper& helper)
 FEvent* NetworkModule::getThreadSuspendedEvent()
 {
     return threadSuspendedEvent;
+}
+
+void NetworkModule::PublicUpdateMessage(tx_sim::StepHelper& helper)
+{
+    FScopeLock ScopeLock(&mutex_Output);
+    UE_LOG(SimLogNet, Log, TEXT("PublicUpdateMessage Size: %d"),
+        myGameInstance->simOutDataArry.Num());
+    for (const auto& sout : myGameInstance->simOutDataArry)
+    {
+        if (sout->datatype == 1)
+        {
+            const FSimUpdateOut* simOut = StaticCast<const FSimUpdateOut*>(sout.Get());
+            std::string payload_;
+            payload_.clear();
+            if (simOut->trafficPose.SerializeToString(&payload_) && payload_.size())
+            {
+                UE_LOG(SimLogNet, Log, TEXT("PublictrafficPose %s"),
+                    ANSI_TO_TCHAR(simOut->trafficPose.DebugString().c_str()));
+                helper.PublishMessage(std::string(TCHAR_TO_ANSI(*PoseTopic)), payload_);
+            }
+        }
+        if (sout->datatype == 2)
+        {
+            const FSimSensorUpdateOut* simSenOut =
+                StaticCast<const FSimSensorUpdateOut*>(sout.Get());
+            std::string payload_;
+            if (simSenOut->sensorData.SerializeToString(&payload_) && payload_.size())
+            {
+                helper.PublishMessage(std::string(TCHAR_TO_ANSI(*SensorTopic)), payload_);
+            }
+            UE_LOG(SimLogNet, Log, TEXT("Send SensorData: %s"), *simSenOut->name);
+        }
+    }
+    myGameInstance->simOutDataArry.SetNum(0);
 }
