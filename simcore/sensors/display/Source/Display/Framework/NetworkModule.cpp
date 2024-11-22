@@ -402,6 +402,7 @@ void NetworkModule::Step(/*const sim_msg::SimMessage& input, sim_msg::SimMessage
         NewInPtr->trajectoryData.ParseFromString(strTrajectory);
         NewInPtr->planOutputData.ParseFromString(strPlanOutput);
         NewInPtr->trafficData.ParseFromString(strTraffic);
+        UE_LOG(SimLogNet, Log, TEXT("TRAFFIC %f %s"), timestamp, UTF8_TO_TCHAR(NewInPtr->trafficData.DebugString().c_str()));
         NewInPtr->controlSimData.ParseFromString(strControlSim);
         NewInPtr->planStatusData.ParseFromString(StrPlanStatus);
         NewInPtr->environmentData.ParseFromString(StrEnviroment);

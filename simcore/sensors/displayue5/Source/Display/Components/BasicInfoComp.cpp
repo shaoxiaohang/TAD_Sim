@@ -1,3 +1,5 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #include "BasicInfoComp.h"
 
 // Sets default values for this component's properties
@@ -36,12 +38,35 @@ void UBasicInfoComp::Update(const FSimActorInput& _InData)
         return;
     }
 
+    // if (_InData.typeName != typeName)
+    //{
+    //     UE_LOG(LogTemp, Error, TEXT("Updating SimActor`s TypeName Does Not Match Data! Name: %s, Id: %d"), *typeName,
+    //     id); return;
+    // }
+
     double DeltaTimeStampInSecond = (_InData.timeStamp - timeStamp);
     if (DeltaTimeStampInSecond <= 0.0001 && DeltaTimeStampInSecond >= -0.0001)
     {
         UE_LOG(LogTemp, Error, TEXT("Updating TimeStamp Is Repeat! Name: %s, Id: %d"), *typeName, id);
     }
+    // else
+    //{
+    //     FVector DeltaDistanceInMeter = (this->GetComponentLocation() - transform_Last.GetLocation()) / 100.f;
+    //     velocity = DeltaDistanceInMeter / DeltaTimeStampInSecond;
+    // }
+    // transform_Last.SetLocation(this->GetComponentLocation());
 
     velocity = _InData.velocity;
     timeStamp = _InData.timeStamp;
+
+    // config->timeStamp = _InData.timeStamp;
 }
+
+//// Called every frame
+// void UBasicInfoComp::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction*
+// ThisTickFunction)
+//{
+//     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+//
+//     // ...
+// }

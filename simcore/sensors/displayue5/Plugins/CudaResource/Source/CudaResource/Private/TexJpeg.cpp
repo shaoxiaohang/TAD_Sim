@@ -194,6 +194,11 @@ bool UTexJpeg::InitResources(bool jpeg, bool share, int w, int h, const FString&
     imgWidth0 = w > 0 ? w : imgWidth;
     imgHeight0 = h > 0 ? h : imgHeight;
 
+    UE_LOG(LogTemp, Warning, TEXT("[UTexJpeg] imgWidth is %d"), imgWidth);
+    UE_LOG(LogTemp, Warning, TEXT("[UTexJpeg] imgHeight is %d"), imgHeight);
+    UE_LOG(LogTemp, Warning, TEXT("[UTexJpeg] imgWidth0 is %d"), imgWidth0);
+    UE_LOG(LogTemp, Warning, TEXT("[UTexJpeg] imgHeight0 is %d"), imgHeight0);
+
     checkCudaErrors_TF(cudaSetDevice(gpu_id));
     checkCudaErrors_TF(cudaStreamCreate(&stream));
     checkCudaErrors_TF(cudaMalloc(&imgBufferBGRA, imgWidth * imgHeight * 4 + 1024));
@@ -381,6 +386,7 @@ bool UTexJpeg::InitRTResource()
                 }
                 if (fd >= 0)
                 {
+                    UE_LOG(LogTemp, Warning, TEXT("[UTexJpeg] cudaExternalMemoryHandleDesc %d size : %d"), fd, VulkanTexture->GetMemorySize());
                     cudaExternalMemoryHandleDesc exdesc = {};
                     memset(&exdesc, 0, sizeof(exdesc));
                     exdesc.type = cudaExternalMemoryHandleTypeOpaqueFd;
@@ -564,6 +570,11 @@ bool UTexJpeg::InitRTResource()
                         desc.extent.depth = 0;    // VulkanTexture->Surface.Depth;
                         desc.flags = cudaArrayColorAttachment;
                         desc.numLevels = VulkanTexture->GetDesc().NumMips;
+
+                       UE_LOG(LogTemp, Warning, TEXT("[UTexJpeg] GetVulkan memory offset %d format %d  width %d height %d numLevels %d"),
+                            VulkanTexture->GetAllocationOffset(), (int)VulkanTexture->StorageFormat, VulkanTexture->GetDesc().Extent.X,
+                            VulkanTexture->GetDesc().Extent.Y, VulkanTexture->GetDesc().NumMips);
+
 
                         if (checkCudaErrors(cudaExternalMemoryGetMappedMipmappedArray(&This->mipmap, This->extMem, &desc)))
                         {

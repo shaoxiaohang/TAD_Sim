@@ -149,6 +149,7 @@ void ASensorManager::Update(const FManagerIn& _Input, FManagerOut& _Output)
     const FSensorManagerIn* SensorManagerIn = Cast_Data<const FSensorManagerIn>(_Input);
     FSensorManagerOut* SensorManagerOut = Cast_Data<FSensorManagerOut>(_Output);
     SensorManagerOut->outArray.SetNum(0);
+    UE_LOG(SimLogSensorManager, Log, TEXT("SensorManger: update timeStamp:%f"), SensorManagerIn->timeStamp);
     for (auto& Elem : sensorMap)
     {
         for (auto& Sensor : Elem.Value)

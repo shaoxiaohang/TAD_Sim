@@ -1,6 +1,8 @@
 #include "DisplayPlayerController.h"
 #include "Managers/TransportManager.h"
+#include "DisplayPlayerState.h"
 #include "DisplayGameStateBase.h"
+#include "Objects/Transports/Vehicle/VehiclePawn.h"
 
 
 DEFINE_LOG_CATEGORY_STATIC(SimLogPlayerController, Log, All);
@@ -44,6 +46,11 @@ void ADisplayPlayerController::SwitchPawnToGhost()
 
 }
 
+UDrivingWidget* ADisplayPlayerController::GetDrivingWidget()
+{
+    return nullptr;
+}
+
 bool ADisplayPlayerController::Server_SimUpdateOutput_Validate(FLocalUpdateOut _OutData)
 {
     return true;
@@ -52,5 +59,5 @@ bool ADisplayPlayerController::Server_SimUpdateOutput_Validate(FLocalUpdateOut _
 void ADisplayPlayerController::Server_SimUpdateOutput_Implementation(FLocalUpdateOut _OutData)
 {
     GetWorld()->GetAuthGameMode<ADisplayGameModeBase>()->SimOutput(
-        _OutData, GetPlayerState<ADisplayPlayerState>()->UniqueId);
+        _OutData, GetPlayerState<ADisplayPlayerState>()->GetUniqueId());
 }

@@ -22,7 +22,7 @@ void NetworkModule::Init(tx_sim::InitHelper& helper)
     GConfig->GetString(TEXT("MessageTopic"), TEXT("Traffic"), TrafficTopic, GGameIni);
     GConfig->GetString(TEXT("MessageTopic"), TEXT("Location"), LocationTopic, GGameIni);
 
-    UE_LOG(SimLogNet, Log, TEXT("TRAFFIC %s "), *TrafficTopic);
+    //UE_LOG(SimLogNet, Log, TEXT("TRAFFIC %s "), *TrafficTopic);
 
     helper.Subscribe(TCHAR_TO_ANSI(*TrafficTopic));
 
@@ -205,7 +205,7 @@ void NetworkModule::Step(tx_sim::StepHelper& helper)
                 locationMsg.position().x(), locationMsg.position().y(), locationMsg.position().z());
         }
         NewInPtr->trafficData.ParseFromString(strTraffic);
-
+        //UE_LOG(SimLogNet, Log, TEXT("TRAFFIC %f %s"), timestamp, UTF8_TO_TCHAR(NewInPtr->trafficData.DebugString().c_str()));
         myGameInstance->simInDataArry.Add(NewInPtr);
         myGameInstance->bSimInDataRefreshed = true;
     }
@@ -255,8 +255,8 @@ void NetworkModule::PublicUpdateMessage(tx_sim::StepHelper& helper)
             payload_.clear();
             if (simOut->trafficPose.SerializeToString(&payload_) && payload_.size())
             {
-                UE_LOG(SimLogNet, Log, TEXT("PublictrafficPose %s"),
-                    ANSI_TO_TCHAR(simOut->trafficPose.DebugString().c_str()));
+                //UE_LOG(SimLogNet, Log, TEXT("PublictrafficPose %s"),
+                    //ANSI_TO_TCHAR(simOut->trafficPose.DebugString().c_str()));
                 helper.PublishMessage(std::string(TCHAR_TO_ANSI(*PoseTopic)), payload_);
             }
         }

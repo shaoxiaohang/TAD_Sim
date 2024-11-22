@@ -1,9 +1,24 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Components/PointLightComponent.h"
 #include "LightMasterComp.generated.h"
+
+// #if WITH_EDITOR
+// USTRUCT(BlueprintType)
+// struct FLampInfo
+//{
+//     GENERATED_USTRUCT_BODY()
+// public:
+//     UPROPERTY(VisibleAnywhere)
+//         FName name;
+//     UPROPERTY(EditAnyWhere)
+//         bool bActive = false;
+// };
+// #endif //WITH_EDITOR
 
 USTRUCT(BlueprintType)
 struct FLampMaterialData
@@ -53,6 +68,17 @@ public:
     ULightMasterComp();
 
 protected:
+    // Called when the game starts
+    virtual void BeginPlay() override;
+
+    // USkeletalMeshComponent* targetMesh = NULL;
+
+    // TTuple<int, FString, UPointLightComponent*, float> lamp;
+
+    // TMap< FString, TTuple<UMaterialInstanceDynamic*, UPointLightComponent*, float> > lampMap;
+
+    // TMap< UMeshComponent*, TMap< FString, TTuple<int, FString, UPointLightComponent*, bool> > > meshLampMap;
+
     TMap<class UMeshComponent*, TMap<FString, TTuple<int, FString, class ULocalLightComponent*, bool> > > meshLampMap;
 
     UPROPERTY(EditAnywhere, EditFixedSize)
@@ -60,17 +86,24 @@ protected:
 
     TMap<FString, TArray<FString> > groupLampMap;
 
-    bool SwitchLight(class UMeshComponent* _Mesh, FString _Name, bool _TurnOn);
+    // UPointLightComponent* CreateLightComp(ELightType _Tpye);
+
+    /*UMaterialInstanceDynamic* CreateMID(USkeletalMeshComponent* _Mesh, int32 _MatId);*/
+
+    // bool SwitchLight(class UMeshComponent* _Mesh, FString _Name, bool _TurnOn);
 
     void SwitchLightByName(FString _Name, bool _TurnOn);
 
     bool SwitchLightByGroup(FString _Name, bool _TurnOn);
 
 public:
+    // Called every frame
+    virtual void TickComponent(
+        float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 #if WITH_EDITOR
     virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif    // WITH_EDITOR
-
+    // void SwitchLight(FString _Name, bool _TurnOn);
 public:
     template <typename T>
     bool CreateLampWithLightComponent(const FString& _LampName, const FString& _MatSlot, const FString& _VarName,

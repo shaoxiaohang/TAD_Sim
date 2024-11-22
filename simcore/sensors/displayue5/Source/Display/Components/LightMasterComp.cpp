@@ -1,3 +1,5 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #include "LightMasterComp.h"
 #include "Components/PointLightComponent.h"
 #include "Components/MeshComponent.h"
@@ -12,11 +14,39 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LightMasterComponent, Log, All);
 
+// Sets default values for this component's properties
 ULightMasterComp::ULightMasterComp()
 {
     // Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these
     // features off to improve performance if you don't need them.
     PrimaryComponentTick.bCanEverTick = false;
+
+    // ...
+}
+
+// Called when the game starts
+void ULightMasterComp::BeginPlay()
+{
+    Super::BeginPlay();
+
+    // ...
+}
+
+// class UPointLightComponent* ULightMasterComp::CreateLightComp(ELightType _Tpye)
+//{
+//     return NULL;
+// }
+
+// UMaterialInstanceDynamic* ULightMasterComp::CreateMID(USkeletalMeshComponent* _Mesh, int32 _MatId)
+//{
+//     return NULL;
+// }
+
+// Called every frame
+void ULightMasterComp::TickComponent(
+    float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
     // ...
 }
@@ -31,6 +61,52 @@ void ULightMasterComp::PostEditChangeProperty(FPropertyChangedEvent& PropertyCha
     }
 }
 #endif    // WITH_EDITOR
+
+// void ULightMasterComp::SwitchLight(FString _Name, bool _TurnOn)
+//{
+//     if (IsGroupNameExist(_Name))
+//     {
+//         SwitchLightByGroup(_Name, _TurnOn);
+//         return;
+//     }
+//     else
+//     {
+//         SwitchLightByName(_Name, _TurnOn);
+//         return;
+//     }
+// }
+
+// bool ULightMasterComp::SwitchLight(UMeshComponent * _Mesh, FString _Name, bool _TurnOn)
+//{
+//     TMap< FString, TTuple<int, FString, class ULocalLightComponent*, bool> >* LampMap = meshLampMap.Find(_Mesh);
+//     if (LampMap)
+//     {
+//         TTuple<int, FString, class ULocalLightComponent*, bool>* Lamp = LampMap->Find(_Name);
+//         if (Lamp)
+//         {
+//             if (Lamp->Get<3>() != _TurnOn)
+//             {
+//                 UMaterialInterface* Mat = _Mesh->GetMaterial(Lamp->Get<0>());
+//                 if (Mat)
+//                 {
+//                     UMaterialInstanceDynamic* MatInsDynamic = _Mesh->CreateDynamicMaterialInstance(Lamp->Get<0>(),
+//                     Mat); if (MatInsDynamic)
+//                     {
+//                         MatInsDynamic->SetScalarParameterValue(FName(*Lamp->Get<1>()), _TurnOn ? 1 : 0);
+//                         if (Lamp->Get<2>())
+//                         {
+//                             Lamp->Get<2>()->SetVisibility(_TurnOn);
+//                         }
+//                     }
+//                 }
+//                 Lamp->Get<3>() = _TurnOn;
+//             }
+//             return true;
+//         }
+//     }
+//     UE_LOG(LightMasterComponent, Warning, TEXT("Switch light failedúíCan`t find lamp name!(ActorName: %s, LampName:
+//     %s)"), *this->GetOwner()->GetName(), *_Name); return false;
+// }
 
 bool ULightMasterComp::SwitchLightByGroup(FString _Name, bool _TurnOn)
 {
@@ -54,7 +130,7 @@ void ULightMasterComp::SwitchLightByName(FString _Name, bool _TurnOn)
     {
         if (Elem.Value.Find(_Name))
         {
-            SwitchLight(Elem.Key, _Name, _TurnOn);
+            // SwitchLight(Elem.Key, _Name, _TurnOn);
             return;
         }
     }
@@ -64,39 +140,34 @@ void ULightMasterComp::SwitchLightByName(FString _Name, bool _TurnOn)
     return;
 }
 
-bool ULightMasterComp::SwitchLight(UMeshComponent * _Mesh, FString _Name, bool _TurnOn)
-{
-    TMap< FString, TTuple<int, FString, class ULocalLightComponent*, bool> >* LampMap = meshLampMap.Find(_Mesh);
-    if (LampMap)
-    {
-        TTuple<int, FString, class ULocalLightComponent*, bool>* Lamp = LampMap->Find(_Name);
-        if (Lamp)
-        {
-            if (Lamp->Get<3>() != _TurnOn)
-            {
-                UMaterialInterface* Mat = _Mesh->GetMaterial(Lamp->Get<0>());
-                if (Mat)
-                {
-                    UMaterialInstanceDynamic* MatInsDynamic = _Mesh->CreateDynamicMaterialInstance(Lamp->Get<0>(),
-                    Mat); if (MatInsDynamic)
-                    {
-                        MatInsDynamic->SetScalarParameterValue(FName(*Lamp->Get<1>()), _TurnOn ? 1 : 0);
-                        if (Lamp->Get<2>())
-                        {
-                            Lamp->Get<2>()->SetVisibility(_TurnOn);
-                        }
-                    }
-                }
-                Lamp->Get<3>() = _TurnOn;
-            }
-            return true;
-        }
-    }
-    UE_LOG(LightMasterComponent, Warning, 
-    TEXT("Switch light failed Can`t find lamp name!(ActorName: %s, LampName:%s)"),
-     *this->GetOwner()->GetName(), *_Name); 
-    return false;
-}
+// void ULightMasterComp::AddLight(UMeshComponent * _Mesh, FString _Name, int _MatIndex, FString _MatParamName,
+// UPointLightComponent * _LightComponent, bool _IsLightOn)
+//{
+//     TMap< FString, TTuple<int, FString, UPointLightComponent*, bool> >* LampMap = meshLampMap.Find(_Mesh);
+//     if (LampMap)
+//     {
+//         TTuple<int, FString, UPointLightComponent*, bool>* Lamp;
+//         Lamp = LampMap->Find(_Name);
+//         if (Lamp)
+//         {
+//             UE_LOG(LightMasterComponent, Warning, TEXT("Add light failedúíName (%s) exist."), *_Name);
+//             return;
+//         }
+//         else
+//         {
+//             TTuple<int, FString, UPointLightComponent*, bool> NewLamp  = TTuple<int, FString, UPointLightComponent*,
+//             bool>(_MatIndex, _MatParamName, _LightComponent, _IsLightOn); LampMap->Add(_Name, NewLamp);
+//         }
+//     }
+//     else
+//     {
+//         TMap< FString, TTuple<int, FString, UPointLightComponent*, bool> > NewLampMap;
+//         TTuple<int, FString, UPointLightComponent*, bool> NewLamp = TTuple<int, FString, UPointLightComponent*,
+//         bool>(_MatIndex, _MatParamName, _LightComponent, _IsLightOn); NewLampMap.Add(_Name, NewLamp);
+//         meshLampMap.Add(_Mesh, NewLampMap);
+//     }
+//
+// }
 
 bool ULightMasterComp::CreateLamp(
     const FString& _LampName, const FString& _MatSlot, const FString& _VarName, UMeshComponent* _TransportMesh)

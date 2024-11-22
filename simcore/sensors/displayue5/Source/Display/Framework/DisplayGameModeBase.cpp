@@ -27,15 +27,14 @@ ADisplayGameModeBase::ADisplayGameModeBase()
     GameSessionClass = ADisplayGameSession::StaticClass();
 };
 
-void ADisplayGameModeBase::PreLogin(const FString& Options, const FString& Address,
-    const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
+void ADisplayGameModeBase::PreLogin(
+    const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
 {
     Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
 }
 
-APlayerController* ADisplayGameModeBase::Login(UPlayer* NewPlayer, ENetRole InRemoteRole,
-    const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId,
-    FString& ErrorMessage)
+APlayerController* ADisplayGameModeBase::Login(UPlayer* NewPlayer, ENetRole InRemoteRole, const FString& Portal,
+    const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage)
 {
     return Super::Login(NewPlayer, InRemoteRole, Portal, Options, UniqueId, ErrorMessage);
 }
@@ -46,8 +45,7 @@ void ADisplayGameModeBase::PostLogin(APlayerController* NewPlayer)
 
     UE_LOG(LogSimSystem, Log, TEXT("Player connected! PlayerName: %s"),
         *(NewPlayer->GetPlayerState<ADisplayPlayerState>()->GetPlayerName()));
-    UE_LOG(LogSimSystem, Log, TEXT("PlayerNum: %d"),
-        GetGameState<ADisplayGameStateBase>()->PlayerArray.Num());
+    UE_LOG(LogSimSystem, Log, TEXT("PlayerNum: %d"), GetGameState<ADisplayGameStateBase>()->PlayerArray.Num());
     id_controlled = Cast<ADisplayPlayerController>(NewPlayer)->id_controlled;
 
     check(GetGameInstance<UDisplayGameInstance>());
@@ -68,8 +66,7 @@ void ADisplayGameModeBase::Logout(AController* Exiting)
     GetGameInstance<UDisplayGameInstance>()->UnregisterClientFromSim(Exiting);
 }
 
-void ADisplayGameModeBase::InitGame(
-    const FString& MapName, const FString& Options, FString& ErrorMessage)
+void ADisplayGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
     Super::InitGame(MapName, Options, ErrorMessage);
 }
@@ -83,8 +80,7 @@ void ADisplayGameModeBase::BeginPlay()
 {
     Super::BeginPlay();
     // Check all client loaded world, send event to GameInstance.
-    if (GetGameInstance<UDisplayGameInstance>()->bAllClientsLogin &&
-        CheckAllClientLoadedCurrentWorld())
+    if (GetGameInstance<UDisplayGameInstance>()->bAllClientsLogin && CheckAllClientLoadedCurrentWorld())
     {
         GetGameInstance<UDisplayGameInstance>()->OnAllClientLevelLoaded();
     }
@@ -120,8 +116,7 @@ bool ADisplayGameModeBase::CheckAllClientKeepConnect()
     check(GetGameInstance<UDisplayGameInstance>());
     check(GetGameState<ADisplayGameStateBase>());
     bool IsAllConnect = true;
-    TArray<FClientInfo> ClientConfigArry =
-        GetGameInstance<UDisplayGameInstance>()->GetAllClientConfig();
+    TArray<FClientInfo> ClientConfigArry = GetGameInstance<UDisplayGameInstance>()->GetAllClientConfig();
     for (size_t i = 0; i < ClientConfigArry.Num(); i++)
     {
         bool IsInArray = false;
@@ -135,8 +130,8 @@ bool ADisplayGameModeBase::CheckAllClientKeepConnect()
         if (!IsInArray)
         {
             IsAllConnect = false;
-            UE_LOG(LogSimSystem, Warning, TEXT("Client %s Is Disconnect!(%d/%d)"),
-                *ClientConfigArry[i].playerName, i + 1, ClientConfigArry.Num());
+            UE_LOG(LogSimSystem, Warning, TEXT("Client %s Is Disconnect!(%d/%d)"), *ClientConfigArry[i].playerName,
+                i + 1, ClientConfigArry.Num());
         }
     }
     return IsAllConnect;
@@ -146,19 +141,18 @@ bool ADisplayGameModeBase::CheckAllClientLoadedCurrentWorld()
 {
     check(GetGameInstance<UDisplayGameInstance>());
     bool IsAllLoaded = true;
-    TArray<FClientInfo> ClientConfigArry =
-        GetGameInstance<UDisplayGameInstance>()->GetAllClientConfig();
+    TArray<FClientInfo> ClientConfigArry = GetGameInstance<UDisplayGameInstance>()->GetAllClientConfig();
     for (size_t i = 0; i < ClientConfigArry.Num(); i++)
     {
-        APlayerController* PC = GetPlayerControllerFromNetId(
-            GetWorld(), *ClientConfigArry[i].uniqueNetId.GetUniqueNetId().Get());
+        APlayerController* PC =
+            GetPlayerControllerFromNetId(GetWorld(), *ClientConfigArry[i].uniqueNetId.GetUniqueNetId().Get());
         if (PC)
         {
             if (!PC->HasClientLoadedCurrentWorld())
             {
                 IsAllLoaded = false;
-                UE_LOG(LogSimSystem, Warning, TEXT("Client %s Has Not Loaded!(%d/%d)"),
-                    *ClientConfigArry[i].playerName, i + 1, ClientConfigArry.Num());
+                UE_LOG(LogSimSystem, Warning, TEXT("Client %s Has Not Loaded!(%d/%d)"), *ClientConfigArry[i].playerName,
+                    i + 1, ClientConfigArry.Num());
             }
         }
         else
@@ -221,18 +215,16 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
             int64 EgoID = GetGameInstance<UDisplayGameInstance>()->ModuleGroupName.IsEmpty()
                               ? -1
                               : GetGameInstance<UDisplayGameInstance>()->GetEgoIDByGroupName();
-            NewLocalResetIn.sensorManager =
-                ASensorManager::ParseSensorString(ResetInPtr->sceneBuffer, EgoID);
-            GetGameInstance<UDisplayGameInstance>()->GetCatalogDataSource()->LoadSceneBuffer(
-                ResetInPtr->sceneBuffer);
+            NewLocalResetIn.sensorManager = ASensorManager::ParseSensorString(ResetInPtr->sceneBuffer, EgoID);
+            GetGameInstance<UDisplayGameInstance>()->GetCatalogDataSource()->LoadSceneBuffer(ResetInPtr->sceneBuffer);
         }
-        UClass* MapGeneratedActorClass = LoadClass<AMapGeneratedActor>(
-            NULL, TEXT("Blueprint'/AutoRoad/HadmapActor.HadmapActor_C'"));
+        UClass* MapGeneratedActorClass =
+            LoadClass<AMapGeneratedActor>(NULL, TEXT("Blueprint'/AutoRoad/HadmapActor.HadmapActor_C'"));
         AMapGeneratedActor* HadMapActor = nullptr;
         if (MapGeneratedActorClass)
         {
-            HadMapActor = GetWorld()->SpawnActor<AMapGeneratedActor>(
-                MapGeneratedActorClass, FVector(0, 0, 0), FRotator(0, 0, 0));
+            HadMapActor =
+                GetWorld()->SpawnActor<AMapGeneratedActor>(MapGeneratedActorClass, FVector(0, 0, 0), FRotator(0, 0, 0));
         }
         else
         {
@@ -245,8 +237,7 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
             {
                 bool bOriginInEgo = false;
                 GConfig->GetBool(TEXT("AutoRoad"), TEXT("bOriginInEgo"), bOriginInEgo, GGameIni);
-                FVector NewOrigin =
-                    UOpenDriveFunctionLibrary::GetMapCenterLonlat(ResetInPtr->mapDataBasePath);
+                FVector NewOrigin = UOpenDriveFunctionLibrary::GetMapCenterLonlat(ResetInPtr->mapDataBasePath);
                 HadMapActor->ShowObjectOnly = false;
 
                 if (bOriginInEgo)
@@ -265,8 +256,8 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
                     HadMapActor->RefY = NewOrigin.Y;
                     HadMapActor->RefZ = NewOrigin.Z - 0.5f;
                 }
-                UE_LOG(LogSimSystem, Error, TEXT("Auto Road Origin is %f, %f, %f"),
-                    HadMapActor->RefX, HadMapActor->RefY, HadMapActor->RefZ);
+                UE_LOG(LogSimSystem, Error, TEXT("Auto Road Origin is %f, %f, %f"), HadMapActor->RefX,
+                    HadMapActor->RefY, HadMapActor->RefZ);
             }
             else
             {
@@ -276,11 +267,13 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
                 HadMapActor->RefX = ResetInPtr->mapOriginLon;
                 HadMapActor->RefY = ResetInPtr->mapOriginLat;
                 HadMapActor->RefZ = ResetInPtr->mapOriginAlt;
+                UE_LOG(LogSimSystem, Error, TEXT("Map Defined Origin is %f, %f, %f"), HadMapActor->RefX,
+                    HadMapActor->RefY, HadMapActor->RefZ);
             }
             const TMap<FString, TPair<FString, FVector>>& MapModelData =
                 GetGameInstance<UDisplayGameInstance>()->GetCatalogDataSource()->GetMapModelData();
-            HadMapActor->DrawMap(ResetInPtr->mapDataBasePath, ResetInPtr->decryptFilePath,
-                bArtLevel, MapModelData, ResetInPtr->ModelPath);
+            HadMapActor->DrawMap(ResetInPtr->mapDataBasePath, ResetInPtr->decryptFilePath, bArtLevel, MapModelData,
+                ResetInPtr->ModelPath);
         }
 
         FLocalResetIn* LocalResetInPtr = static_cast<FLocalResetIn*>(&_LocalData);
@@ -293,21 +286,25 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
             EgoConfig.timeStamp = ResetInPtr->timeStamp;
             EgoConfig.trafficType = ETrafficType::ST_Ego;
 
-            EgoConfig.type =
-                FCString::Atoi(*(Elem.egoType.Replace(TEXT("transport/Type"), TEXT(""))));
+            EgoConfig.type = FCString::Atoi(*(Elem.egoType.Replace(TEXT("transport/Type"), TEXT(""))));
             EgoConfig.typeName = GetTypeIdDef(Elem.egoType);
             EgoConfig.Name = Elem.egoName;
-
-            UE_LOG(
-                LogSimSystem, Warning, TEXT("egoType %s egoName %s"), *Elem.egoType, *Elem.egoName);
 
             double x = Elem.startLon;
             double y = Elem.startLat;
             double z = Elem.startAlt;
             hadmapue4::HadmapManager::Get()->LonLatToLocal(x, y, z, EgoConfig.startLocation);
+
+            UE_LOG(LogSimSystem, Warning,
+                TEXT("egoType %s egoName %s lon %f lat %f alt %f x %f y %f z %f origin lon %f lat "
+                     "%f alt %f"),
+                *Elem.egoType, *Elem.egoName, Elem.startLon, Elem.startLat, Elem.startAlt, EgoConfig.startLocation.X,
+                EgoConfig.startLocation.Y, EgoConfig.startLocation.Z, hadmapue4::HadmapManager::Get()->mapOriginLon,
+                hadmapue4::HadmapManager::Get()->mapOriginLat, hadmapue4::HadmapManager::Get()->mapOriginAlt);
+
             // Rotation
             FRotator egoVehicleRotation(ForceInit);
-            EgoConfig.startRotation = FRotator(0, -Elem.startTheta * 180 / PI - 90, 0);
+            EgoConfig.startRotation = FRotator(0, -Elem.startTheta * 180 / PI + 90, 0);
             // Velocity
             FVector Velocity = EgoConfig.startRotation.Vector() * Elem.startSpeed;
             EgoConfig.initVelocity = Velocity;
@@ -346,21 +343,20 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
             EgoInput.typeName = TEXT("");
 
             // Location
-            hadmapue4::HadmapManager::Get()->LonLatToLocal(Location.position().x(),
-                Location.position().y(), Location.position().z(), EgoInput.location);
+            hadmapue4::HadmapManager::Get()->LonLatToLocal(
+                Location.position().x(), Location.position().y(), Location.position().z(), EgoInput.location);
 
-            // UE_LOG(LogSimSystem, Display, TEXT("Update ego lon %f lat %f alt %f x %f y %f z %f"),
-            //Location.position().x(), Location.position().y(), Location.position().z(), 
-            //EgoInput.location.X,EgoInput.location.Y,EgoInput.location.Z );
+            UE_LOG(LogSimSystem, Display, TEXT("Update ego lon %f lat %f alt %f x %f y %f z %f"),
+                Location.position().x(), Location.position().y(), Location.position().z(), EgoInput.location.X,
+                EgoInput.location.Y, EgoInput.location.Z);
 
             // Rotation
             FRotator egoVehicleRotation(ForceInit);
             EgoInput.rotation.Roll = (float) (Location.rpy().x() * 180 / PI);
             EgoInput.rotation.Pitch = (float) (-Location.rpy().y() * 180 / PI);
-            EgoInput.rotation.Yaw = (float) (-Location.rpy().z() * 180 / PI - 90);
+            EgoInput.rotation.Yaw = (float) (-Location.rpy().z() * 180 / PI + 90);
             // Velocity
-            FVector Velocity =
-                FVector(Location.velocity().x(), -Location.velocity().y(), Location.velocity().z());
+            FVector Velocity = FVector(Location.velocity().x(), -Location.velocity().y(), Location.velocity().z());
             EgoInput.velocity = Velocity;
 
             NewLocalUpdateIn.transportManager.vehicleManagerIn.egoVehicleInputArry.Add(EgoInput);
@@ -384,21 +380,154 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
             double z = Elem.z();
             hadmapue4::HadmapManager::Get()->LonLatToLocal(x, y, z, TrafficInput.location);
 
-            // UE_LOG(LogSimSystem, Display, TEXT("Update traffic vehicle %s %f %f %f"),
-            //*TrafficInput.typeName,
-            //TrafficInput.location.X,TrafficInput.location.Y,TrafficInput.location.Z );
+            UE_LOG(LogSimSystem, Display, TEXT("Update traffic vehicle Type %d TypaName %s %f %f %f"),
+                TrafficInput.type, *TrafficInput.typeName, TrafficInput.location.X, TrafficInput.location.Y,
+                TrafficInput.location.Z);
 
             // Rotation
-            TrafficInput.rotation = FRotator(0, -Elem.heading() * 180 / PI - 90, 0);
+            TrafficInput.rotation = FRotator(0, -Elem.heading() * 180 / PI + 90, 0);
             // Velocity
             TrafficInput.velocity = TrafficInput.rotation.Vector().GetSafeNormal() * Elem.v();
             // Add
-            NewLocalUpdateIn.transportManager.vehicleManagerIn.trafficVehicleInputArry.Add(
-                TrafficInput);
+            NewLocalUpdateIn.transportManager.vehicleManagerIn.trafficVehicleInputArry.Add(TrafficInput);
         }
         // Updat global time
         NewLocalUpdateIn.transportManager.vehicleManagerIn.timeStamp = UpdateInPtr->timeStamp;
 
+        /* Creature */
+        for (auto& Elem : UpdateInPtr->trafficData.dynamicobstacles())
+        {
+            UE_LOG(LogSimSystem, Display, TEXT("Update Creature Type %d Id %d"), Elem.type(),
+            Elem.id());
+            /* Pedestrian */
+            if (Elem.type() >= 0 && Elem.type() < 100)
+            {
+                FPedestrianInput PedestrianInput;
+                PedestrianInput.id = Elem.id();
+                PedestrianInput.timeStamp0 = Elem.t();
+                PedestrianInput.sizeLWH = FVector(Elem.length(), Elem.width(), Elem.height()) * 100;
+                PedestrianInput.timeStamp = UpdateInPtr->timeStamp;
+                PedestrianInput.typeName = GetTypeIdDef(Elem.type(), TEXT("creature"));
+                PedestrianInput.type = Elem.type();
+                // if (Elem.type() == 0)
+                //{
+                //     PedestrianInput.typeName = TEXT("creature/pedestrian.man");
+                // }
+                // else if (Elem.type() == 1)
+                //{
+                //     PedestrianInput.typeName = TEXT("creature/pedestrian.boy");
+                // }
+                // else if (Elem.type() == 2)
+                //{
+                //     PedestrianInput.typeName = TEXT("creature/pedestrian.oldwoman");
+                // }
+                double x = Elem.x();
+                double y = Elem.y();
+                double z = Elem.z();
+                hadmapue4::HadmapManager::Get()->LonLatToLocal(x, y, z, PedestrianInput.location);
+                FRotator Rotation;
+                PedestrianInput.rotation = FRotator(0, -Elem.heading() * 180 / PI + 90, 0);
+                PedestrianInput.velocity = PedestrianInput.rotation.Quaternion().GetForwardVector() * Elem.v();
+
+                NewLocalUpdateIn.creatureManager.pedestrianManager.pedestrianArry.Add(PedestrianInput);
+            }
+            /* Animal */
+            if (Elem.type() >= 100 && Elem.type() < 200)
+            {
+                FAnimalInput AnimalInput;
+                AnimalInput.id = Elem.id();
+                AnimalInput.timeStamp0 = Elem.t();
+                AnimalInput.sizeLWH = FVector(Elem.length(), Elem.width(), Elem.height()) * 100;
+                AnimalInput.timeStamp = UpdateInPtr->timeStamp;
+                AnimalInput.typeName = GetTypeIdDef(Elem.type(), TEXT("creature"));
+                AnimalInput.type = Elem.type();
+                // if (Elem.type() == 100)
+                //{
+                //     AnimalInput.typeName = TEXT("creature/Animal.cat");
+                // }
+                // else if (Elem.type() == 101)
+                //{
+                //     AnimalInput.typeName = TEXT("creature/Animal.dog");
+                // }
+                double x = Elem.x();
+                double y = Elem.y();
+                double z = Elem.z();
+                hadmapue4::HadmapManager::Get()->LonLatToLocal(x, y, z, AnimalInput.location);
+                FRotator Rotation;
+                AnimalInput.rotation = FRotator(0, -Elem.heading() * 180 / PI + 90, 0);
+                AnimalInput.velocity = AnimalInput.rotation.Quaternion().GetForwardVector() * Elem.v();
+
+                NewLocalUpdateIn.creatureManager.animalArry.Add(AnimalInput);
+            }
+            /* Bike */
+            if (Elem.type() >= 200 && Elem.type() < 300)
+            {
+                FPedestrianInput BikeInput;
+                BikeInput.id = Elem.id();
+                BikeInput.timeStamp0 = Elem.t();
+                BikeInput.sizeLWH = FVector(Elem.length(), Elem.width(), Elem.height()) * 100;
+                BikeInput.timeStamp = UpdateInPtr->timeStamp;
+                BikeInput.typeName = GetTypeIdDef(Elem.type(), TEXT("creature"));
+                BikeInput.type = Elem.type();
+
+                double x = Elem.x();
+                double y = Elem.y();
+                double z = Elem.z();
+                hadmapue4::HadmapManager::Get()->LonLatToLocal(x, y, z, BikeInput.location);
+                FRotator Rotation;
+                BikeInput.rotation = FRotator(0, -Elem.heading() * 180 / PI + 90, 0);
+                BikeInput.velocity = BikeInput.rotation.Quaternion().GetForwardVector() * Elem.v();
+
+                NewLocalUpdateIn.creatureManager.pedestrianManager.pedestrianArry.Add(BikeInput);
+            }
+            /* Moto */
+            if (Elem.type() >= 300 && Elem.type() < 500)
+            {
+                FPedestrianInput MotoInput;
+                MotoInput.id = Elem.id();
+                MotoInput.timeStamp0 = Elem.t();
+                MotoInput.sizeLWH = FVector(Elem.length(), Elem.width(), Elem.height()) * 100;
+                MotoInput.timeStamp = UpdateInPtr->timeStamp;
+                MotoInput.typeName = GetTypeIdDef(Elem.type(), TEXT("creature"));
+                MotoInput.type = Elem.type();
+
+                double x = Elem.x();
+                double y = Elem.y();
+                double z = Elem.z();
+                hadmapue4::HadmapManager::Get()->LonLatToLocal(x, y, z, MotoInput.location);
+                FRotator Rotation;
+                MotoInput.rotation = FRotator(0, -Elem.heading() * 180 / PI + 90, 0);
+                MotoInput.velocity = MotoInput.rotation.Quaternion().GetForwardVector() * Elem.v();
+
+                NewLocalUpdateIn.creatureManager.pedestrianManager.pedestrianArry.Add(MotoInput);
+            }
+        }
+        NewLocalUpdateIn.creatureManager.pedestrianManager.timeStamp = UpdateInPtr->timeStamp;
+        NewLocalUpdateIn.creatureManager.timeStamp = UpdateInPtr->timeStamp;
+
+        /* Obstacle */
+        for (auto& Elem : UpdateInPtr->trafficData.staticobstacles())
+        {
+            FObstacleInput ObstacleInput;
+            ObstacleInput.id = Elem.id();
+            ObstacleInput.timeStamp0 = Elem.t();
+            ObstacleInput.sizeLWH = FVector(Elem.length(), Elem.width(), Elem.height()) * 100;
+            ObstacleInput.timeStamp = UpdateInPtr->timeStamp;
+            FVector Location;
+            double x = Elem.x();
+            double y = Elem.y();
+            double z = Elem.z();
+            hadmapue4::HadmapManager::Get()->LonLatToLocal(x, y, z, ObstacleInput.location);
+            FRotator Rotation;
+            ObstacleInput.rotation = FRotator(0, -Elem.heading() * 180 / PI + 90, 0);
+            ObstacleInput.typeName = GetTypeIdDef(Elem.type(), TEXT("obstacle"));
+            ObstacleInput.type = Elem.type();
+            NewLocalUpdateIn.obstacleManager.obstacleArry.Add(ObstacleInput);
+        }
+        NewLocalUpdateIn.obstacleManager.timeStamp = UpdateInPtr->timeStamp;
+
+        /* Sensor */
+        NewLocalUpdateIn.sensorManager.timeStamp = UpdateInPtr->timeStamp;
         *LocalUpdateInPtr = NewLocalUpdateIn;
     }
     if (_SimData.name == TEXT("OUTPUT_SENSOR"))
@@ -420,38 +549,34 @@ void ADisplayGameModeBase::ConvertData_LocalToSim(const FLocalData& _LocalData, 
             SimUpdateInPtr->timeStamp = UpdateInPtr->timeStamp;
             SimUpdateInPtr->frameID = (int32)(UpdateInPtr->timeStamp);
             SimUpdateInPtr->trafficPose.set_timestamp(UpdateInPtr->timeStamp);
-            for (size_t i = 0; i < UpdateInPtr->transportManager.vehicleManagerOut.egoOutArry.Num();
-                 i++)
+            for (size_t i = 0; i < UpdateInPtr->transportManager.vehicleManagerOut.egoOutArry.Num(); i++)
             {
                 if (UpdateInPtr->transportManager.vehicleManagerOut.egoOutArry[i].bHasPose)
                 {
-                     const auto& out =
-                         UpdateInPtr->transportManager.vehicleManagerOut.egoOutArry[i];
-                     double Px, Py, Pz = 0.0;
-                     hadmapue4::HadmapManager::Get()->LocalToLonLat(out.locPose, Px, Py, Pz);
-                     auto* object = SimUpdateInPtr->trafficPose.add_egos();
-                     object->set_id(out.id + 1);
-                     object->set_timestamp(out.timeStamp0);
-                     object->mutable_pose()->set_longitude(Px);
-                     object->mutable_pose()->set_latitude(Py);
-                     object->mutable_pose()->set_altitude(Pz);
-                     object->mutable_pose()->set_roll(out.rotPose.Roll * PI / 180.f);
-                     object->mutable_pose()->set_pitch(-out.rotPose.Pitch * PI / 180.f);
-                     object->mutable_pose()->set_yaw(-(out.rotPose.Yaw + 90.f) * PI / 180.f);
-                     object->set_length(out.sizeLWH.X * 0.01);
-                     object->set_width(out.sizeLWH.Y * 0.01);
-                     object->set_height(out.sizeLWH.Z * 0.01);
-                     object->set_type(std::string(TCHAR_TO_ANSI(*out.typeName)));
-                     object->set_raw_type(out.type);
+                    const auto& out = UpdateInPtr->transportManager.vehicleManagerOut.egoOutArry[i];
+                    double Px, Py, Pz = 0.0;
+                    hadmapue4::HadmapManager::Get()->LocalToLonLat(out.locPose, Px, Py, Pz);
+                    auto* object = SimUpdateInPtr->trafficPose.add_egos();
+                    object->set_id(out.id + 1);
+                    object->set_timestamp(out.timeStamp0);
+                    object->mutable_pose()->set_longitude(Px);
+                    object->mutable_pose()->set_latitude(Py);
+                    object->mutable_pose()->set_altitude(Pz);
+                    object->mutable_pose()->set_roll(out.rotPose.Roll * PI / 180.f);
+                    object->mutable_pose()->set_pitch(-out.rotPose.Pitch * PI / 180.f);
+                    object->mutable_pose()->set_yaw(-(out.rotPose.Yaw + 90.f) * PI / 180.f);
+                    object->set_length(out.sizeLWH.X * 0.01);
+                    object->set_width(out.sizeLWH.Y * 0.01);
+                    object->set_height(out.sizeLWH.Z * 0.01);
+                    object->set_type(std::string(TCHAR_TO_ANSI(*out.typeName)));
+                    object->set_raw_type(out.type);
                 }
             }
-            for (size_t i = 0;
-                 i < UpdateInPtr->transportManager.vehicleManagerOut.trafficOutArry.Num(); i++)
+            for (size_t i = 0; i < UpdateInPtr->transportManager.vehicleManagerOut.trafficOutArry.Num(); i++)
             {
                 if (UpdateInPtr->transportManager.vehicleManagerOut.trafficOutArry[i].bHasPose)
                 {
-                    const auto& out =
-                        UpdateInPtr->transportManager.vehicleManagerOut.trafficOutArry[i];
+                    const auto& out = UpdateInPtr->transportManager.vehicleManagerOut.trafficOutArry[i];
                     double Px, Py, Pz = 0.0;
                     hadmapue4::HadmapManager::Get()->LocalToLonLat(out.locPose, Px, Py, Pz);
                     auto* object = SimUpdateInPtr->trafficPose.add_cars();

@@ -1,0 +1,15 @@
+FROM nvcr.io/nvidia/driver:535.86.10-ubuntu20.04
+
+# RUN add-apt-repository ppa:graphics-drivers/ppa
+
+# RUN apt update
+
+# RUN apt-get install -y --no-install-recommends kmod
+
+# COPY NVIDIA-Linux-x86_64-535.98.run NVIDIA-Linux-x86_64-535.98.run
+
+# RUN chmod +x NVIDIA-Linux-x86_64-535.98.run
+
+# RUN rmmod nvidia_uvm
+
+# RUN sh NVIDIA-Linux-x86_64-535.98.run --silent

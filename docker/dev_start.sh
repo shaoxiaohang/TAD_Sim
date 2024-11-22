@@ -102,6 +102,7 @@ function main(){
         -e DOCKER_GRP_ID="$GRP_ID" \
         -e DOCKER_IMG="$MAIN_IMAGE" \
         -e XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
+        -e DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$USER_ID/bus" \
         --net=host \
         --pid=host \
         $(local_volumes) \

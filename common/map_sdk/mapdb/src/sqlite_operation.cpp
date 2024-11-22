@@ -18,7 +18,7 @@
 #include "spatialite.h"
 #include "spatialite/gaiageo.h"
 
-#define USE_RTREE
+//#define USE_RTREE
 
 #ifdef __GNUC__
 #  pragma GCC diagnostic push

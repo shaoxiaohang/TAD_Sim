@@ -46,6 +46,10 @@ void linetrace(UWorld* world, uint32 scanfrom, uint32 scanto, const FTLidarMeasu
     if (scanfrom >= scanto)
         return;
 
+    UE_LOG(LogTemp, Log, TEXT("linetrace: time %f from %d to %d cur pos %d."),
+    LidarMeasurement.TimeStamp, scanfrom, scanto, LidarMeasurement.HorizontalPos);
+
+
     /*FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Laser_Trace")), true, lidarActor);*/
     FCollisionQueryParams TraceParams =
         FCollisionQueryParams(FName(TEXT("Laser_Trace")), true /*, lidarActor->InstalledActor*/);
@@ -160,8 +164,9 @@ TSharedPtr<LidarBuffer> ALidarBufferRaycast::GetTBuffer(const FTLidarMeasurement
                 th.join();
         }
     }
-    if (showPt)
+    if (false)
     {
+        //UE_LOG(LogTemp, Log, TEXT("showPt: Points is: %d."), buffer->pts.Num());
         for (const auto& p : buffer->pts)
         {
             if (p.valid())

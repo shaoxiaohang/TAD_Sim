@@ -1,5 +1,6 @@
 #include "SensorActor.h"
 #include "Framework/DisplayGameInstance.h"
+#include "Framework/DisplayGameStateBase.h"
 
 ASensorActor::ASensorActor()
 {

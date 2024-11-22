@@ -528,6 +528,8 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
             /* Moto */
             if (Elem.type() >= 300 && Elem.type() < 500)
             {
+                UE_LOG(LogSimSystem, Display, TEXT("Update dynamic obstacle Type %d Id %d"),Elem.type(),Elem.id());
+
                 FPedestrianInput MotoInput;
                 MotoInput.id = Elem.id();
                 MotoInput.timeStamp0 = Elem.t();

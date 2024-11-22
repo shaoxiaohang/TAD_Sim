@@ -1,7 +1,7 @@
 #!/bin/bash
 
-export http_proxy=http://10.9.1.251:8838
-export https_proxy=http://10.9.1.251:8838
+# export http_proxy=http://10.9.1.251:8838
+# export https_proxy=http://10.9.1.251:8838
 
 
 #export http_proxy=http://127.0.0.1:7897
@@ -55,8 +55,8 @@ TADSIM_BUILD_SCENARIO="$TADSIM_BUILD/scenario"
 # echo "=== End clean"
 
 # ====== Start compiling ======
-#build_project "simapp" "build.sh"
-build_project "common" "build.sh"
+build_project "simapp" "build.sh"
+#build_project "common" "build.sh"
 #build_project "simcore" "build.sh"
 #build_project "co_simulation" "build.sh"
 #build_project "adapter" "build.sh"
@@ -217,20 +217,20 @@ cp "$TADSIM_BUILD_SERVICE/simdeps/libboost_filesystem.so."* "$TADSIM_BUILD_SERVI
 cp "$TADSIM_BUILD_SERVICE/simdeps/libjsoncpp.so."* "$TADSIM_BUILD_SERVICE/simdeps/nodedeps/"
 echo "=== End pack service"
 
-# #系统默认自带 scenario 的迁移整合
-# echo "=== Begin pack scenario"
-# mkdir -p "$TADSIM_BUILD_SCENARIO"
-# cp -rf "$TADSIM_ROOT/datas/default/"* "$TADSIM_BUILD_SCENARIO/"
-# echo "=== End pack scenario"
+#系统默认自带 scenario 的迁移整合
+echo "=== Begin pack scenario"
+mkdir -p "$TADSIM_BUILD_SCENARIO"
+cp -rf "$TADSIM_ROOT/datas/default/"* "$TADSIM_BUILD_SCENARIO/"
+echo "=== End pack scenario"
 
-# # ====== 打包为可执行程序应用 ======
-# echo "=== Begin gen"
-# cd "$TADSIM_ROOT"
-# chmod 777 -R "$TADSIM_BUILD"
-# cd "$TADSIM_BUILD"
-# export electron_mirror=https://registry.npmmirror.com/-/binary/electron/
-# export electron_builder_binaries_mirror=https://mirrors.huaweicloud.com/electron-builder-binaries/
-# # 修改版本号
+# ====== 打包为可执行程序应用 ======
+echo "=== Begin gen"
+cd "$TADSIM_ROOT"
+chmod 777 -R "$TADSIM_BUILD"
+cd "$TADSIM_BUILD"
+export electron_mirror=https://registry.npmmirror.com/-/binary/electron/
+export electron_builder_binaries_mirror=https://mirrors.huaweicloud.com/electron-builder-binaries/
+# 修改版本号
 # if command -v python >/dev/null 2>&1; then
 #     python "$TADSIM_ROOT/tools/modify_version.py"
 # else
@@ -243,11 +243,11 @@ echo "=== End pack service"
 #     fi
 # fi
 
-# #重新安装依赖, 拷贝后会有概率不能正常使用环境
-# cnpm install
-# # 编译, 最终结果为 build/release/tadsim_x.x.x_amd64.deb
-# npm run release
-# echo "=== End gen"
+#重新安装依赖, 拷贝后会有概率不能正常使用环境
+cnpm install
+# 编译, 最终结果为 build/release/tadsim_x.x.x_amd64.deb
+npm run release
+echo "=== End gen"
 
 # #====== 拷贝 SDK 产物 ======
 # echo "=== Begin copy SDK zips"

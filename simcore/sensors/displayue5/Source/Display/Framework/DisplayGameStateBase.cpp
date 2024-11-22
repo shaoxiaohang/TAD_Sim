@@ -1,5 +1,7 @@
 #include "DisplayGameStateBase.h"
 #include "DisplayPlayerController.h"
+#include "Objects/Transports/TransportPawn.h"
+
 
 DEFINE_LOG_CATEGORY_STATIC(LogDebugGameState, Log, All);
 
@@ -44,6 +46,30 @@ bool ASyncSystem::SpawnAndInitAllManagers()
         UE_LOG(LogTemp, Error, TEXT("Can not spawn TransportManager!"));
     }
 
+    /* Creatures */
+    creatureManager = GetWorld()->SpawnActor<ACreatureManager>();
+    if (creatureManager)
+    {
+        creatureManager->Init(resetIn.creatureManager);
+    }
+    else
+    {
+        AllManagerReady = false;
+        UE_LOG(LogTemp, Error, TEXT("Can not spawn CreatureManager!"));
+    }
+
+    /* Obstacles */
+    obstacleManager = GetWorld()->SpawnActor<AObstacleManager>();
+    if (obstacleManager)
+    {
+        obstacleManager->Init(resetIn.obstacleManager);
+    }
+    else
+    {
+        AllManagerReady = false;
+        UE_LOG(LogTemp, Error, TEXT("Can not spawn ObstacleManager!"));
+    }
+
     /* Sensors */
     SensorManager = GetWorld()->SpawnActor<ASensorManager>();
     if (SensorManager)
@@ -65,6 +91,8 @@ FLocalUpdateOut ASyncSystem::UpdateAllManagers(const FLocalUpdateIn& _In)
     FLocalUpdateOut UpdateOut = FLocalUpdateOut();
 
     transportManager->Update(_In.transportManager, UpdateOut.transportManager);
+    creatureManager->Update(_In.creatureManager, UpdateOut.creatureManager);
+    obstacleManager->Update(_In.obstacleManager, UpdateOut.obstacleManager);
 
     UpdateOut.message = TEXT("SUCCESS");
 

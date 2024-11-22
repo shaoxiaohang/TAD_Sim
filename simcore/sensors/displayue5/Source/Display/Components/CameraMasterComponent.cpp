@@ -1,15 +1,25 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #include "CameraMasterComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Framework/DisplayPlayerController.h"
 
-
+// Sets default values for this component's properties
 UCameraMasterComponent::UCameraMasterComponent()
 {
     // Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these
     // features off to improve performance if you don't need them.
-    PrimaryComponentTick.bCanEverTick = false;
+    PrimaryComponentTick.bCanEverTick = true;
+
+    // ...
+}
+
+// Called when the game starts
+void UCameraMasterComponent::BeginPlay()
+{
+    Super::BeginPlay();
 
     // ...
 }
@@ -48,6 +58,33 @@ void UCameraMasterComponent::SwitchCamera(FString _CameraName)
     }
 }
 
+// Called every frame
+void UCameraMasterComponent::TickComponent(
+    float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+    // ...
+}
+
+UCameraComponent* UCameraMasterComponent::CreateCameraByName_Runtime(FString _CameraName)
+{
+    if (!this->GetOwner())
+    {
+        return NULL;
+    }
+
+    UCameraComponent* NewCamera = NewObject<UCameraComponent>(this->GetOwner(), FName(*_CameraName));
+    if (NewCamera)
+    {
+        NewCamera->RegisterComponent();
+        cameraMap.Add(_CameraName, NewCamera);
+        cameraNameOrderArry.Add(_CameraName);
+        return NewCamera;
+    }
+    return NULL;
+}
+
 bool UCameraMasterComponent::RegisterCamera(FString _Name, UCameraComponent* _Camera)
 {
     if (!_Camera)
@@ -63,6 +100,7 @@ void UCameraMasterComponent::SwitchCameraByName(FString _CameraName /* = FString
 {
     if (_CameraName.IsEmpty())
     {
+        // UE_LOG(LogTemp, Warning, TEXT("CurrentCameraName Is Null!"));
         if (currentCameraName.IsEmpty())
         {
             if (cameraNameOrderArry.Num() > 0)

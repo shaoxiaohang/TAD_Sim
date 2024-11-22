@@ -1,4 +1,7 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #include "CatalogDataSource.h"
+
 #include "XmlParser.h"
 #include "scene.pb.h"
 
@@ -9,14 +12,13 @@ TMap<int32, FString> UCatalogDataSource::VehicleMap_Name_Type = {{-1, "suv"}, {-
     {9, "Sedan_004"}, {10, "SUV_001"}, {11, "SUV_002"}, {12, "SUV_003"}, {13, "SUV_004"}, {14, "Truck_002"},
     {15, "Truck_003"}, {16, "Bus_001"}, {17, "Semi_Trailer_Truck_001"}, {18, "SUV_005"}, {19, "SUV_006"},
     {20, "Bus_004"}, {21, "Ambulance_001"}, {22, "HongqiHS5"}, {23, "Bus_003"}, {24, "Sedan_005"}, {25, "Bus_005"},
-    {27, "LandRover_RangeRover_2010"}, {28, "BMW_MINI_CooperS_2010"}, {29, "Opel_Corsa_2009"},
-    {30, "Lexus_IS_2009"}, {31, "Suzuki_Celerio_2011"}, {32, "Lancia_DeltaIntegrale_Evo1"},
-    {33, "Chevrolet_ExpressVan1500_2001"}, {34, "MercedesBenz_SL_2005"}, {35, "Dodge_Charger_2006"},
-    {36, "Porsche_911_TurboS_2020"}, {37, "Nissan_GTR_2009"}, {38, "Opel_Ampera_2009"},
-    {39, "Dodge_ViperMambaEdition_RCH680"}, {40, "Mitsubishi_iMiEV_2018"}, {41, "Audi_A8_2015"},
-    {42, "Toyota_Tacoma_2017"}, {43, "Lamborghini_Gallardo_2011"}, {44, "MercedesBenz_SLSAMG_2014"},
-    {45, "Scania_R620_2012"}, {46, "MAN_LionsCoach_2003"}, {47, "Cadillac_XTSLimousine_2018"},
-    {48, "MercedesBenz_Arocs_3240"}, {49, "BMW_X6_2014"},
+    {27, "LandRover_RangeRover_2010"}, {28, "BMW_MINI_CooperS_2010"}, {29, "Opel_Corsa_2009"}, {30, "Lexus_IS_2009"},
+    {31, "Suzuki_Celerio_2011"}, {32, "Lancia_DeltaIntegrale_Evo1"}, {33, "Chevrolet_ExpressVan1500_2001"},
+    {34, "MercedesBenz_SL_2005"}, {35, "Dodge_Charger_2006"}, {36, "Porsche_911_TurboS_2020"}, {37, "Nissan_GTR_2009"},
+    {38, "Opel_Ampera_2009"}, {39, "Dodge_ViperMambaEdition_RCH680"}, {40, "Mitsubishi_iMiEV_2018"},
+    {41, "Audi_A8_2015"}, {42, "Toyota_Tacoma_2017"}, {43, "Lamborghini_Gallardo_2011"},
+    {44, "MercedesBenz_SLSAMG_2014"}, {45, "Scania_R620_2012"}, {46, "MAN_LionsCoach_2003"},
+    {47, "Cadillac_XTSLimousine_2018"}, {48, "MercedesBenz_Arocs_3240"}, {49, "BMW_X6_2014"},
 
     {501, "Ambulance"}, {502, "Ambulance_002"}, {530, "FireEngine_01"}, {601, "AdminVehicle_01"},
     {602, "AdminVehicle_02"}, {650, "RelativeObstacle"}, {503, "AIV_FullLoad_001"}, {504, "AIV_Empty_001"},
@@ -190,6 +192,9 @@ bool UCatalogDataSource::LoadSceneBuffer(const std::string& Buffer)
     }
 
     std::string DebugStr = scene.DebugString();
+
+    //UE_LOG(SimLogCatalog, Log, TEXT("sceneBuffer %s "), UTF8_TO_TCHAR(DebugStr.c_str()));
+
     FString ModelRootDir = UTF8_TO_TCHAR(scene.setting().model3d_pathdir().c_str());
     ModelRootDir.Append(TEXT("/"));
     {

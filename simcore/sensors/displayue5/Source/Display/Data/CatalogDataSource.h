@@ -1,3 +1,5 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -71,6 +73,9 @@ struct FTruckCatalogData : public FCommonCatalogData
     }
 };
 
+/**
+ *
+ */
 UCLASS(config = game)
 class DISPLAY_API UCatalogDataSource : public UObject
 {
@@ -108,5 +113,4 @@ private:
     static TMap<int32, FString> VehicleMap_Name_Type;
     static TMap<int32, FString> CreatureMap_Name_Type;
     static TMap<int32, FString> Obstacle_Name_Type;
-
 };

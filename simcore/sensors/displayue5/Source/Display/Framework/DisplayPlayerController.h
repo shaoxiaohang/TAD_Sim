@@ -19,6 +19,14 @@ public:
     // Switch possess to ghost pawn
     void SwitchPawnToGhost();
 
+    int32 GetDrivingMode() const
+    {
+        return modeDrive;
+    }
+    void SetDrivingMode(int32 _Mode)
+    {
+        modeDrive = _Mode;
+    }
 
     UFUNCTION(Server, Reliable, WithValidation)
     virtual void Server_SimUpdateOutput(FLocalUpdateOut _OutData);
@@ -32,9 +40,16 @@ private:
     UPROPERTY(Config)
     bool bShowMouseConfig = true;
 
+    UPROPERTY(Config)
+    int32 modeDrive = 0;
+
 public:
     UPROPERTY(Config)
     int32 id_controlled = 0;
 
     FOnEgoViewChange OnEgoViewChange;
+
+    class UDrivingWidget* driving_widget = nullptr;
+
+    class UDrivingWidget* GetDrivingWidget();
 };

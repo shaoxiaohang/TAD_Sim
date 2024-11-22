@@ -11,9 +11,9 @@ public class Display : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine",
-		 "InputCore", "EnhancedInput","CinematicCamera","Networking", "Sockets", "AutoRoad","RuntimeMeshLoader"});
+		 "InputCore", "EnhancedInput","ProceduralMeshComponent","CinematicCamera","Networking", "Sockets", "AutoRoad","RuntimeMeshLoader"});
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PrivateDependencyModuleNames.AddRange(new string[] { "UMG"  });
 
     //Plugin module
     PublicDependencyModuleNames.AddRange(new string[]

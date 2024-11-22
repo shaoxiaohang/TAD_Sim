@@ -146,7 +146,7 @@ class PlayerWrapper {
       lastFrame && console.debug('render', lastFrame)
     }
     if (this.canvasTextPayload) {
-      this.renderCanvasText(this.canvasTextPayload)
+      //this.renderCanvasText(this.canvasTextPayload)
       this.canvasTextPayload = null
     }
     playerScene.renderScene()

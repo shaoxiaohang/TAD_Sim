@@ -38,7 +38,7 @@ function build_game(){
 function cook(){
   export LD_LIBRARY_PATH="$OPENVR_LIBRARY_PATH:$DISPLAY_LIBRARY_PATH:$LD_LIBRARY_PATH"
   info "Cooking Display..."
-  $UE5_ROOT/Engine/Binaries/Linux/UnrealEditor ${DISPLAY_ROOT}/Display.uproject -run=cook -targetplatform=Linux -iterate -map=/Game/Basic
+  $UE5_ROOT/Engine/Binaries/Linux/UnrealEditor ${DISPLAY_ROOT}/Display.uproject -run=cook -targetplatform=Linux -iterate
 }
 
 function package(){
@@ -55,6 +55,7 @@ function package(){
                          -cook \
                          -build \
                          -stage \
+                         -pak \
                          -prereqs \
                          -archive \
                          -archivedirectory="$DISPLAY_ROOT/Saved"

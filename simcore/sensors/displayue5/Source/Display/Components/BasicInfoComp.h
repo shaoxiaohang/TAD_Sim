@@ -1,3 +1,5 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -52,6 +54,9 @@ public:
     TSharedPtr<FSimActorConfig> config;
 
 public:
+    // Called every frame
+    // virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+    // override;
 
     // Init
     bool Init(const FSimActorConfig& _Config);

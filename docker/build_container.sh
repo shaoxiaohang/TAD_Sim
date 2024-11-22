@@ -8,6 +8,7 @@ DISPLAY_TAG=$(get_display_tag)
 
 DESKTOP_IMAGE_TAG="$REGISTRY/$DESKTOP_TAG"
 DISPLAY_IMAGE_TAG="$REGISTRY/$DISPLAY_TAG"
+REMOTE_IMAGE_TAG="$REGISTRY/imagesys/4dlabel:tadsim-display-runtime"
 
 #UBUNTU_IMAGE=ubuntu:18.04
 UBUNTU_IMAGE=nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
@@ -23,6 +24,12 @@ docker build --build-arg BASE_IMAGE="$UBUNTU_IMAGE" \
 function build_display_image() {
 docker build -t "$DISPLAY_IMAGE_TAG" \
             -f $DOCKER_DIR/Dockerfile_display \
+            "$SATURNV_ROOT_DIR/docker"
+}
+
+function build_remote_image() {
+docker build -t "$REMOTE_IMAGE_TAG" \
+            -f $DOCKER_DIR/Dockerfile_remote \
             "$SATURNV_ROOT_DIR/docker"
 }
 
@@ -43,8 +50,10 @@ Usage: build_main_container.sh <action>
 # Defaults
 BUILD_DESKTOP_IMAGE=false
 BUILD_DISPLAY_IMAGE=false
+BUILD_REMOTE_IMAGE=false
 PUSH_DESKTOP_IMAGE=false
 PUSH_DISPLAY_IMAGE=false
+PUSH_REMOTE_IMAGE=false
 
 while [ "$#" -gt 0 ]
 do
@@ -57,12 +66,20 @@ do
       BUILD_DISPLAY_IMAGE=true
       shift
       ;;
+    --build-remote)
+      BUILD_REMOTE_IMAGE=true
+      shift
+      ;;
     --push-desktop)
       PUSH_DESKTOP_IMAGE=true
       shift
       ;;
     --push-display)
       PUSH_DISPLAY_IMAGE=true
+      shift
+      ;;
+    --push-remote)
+      PUSH_REMOTE_IMAGE=true
       shift
       ;;
     --)
@@ -83,10 +100,18 @@ if [ "$BUILD_DISPLAY_IMAGE" == "true" ]; then
   build_display_image
 fi
 
+if [ "$BUILD_REMOTE_IMAGE" == "true" ]; then
+  build_remote_image
+fi
+
 if [ "$PUSH_DESKTOP_IMAGE" == "true" ]; then
   push_desktop_image
 fi
 
 if [ "$PUSH_DISPLAY_IMAGE" == "true" ]; then
   push_display_image
+fi
+
+if [ "$PUSH_REMOTE_IMAGE" == "true" ]; then
+  push_remote_image
 fi

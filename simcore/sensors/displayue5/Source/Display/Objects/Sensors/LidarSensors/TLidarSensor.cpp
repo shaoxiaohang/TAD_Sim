@@ -13,6 +13,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "SimMsg/sensor_raw.pb.h"
 #include "TLidarBufferRaycast.h"
+#include "lidar/HSLidar.h"
 #include "lidar/LidarModel.h"
 
 #include <chrono>
@@ -242,8 +243,8 @@ bool ATLidarSensor::Init(const FSensorConfig& _Config)
         // 深度渲染方法
         else if (method == TEXT("depth"))
         {
-            // UE_LOG(LogTemp, Log, TEXT("Lidar method is Depth"));
-            // lidarBuffer = std::make_shared<ALidarBufferDepth>();
+            UE_LOG(LogTemp, Log, TEXT("Lidar method is Depth"));
+            lidarBuffer = std::make_shared<ALidarBufferDepth>();
         }
 #if PLATFORM_WINDOWS
         // 光追方法
@@ -261,8 +262,8 @@ bool ATLidarSensor::Init(const FSensorConfig& _Config)
     }
     if (!lidarBuffer)
     {
-        UE_LOG(LogTemp, Log, TEXT("Lidar method is Raycast"));
-        lidarBuffer = std::make_shared<ALidarBufferRaycast>();
+        UE_LOG(LogTemp, Log, TEXT("Lidar method is Depth"));
+        lidarBuffer = std::make_shared<ALidarBufferDepth>();
     }
 
     GConfig->GetBool(TEXT("Sensor"), TEXT("PublicMsg"), public_msg, GGameIni);

@@ -411,7 +411,7 @@ void hadmapue4::HadmapManager::LonLatToLocal(double& _Lon, double& _Lat, double&
     coord_trans_api::lonlat2local(_Lon, _Lat, _Alt, mapOriginLon, mapOriginLat, mapOriginAlt);
     _Lon = _Lon * 100.f;
     _Lat = -(_Lat * 100.f);
-    _Alt = _Alt * 100.f;
+    _Alt = 0 * 100.f;
 }
 
 void hadmapue4::HadmapManager::LonLatToLocal(double _X, double _Y, double _Z, FVector& _Loc)
@@ -420,7 +420,7 @@ void hadmapue4::HadmapManager::LonLatToLocal(double _X, double _Y, double _Z, FV
     double Y = _Y;
     double Z = _Z;
     LonLatToLocal(X, Y, Z);
-    _Loc = FVector(X, Y, Z);
+    _Loc = FVector(-X, -Y, Z);
 }
 
 void hadmapue4::HadmapManager::LocalToLonLat(const FVector& _Loc, double& _X, double& _Y, double& _Z,

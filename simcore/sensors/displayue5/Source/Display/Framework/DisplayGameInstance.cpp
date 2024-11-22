@@ -609,6 +609,8 @@ void UDisplayGameInstance::Sim_ResetBeginLoadWorld()
         }
     }
 
+    UE_LOG(LogSimGameInstance, Warning, TEXT("Server Travel Level %s !"), *ResetIn->mapPath);
+
     // Check map asset exist
     if (!FPackageName::DoesPackageExist(ResetIn->mapPath))
     {
@@ -707,6 +709,7 @@ void UDisplayGameInstance::ReadSceneFileAndConfig(FSimIn& _InData)
 
 int32 UDisplayGameInstance::getMapIndex(const FString& mapname)
 {
+    UE_LOG(LogSimGameInstance, Log, TEXT("getMapIndex: %s %s"), *mapname, *FPaths::ProjectSavedDir());
     FConfigSection* Sec = GConfig->GetSectionPrivate(TEXT("MapIndex"), false, false, GGameIni);
     if (!Sec)
     {
@@ -714,6 +717,7 @@ int32 UDisplayGameInstance::getMapIndex(const FString& mapname)
     }
     for (FConfigSection::TIterator It(*Sec); It; ++It)
     {
+        UE_LOG(LogSimGameInstance, Log, TEXT("getMapIndex key: %s value : %s"), *It.Key().ToString(), *It.Value().GetValue());
         FRegexPattern pattern(It.Key().ToString());
         FRegexMatcher matcher(pattern, mapname);
         if (matcher.FindNext() && !It.Value().GetValue().IsEmpty())

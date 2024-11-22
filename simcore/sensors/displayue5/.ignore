@@ -1,4 +1,6 @@
 /Intermediate
+/XMLFiles
+/DerivedDataCache
 /Content
 /.vscode
 /Saved
@@ -10,12 +12,13 @@
 /Plugins/HadMap/Content
 /Plugins/MyUDP/Intermediate
 /Plugins/MyUDP/Content
+/Plugins/CudaResource/Intermediate
+/Plugins/CudaResource/ThirdParty
+/Plugins/CudaResource/Content
 /Plugins/BoostLib/Intermediate
 /Plugins/BoostLib/deps
 /Plugins/AutoRoad/Intermediate
 /Plugins/AutoRoad/ThirdParty
 /Plugins/AutoRoad/Content
-/Plugins/RTXLidar/Content
-/Plugins/RTXLidar/Shaders
 /Plugins/Protobuf/Intermediate
 /Plugins/Protobuf/ThirdParty

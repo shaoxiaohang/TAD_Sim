@@ -12,8 +12,8 @@
 #include <sstream>
 #include <thread>
 
-bool ALidarBufferRaycast::Init(const FLidarConfig& _config,
-    std::shared_ptr<lidar::TraditionalLidar> _LidarSensor, AActor* _actor, class LidarModel* lmodel)
+bool ALidarBufferRaycast::Init(const FLidarConfig& _config, std::shared_ptr<lidar::TraditionalLidar> _LidarSensor,
+    AActor* _actor, class LidarModel* lmodel)
 {
     LidarBufferFun::Init(_config, _LidarSensor, _actor, lmodel);
 
@@ -28,13 +28,15 @@ bool ALidarBufferRaycast::Init(const FLidarConfig& _config,
 }
 
 // 射线方法获取点云深度
-void linetrace(UWorld* world, uint32 scanfrom, uint32 scanto,
-    const FTLidarMeasurement& LidarMeasurement, const lidar::TraditionalLidar* LidarSensor,
-    RaycastLidarBuffer::lpoint* pdata)
+void linetrace(UWorld* world, uint32 scanfrom, uint32 scanto, const FTLidarMeasurement& LidarMeasurement,
+    const lidar::TraditionalLidar* LidarSensor, RaycastLidarBuffer::lpoint* pdata)
 {
     scanto = std::min(scanto, LidarMeasurement.HorizontalToScan);
     if (scanfrom >= scanto)
         return;
+
+    UE_LOG(LogTemp, Log, TEXT("linetrace: time %f from %d to %d cur pos %d."), LidarMeasurement.TimeStamp, scanfrom,
+        scanto, LidarMeasurement.HorizontalPos);
 
     /*FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Laser_Trace")), true,
      * lidarActor);*/
@@ -42,13 +44,15 @@ void linetrace(UWorld* world, uint32 scanfrom, uint32 scanto,
         FCollisionQueryParams(FName(TEXT("Laser_Trace")), true /*, lidarActor->InstalledActor*/);
     TraceParams.bTraceComplex = true;
     TraceParams.bReturnPhysicalMaterial = false;
-    FVector locStep = (LidarMeasurement.LidarBodyLoc - LidarMeasurement.LidarBodyLoc0) /
-                      LidarMeasurement.HorizontalToScan;
+    FVector locStep =
+        (LidarMeasurement.LidarBodyLoc - LidarMeasurement.LidarBodyLoc0) / LidarMeasurement.HorizontalToScan;
     FRotator LidarBodyRot = LidarMeasurement.LidarBodyRot;    // FRotator(0, 0, 0);//
     FHitResult HitInfo(ForceInit);
 
     float lzr = LidarSensor->getLaserRadius();
     float lzh = LidarSensor->getLaserHeight();
+
+    int cout = 0;
 
     for (auto i = scanfrom; i < scanto; ++i)
     {
@@ -56,8 +60,7 @@ void linetrace(UWorld* world, uint32 scanfrom, uint32 scanto,
         {
             auto yawpitch = LidarSensor->getYawPitchAngle(
                 (LidarMeasurement.HorizontalPos + i) % LidarSensor->getHorizontalScanCount(), c);
-            FRotator LaserRot(
-                yawpitch.second, yawpitch.first, 0);    // float InPitch, float InYaw, float InRoll
+            FRotator LaserRot(yawpitch.second, yawpitch.first, 0);    // float InPitch, float InYaw, float InRoll
             FRotator ResultRot = UKismetMathLibrary::ComposeRotators(LaserRot, LidarBodyRot);
             // 计算射线起点
             auto loc = LidarMeasurement.LidarBodyLoc0 + locStep * i;
@@ -68,13 +71,10 @@ void linetrace(UWorld* world, uint32 scanfrom, uint32 scanto,
             loc.Z += lzh;
 
             // 计算射线终点
-            FVector EndTrace =
-                LidarSensor->getRange() * 100 * UKismetMathLibrary::GetForwardVector(ResultRot) +
-                loc;
+            FVector EndTrace = LidarSensor->getRange() * 100 * UKismetMathLibrary::GetForwardVector(ResultRot) + loc;
             // 发射射线
-            world->LineTraceSingleByChannel(HitInfo, loc, EndTrace,
-                ECollisionChannel::ECC_GameTraceChannel1, TraceParams,
-                FCollisionResponseParams::DefaultResponseParam);
+            world->LineTraceSingleByChannel(HitInfo, loc, EndTrace, ECollisionChannel::ECC_GameTraceChannel1,
+                TraceParams, FCollisionResponseParams::DefaultResponseParam);
             RaycastLidarBuffer::lpoint* p = pdata + i * LidarSensor->getRaysNum() + c;
 
             if (HitInfo.bBlockingHit)
@@ -118,8 +118,7 @@ void linetrace(UWorld* world, uint32 scanfrom, uint32 scanto,
                     {
                         u2 = FCString::Atoi(*actor->Tags[1].ToString());
                     }
-                    if (actor->Tags.Num() > 1 &&
-                        actor->Tags[0].ToString().Len() < actor->Tags[1].ToString().Len())
+                    if (actor->Tags.Num() > 1 && actor->Tags[0].ToString().Len() < actor->Tags[1].ToString().Len())
                     {
                         std::swap(u1, u2);
                     }
@@ -147,9 +146,8 @@ TSharedPtr<LidarBuffer> ALidarBufferRaycast::GetTBuffer(const FTLidarMeasurement
         std::vector<std::thread> thrs;
         for (uint32 i = 0; i < (uint32) ltt; i++)
         {
-            thrs.push_back(std::thread(linetrace, actor->GetWorld(),
-                measure.HorizontalToScan * i / ltt, measure.HorizontalToScan * (i + 1) / ltt,
-                measure, lidarSensor.get(), buffer->pts.GetData()));
+            thrs.push_back(std::thread(linetrace, actor->GetWorld(), measure.HorizontalToScan * i / ltt,
+                measure.HorizontalToScan * (i + 1) / ltt, measure, lidarSensor.get(), buffer->pts.GetData()));
             // thrs.push_back(std::move(t1));
         }
         for (std::thread& th : thrs)
@@ -170,8 +168,8 @@ TSharedPtr<LidarBuffer> ALidarBufferRaycast::GetTBuffer(const FTLidarMeasurement
     return buffer;
 }
 
-bool ALidarBufferRaycast::GetPoints(const LidarBuffer* rawbuf, const FTLidarMeasurement& measure,
-    lidar::TraditionalLidar::lidar_ptset& lidarBuffer)
+bool ALidarBufferRaycast::GetPoints(
+    const LidarBuffer* rawbuf, const FTLidarMeasurement& measure, lidar::TraditionalLidar::lidar_ptset& lidarBuffer)
 {
     const RaycastLidarBuffer* buffer = StaticCast<const RaycastLidarBuffer*>(rawbuf);
     uint32_t rn = lidarSensor->getRaysNum();
@@ -179,8 +177,7 @@ bool ALidarBufferRaycast::GetPoints(const LidarBuffer* rawbuf, const FTLidarMeas
     lidarBuffer.channels.resize(measure.HorizontalToScan);
     lidarBuffer.points.resize(measure.HorizontalToScan * rn * rtn);
 
-    double umpsec = 1000.0 * 1000. /
-                    (lidarSensor->getRotationFrequency() * lidarSensor->getHorizontalScanCount());
+    double umpsec = 1000.0 * 1000. / (lidarSensor->getRotationFrequency() * lidarSensor->getHorizontalScanCount());
     auto utime = measure.TimeStamp0 * 1000;
 
     for (uint32 i = 0; i < measure.HorizontalToScan; i++)
@@ -199,16 +196,15 @@ bool ALidarBufferRaycast::GetPoints(const LidarBuffer* rawbuf, const FTLidarMeas
             pt.tag_t = p.tag_t;
             pt.norinter = abs(FVector::DotProduct(p.p - p.p0, p.nor));
             // LIDAR 模型
-            //if (lidarMd)
-                //lidarMd->simulator(pt.norinter, p.tag_c, p.tag_t, pt.distance, pt.instensity);
+            // if (lidarMd)
+            // lidarMd->simulator(pt.norinter, p.tag_c, p.tag_t, pt.distance, pt.instensity);
             if (pt.distance > 0.01 && pt.distance < 327.f)
             {
                 auto yawpitch = lidarSensor->getYawPitchAngle(dd.hor_pos, j);
                 FRotator LaserRot(yawpitch.second, yawpitch.first,
                     0);    // float InPitch, float InYaw, float InRoll
                 // 计算3d坐标
-                auto pv = rtMatrix.TransformPosition(
-                    pt.distance * UKismetMathLibrary::GetForwardVector(LaserRot));
+                auto pv = rtMatrix.TransformPosition(pt.distance * UKismetMathLibrary::GetForwardVector(LaserRot));
                 pt.x = pv.X;
                 pt.y = pv.Y;
                 pt.z = pv.Z;
@@ -216,8 +212,7 @@ bool ALidarBufferRaycast::GetPoints(const LidarBuffer* rawbuf, const FTLidarMeas
         }
         for (uint32 t = 1; t < rtn; ++t)
         {
-            memcpy(
-                &dd.points[rn * t], dd.points, sizeof(lidar::TraditionalLidar::lidar_point) * rn);
+            memcpy(&dd.points[rn * t], dd.points, sizeof(lidar::TraditionalLidar::lidar_point) * rn);
         }
     }
 

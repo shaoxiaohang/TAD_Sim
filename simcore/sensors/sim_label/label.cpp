@@ -96,7 +96,7 @@ void sim_label::Init(tx_sim::InitHelper &helper) {
   if (tmp == "1" || tmp == "true" || tmp == "enable") debugFiles = true;
   config_dir = helper.GetParameter(tx_sim::constant::kInitKeyModuleSharedLibDirectory);
   // write path to logs
-  // std::cout << "savePathBase=" << savePathBase << std::endl;
+  std::cout << "savePathBase=" << savePathBase << std::endl;
 }
 
 /**

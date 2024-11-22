@@ -218,7 +218,7 @@ public class CudaResource : ModuleRules
             if (Directory.Exists(cuda_path))
             {
                 // find cuda
-                PublicDefinitions.Add("FIND_CUDA");
+                //PublicDefinitions.Add("FIND_CUDA");
 
                 // add cuda include and lib
                 string cuda_include = "include";

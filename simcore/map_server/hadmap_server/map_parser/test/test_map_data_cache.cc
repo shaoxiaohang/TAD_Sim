@@ -15,7 +15,7 @@
 using namespace std;
 
 TEST(testMapCacheCase, testNormal) {
-  std::string req("test23.sqlite");
+  std::string req("shanghai2.sqlite");
   std::wstring wstrParams = CEngineConfig::Instance().MBStr2WStr(req.c_str());
 
   std::wstring status = CMapDataCache::Instance().LoadHadMap(wstrParams.c_str());

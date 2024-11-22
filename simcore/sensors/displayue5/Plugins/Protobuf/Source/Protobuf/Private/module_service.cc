@@ -93,7 +93,9 @@ txsim_service_t txsim_service_construct(void* init_cb, void* reset_cb, void* ste
   if(lib){
     std::cout << "load ok " << impl_lib_path << std::endl;
   }else{
-    std::cout << "load failed" << std::endl;
+    std::string dl_error;
+    dl_error = dlerror();
+    std::cout << "load failed " << dl_error <<std::endl;
     return nullptr;
   }
 

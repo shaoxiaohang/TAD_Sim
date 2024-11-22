@@ -6,6 +6,8 @@
 #include "Framework/DisplayGameModeBase.h"
 #include "Managers/SensorManager.h"
 #include "Managers/TransportManager.h"
+#include "Managers/CreatureManager.h"
+#include "Managers/ObstacleManager.h"
 
 #include "DisplayGameStateBase.generated.h"
 
@@ -24,6 +26,12 @@ public:
 
     // SensorManager
     ASensorManager* SensorManager = NULL;
+
+    // CreatureManager
+    ACreatureManager* creatureManager = NULL;
+
+    // ObstacleManager
+    AObstacleManager* obstacleManager = NULL;
 
 protected:
     /* Spawn all private managers */

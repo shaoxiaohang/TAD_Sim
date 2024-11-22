@@ -1,9 +1,10 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "SimActorInterface.generated.h"
-
 
 USTRUCT()
 struct FSimActorConfig
@@ -105,10 +106,7 @@ public:
     virtual void Destroy() = 0;
 
     // Get current timestamp
-    virtual double GetTimeStamp() const
-    {
-        return 0.0;
-    }
+    virtual double GetTimeStamp() const;
 };
 
 template <typename T, typename V>

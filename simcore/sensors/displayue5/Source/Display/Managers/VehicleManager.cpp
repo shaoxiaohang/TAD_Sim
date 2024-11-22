@@ -1,7 +1,7 @@
 #include "VehicleManager.h"
 #include "Objects/Transports/Vehicle/VehiclePawn.h"
 #include "Framework/DisplayGameInstance.h"
-
+#include "Objects/SimActorFactory.h"
 
 DEFINE_LOG_CATEGORY_STATIC(SimLogVehicleManager, Log, All);
 
@@ -113,6 +113,10 @@ void AVehicleManager::Update(const FManagerIn& Input, FManagerOut& Output)
             VehicleConfig.timeStamp = TInput->trafficVehicleInputArry[i].timeStamp;
             VehicleConfig.wheelLocationArry = TInput->trafficVehicleInputArry[i].wheelLocationArry;
             VehicleConfig.wheelRotationArry = TInput->trafficVehicleInputArry[i].wheelRotationArry;
+            if (!GConfig->GetBool(TEXT("Mode"), TEXT("SnapGround"), VehicleConfig.isEgoSnap, GGameIni))
+            {
+                VehicleConfig.isEgoSnap = false;
+            }
             TSubclassOf<AVehiclePawn> Class = GetBPResource<AVehiclePawn>(
                 TInput->trafficVehicleInputArry[i].typeName, ECatalogType::CT_TrafficVehicle, vehicleClassMap);
             if (!Class.Get())

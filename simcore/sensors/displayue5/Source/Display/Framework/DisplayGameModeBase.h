@@ -4,7 +4,9 @@
 #include "DisplayGameInstance.h"
 #include "GameFramework/GameModeBase.h"
 #include "Managers/TransportManager.h"
+#include "Managers/CreatureManager.h"
 #include "Managers/SensorManager.h"
+#include "Managers/ObstacleManager.h"
 #include "DisplayGameModeBase.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogSimGameMode, Log, All)
@@ -40,11 +42,11 @@ public:
     UPROPERTY()
     FTransportManagerConfig transportManager;
 
-    // UPROPERTY()
-    // FCreatureManagerConfig creatureManager;
+    UPROPERTY()
+    FCreatureManagerConfig creatureManager;
 
-    // UPROPERTY()
-    // FObstacleManagerConfig obstacleManager;
+    UPROPERTY()
+    FObstacleManagerConfig obstacleManager;
 
     // UPROPERTY()
     // FSignalLightManagerConfig signallightManager;
@@ -64,11 +66,11 @@ public:
     UPROPERTY()
     FTransportManagerIn transportManager;
 
-    //UPROPERTY()
-    //FCreatureManagerIn creatureManager;
+    UPROPERTY()
+    FCreatureManagerIn creatureManager;
 
-    //UPROPERTY()
-    //FObstacleManagerIn obstacleManager;
+    UPROPERTY()
+    FObstacleManagerIn obstacleManager;
 
     //UPROPERTY()
     //FSignalLightManagerIn signallightManager;
@@ -90,6 +92,12 @@ public:
 
     UPROPERTY()
     FTransportManagerOut transportManager;
+
+    UPROPERTY()
+    FCreatureManagerOut creatureManager;
+
+    UPROPERTY()
+    FObstacleManagerOut obstacleManager;
 
     UPROPERTY()
     FSensorManagerOut sensorManager;
