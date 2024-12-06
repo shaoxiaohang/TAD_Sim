@@ -1001,6 +1001,7 @@ uint32_t Coordinator::Step(CommandStatus& status, const CommandInfo& cmd_info) {
                 // whose request is already sent out, but no new requests anymore.
       ModuleStepRequest req;
       LoadModuleStepRequest(req, event.module_name);
+      LOG(INFO) << "module step: " << event.module_name << "  " <<  sim_time_;
       AddSystemTime(req);
       req.group = sModuleGroupName;
       hdl.has_outstanding_step_request = hdl.conn->Send(req);  // should always return true.

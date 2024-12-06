@@ -13,6 +13,8 @@
 #include "CudaLidarModel.h"
 // #include "TLidarBufferDepth.generated.h"
 
+class ADepthLidarBuffer;
+
 struct DepthLidarBuffer : public LidarBuffer
 {
     struct ImgBuffer
@@ -39,8 +41,10 @@ public:
 
     virtual void setRotationTranslation(const FTransform& mat);
 
+    TArray<ADepthLidarBuffer*>& GetDepthCameraActors();
+
 private:
-    TArray<class ADepthLidarBuffer*> depthCameraActors;
+    TArray<ADepthLidarBuffer*> depthCameraActors;
     int nImage{8};
     float Hfov = 60;
     float offsetX0;

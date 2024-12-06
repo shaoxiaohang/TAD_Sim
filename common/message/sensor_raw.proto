@@ -306,6 +306,12 @@ message DisplayPose {
     // 对象类型.
     //
     int32 raw_type = 8;
+
+    double center_x = 9;
+
+    double center_y = 10;
+
+    double center_z = 11;
   }
 
   // Simulation timestamp.

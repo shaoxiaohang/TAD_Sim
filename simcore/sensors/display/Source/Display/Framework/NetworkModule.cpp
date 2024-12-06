@@ -712,6 +712,7 @@ void NetworkModule::PublicUpdateMessage(tx_sim::StepHelper& helper)
             {
                 helper.PublishMessage(std::string(TCHAR_TO_ANSI(*SensorTopic)), payload_);
             }
+            UE_LOG(SimLogNet, Log, TEXT("Send SensorData: %f"), simSenOut->sensorData.timestamp());
         }
     }
     myGameInstance->simOutDataArry.SetNum(0);

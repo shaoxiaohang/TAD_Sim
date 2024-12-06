@@ -51,7 +51,7 @@ struct TableStruct_traffic_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[17]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[20]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -59,9 +59,18 @@ struct TableStruct_traffic_2eproto {
 };
 extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_traffic_2eproto;
 namespace sim_msg {
+class Capsule;
+class CapsuleDefaultTypeInternal;
+extern CapsuleDefaultTypeInternal _Capsule_default_instance_;
 class Car;
 class CarDefaultTypeInternal;
 extern CarDefaultTypeInternal _Car_default_instance_;
+class Detection;
+class DetectionDefaultTypeInternal;
+extern DetectionDefaultTypeInternal _Detection_default_instance_;
+class Drone;
+class DroneDefaultTypeInternal;
+extern DroneDefaultTypeInternal _Drone_default_instance_;
 class DynamicObstacle;
 class DynamicObstacleDefaultTypeInternal;
 extern DynamicObstacleDefaultTypeInternal _DynamicObstacle_default_instance_;
@@ -112,7 +121,10 @@ class TwinInfoDefaultTypeInternal;
 extern TwinInfoDefaultTypeInternal _TwinInfo_default_instance_;
 }  // namespace sim_msg
 PROTOBUF_NAMESPACE_OPEN
+template<> ::sim_msg::Capsule* Arena::CreateMaybeMessage<::sim_msg::Capsule>(Arena*);
 template<> ::sim_msg::Car* Arena::CreateMaybeMessage<::sim_msg::Car>(Arena*);
+template<> ::sim_msg::Detection* Arena::CreateMaybeMessage<::sim_msg::Detection>(Arena*);
+template<> ::sim_msg::Drone* Arena::CreateMaybeMessage<::sim_msg::Drone>(Arena*);
 template<> ::sim_msg::DynamicObstacle* Arena::CreateMaybeMessage<::sim_msg::DynamicObstacle>(Arena*);
 template<> ::sim_msg::EgoInfo* Arena::CreateMaybeMessage<::sim_msg::EgoInfo>(Arena*);
 template<> ::sim_msg::Extra_Info* Arena::CreateMaybeMessage<::sim_msg::Extra_Info>(Arena*);
@@ -132,6 +144,81 @@ template<> ::sim_msg::TwinInfo* Arena::CreateMaybeMessage<::sim_msg::TwinInfo>(A
 PROTOBUF_NAMESPACE_CLOSE
 namespace sim_msg {
 
+enum Detection_DetectionType : int {
+  Detection_DetectionType_OFFTRACK_CAPSULE = 0,
+  Detection_DetectionType_OFFTRACK_AIRWAY = 1,
+  Detection_DetectionType_Detection_DetectionType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
+  Detection_DetectionType_Detection_DetectionType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+};
+bool Detection_DetectionType_IsValid(int value);
+constexpr Detection_DetectionType Detection_DetectionType_DetectionType_MIN = Detection_DetectionType_OFFTRACK_CAPSULE;
+constexpr Detection_DetectionType Detection_DetectionType_DetectionType_MAX = Detection_DetectionType_OFFTRACK_AIRWAY;
+constexpr int Detection_DetectionType_DetectionType_ARRAYSIZE = Detection_DetectionType_DetectionType_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Detection_DetectionType_descriptor();
+template<typename T>
+inline const std::string& Detection_DetectionType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, Detection_DetectionType>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function Detection_DetectionType_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    Detection_DetectionType_descriptor(), enum_t_value);
+}
+inline bool Detection_DetectionType_Parse(
+    const std::string& name, Detection_DetectionType* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<Detection_DetectionType>(
+    Detection_DetectionType_descriptor(), name, value);
+}
+enum Detection_DetectionStatus : int {
+  Detection_DetectionStatus_OFFTRACK_START = 0,
+  Detection_DetectionStatus_OFFTRACK_END = 1,
+  Detection_DetectionStatus_Detection_DetectionStatus_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
+  Detection_DetectionStatus_Detection_DetectionStatus_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+};
+bool Detection_DetectionStatus_IsValid(int value);
+constexpr Detection_DetectionStatus Detection_DetectionStatus_DetectionStatus_MIN = Detection_DetectionStatus_OFFTRACK_START;
+constexpr Detection_DetectionStatus Detection_DetectionStatus_DetectionStatus_MAX = Detection_DetectionStatus_OFFTRACK_END;
+constexpr int Detection_DetectionStatus_DetectionStatus_ARRAYSIZE = Detection_DetectionStatus_DetectionStatus_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Detection_DetectionStatus_descriptor();
+template<typename T>
+inline const std::string& Detection_DetectionStatus_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, Detection_DetectionStatus>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function Detection_DetectionStatus_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    Detection_DetectionStatus_descriptor(), enum_t_value);
+}
+inline bool Detection_DetectionStatus_Parse(
+    const std::string& name, Detection_DetectionStatus* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<Detection_DetectionStatus>(
+    Detection_DetectionStatus_descriptor(), name, value);
+}
+enum Detection_ExceptionStatus : int {
+  Detection_ExceptionStatus_EXCEPTION_START = 0,
+  Detection_ExceptionStatus_EXCEPTION_UNSTART = 1,
+  Detection_ExceptionStatus_Detection_ExceptionStatus_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
+  Detection_ExceptionStatus_Detection_ExceptionStatus_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+};
+bool Detection_ExceptionStatus_IsValid(int value);
+constexpr Detection_ExceptionStatus Detection_ExceptionStatus_ExceptionStatus_MIN = Detection_ExceptionStatus_EXCEPTION_START;
+constexpr Detection_ExceptionStatus Detection_ExceptionStatus_ExceptionStatus_MAX = Detection_ExceptionStatus_EXCEPTION_UNSTART;
+constexpr int Detection_ExceptionStatus_ExceptionStatus_ARRAYSIZE = Detection_ExceptionStatus_ExceptionStatus_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Detection_ExceptionStatus_descriptor();
+template<typename T>
+inline const std::string& Detection_ExceptionStatus_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, Detection_ExceptionStatus>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function Detection_ExceptionStatus_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    Detection_ExceptionStatus_descriptor(), enum_t_value);
+}
+inline bool Detection_ExceptionStatus_Parse(
+    const std::string& name, Detection_ExceptionStatus* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<Detection_ExceptionStatus>(
+    Detection_ExceptionStatus_descriptor(), name, value);
+}
 enum ControlState : int {
   Autonomous = 0,
   Manual = 1,
@@ -220,12 +307,14 @@ enum Phase : int {
   L = 1,
   T = 2,
   R = 3,
+  L0 = 4,
+  R0 = 5,
   Phase_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   Phase_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool Phase_IsValid(int value);
 constexpr Phase Phase_MIN = U;
-constexpr Phase Phase_MAX = R;
+constexpr Phase Phase_MAX = R0;
 constexpr int Phase_ARRAYSIZE = Phase_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Phase_descriptor();
@@ -1334,16 +1423,16 @@ class Car :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::NearestObject >&
       show_nearestobjectinfo() const;
 
-  // string strid = 33;
-  void clear_strid();
-  const std::string& strid() const;
-  void set_strid(const std::string& value);
-  void set_strid(std::string&& value);
-  void set_strid(const char* value);
-  void set_strid(const char* value, size_t size);
-  std::string* mutable_strid();
-  std::string* release_strid();
-  void set_allocated_strid(std::string* strid);
+  // string strid = 33 [deprecated = true];
+  PROTOBUF_DEPRECATED void clear_strid();
+  PROTOBUF_DEPRECATED const std::string& strid() const;
+  PROTOBUF_DEPRECATED void set_strid(const std::string& value);
+  PROTOBUF_DEPRECATED void set_strid(std::string&& value);
+  PROTOBUF_DEPRECATED void set_strid(const char* value);
+  PROTOBUF_DEPRECATED void set_strid(const char* value, size_t size);
+  PROTOBUF_DEPRECATED std::string* mutable_strid();
+  PROTOBUF_DEPRECATED std::string* release_strid();
+  PROTOBUF_DEPRECATED void set_allocated_strid(std::string* strid);
 
   // bytes serialization_archive = 40;
   void clear_serialization_archive();
@@ -1364,13 +1453,13 @@ class Car :
   ::sim_msg::Trajectory* mutable_planning_line();
   void set_allocated_planning_line(::sim_msg::Trajectory* planning_line);
 
-  // .sim_msg.TwinInfo twin_data = 34;
-  bool has_twin_data() const;
-  void clear_twin_data();
-  const ::sim_msg::TwinInfo& twin_data() const;
-  ::sim_msg::TwinInfo* release_twin_data();
-  ::sim_msg::TwinInfo* mutable_twin_data();
-  void set_allocated_twin_data(::sim_msg::TwinInfo* twin_data);
+  // .sim_msg.TwinInfo twin_data = 34 [deprecated = true];
+  PROTOBUF_DEPRECATED bool has_twin_data() const;
+  PROTOBUF_DEPRECATED void clear_twin_data();
+  PROTOBUF_DEPRECATED const ::sim_msg::TwinInfo& twin_data() const;
+  PROTOBUF_DEPRECATED ::sim_msg::TwinInfo* release_twin_data();
+  PROTOBUF_DEPRECATED ::sim_msg::TwinInfo* mutable_twin_data();
+  PROTOBUF_DEPRECATED void set_allocated_twin_data(::sim_msg::TwinInfo* twin_data);
 
   // .sim_msg.ForwardCollisionWarning fcw = 35;
   bool has_fcw() const;
@@ -1488,10 +1577,10 @@ class Car :
   double show_abs_velocity() const;
   void set_show_abs_velocity(double value);
 
-  // int32 age = 15;
-  void clear_age();
-  ::PROTOBUF_NAMESPACE_ID::int32 age() const;
-  void set_age(::PROTOBUF_NAMESPACE_ID::int32 value);
+  // int32 age = 15 [deprecated = true];
+  PROTOBUF_DEPRECATED void clear_age();
+  PROTOBUF_DEPRECATED ::PROTOBUF_NAMESPACE_ID::int32 age() const;
+  PROTOBUF_DEPRECATED void set_age(::PROTOBUF_NAMESPACE_ID::int32 value);
 
   // .sim_msg.ControlState control_state = 30;
   void clear_control_state();
@@ -1533,10 +1622,10 @@ class Car :
   double show_relative_dist_horizontal() const;
   void set_show_relative_dist_horizontal(double value);
 
-  // double angle_along_centerline_degree = 32;
-  void clear_angle_along_centerline_degree();
-  double angle_along_centerline_degree() const;
-  void set_angle_along_centerline_degree(double value);
+  // double angle_along_centerline_degree = 32 [deprecated = true];
+  PROTOBUF_DEPRECATED void clear_angle_along_centerline_degree();
+  PROTOBUF_DEPRECATED double angle_along_centerline_degree() const;
+  PROTOBUF_DEPRECATED void set_angle_along_centerline_degree(double value);
 
   // double lOffset = 36;
   void clear_loffset();
@@ -1742,24 +1831,24 @@ class StaticObstacle :
     kZFieldNumber = 11,
     kAgeFieldNumber = 10,
   };
-  // string strid = 12;
-  void clear_strid();
-  const std::string& strid() const;
-  void set_strid(const std::string& value);
-  void set_strid(std::string&& value);
-  void set_strid(const char* value);
-  void set_strid(const char* value, size_t size);
-  std::string* mutable_strid();
-  std::string* release_strid();
-  void set_allocated_strid(std::string* strid);
+  // string strid = 12 [deprecated = true];
+  PROTOBUF_DEPRECATED void clear_strid();
+  PROTOBUF_DEPRECATED const std::string& strid() const;
+  PROTOBUF_DEPRECATED void set_strid(const std::string& value);
+  PROTOBUF_DEPRECATED void set_strid(std::string&& value);
+  PROTOBUF_DEPRECATED void set_strid(const char* value);
+  PROTOBUF_DEPRECATED void set_strid(const char* value, size_t size);
+  PROTOBUF_DEPRECATED std::string* mutable_strid();
+  PROTOBUF_DEPRECATED std::string* release_strid();
+  PROTOBUF_DEPRECATED void set_allocated_strid(std::string* strid);
 
-  // .sim_msg.TwinInfo twin_data = 13;
-  bool has_twin_data() const;
-  void clear_twin_data();
-  const ::sim_msg::TwinInfo& twin_data() const;
-  ::sim_msg::TwinInfo* release_twin_data();
-  ::sim_msg::TwinInfo* mutable_twin_data();
-  void set_allocated_twin_data(::sim_msg::TwinInfo* twin_data);
+  // .sim_msg.TwinInfo twin_data = 13 [deprecated = true];
+  PROTOBUF_DEPRECATED bool has_twin_data() const;
+  PROTOBUF_DEPRECATED void clear_twin_data();
+  PROTOBUF_DEPRECATED const ::sim_msg::TwinInfo& twin_data() const;
+  PROTOBUF_DEPRECATED ::sim_msg::TwinInfo* release_twin_data();
+  PROTOBUF_DEPRECATED ::sim_msg::TwinInfo* mutable_twin_data();
+  PROTOBUF_DEPRECATED void set_allocated_twin_data(::sim_msg::TwinInfo* twin_data);
 
   // double t = 2;
   void clear_t();
@@ -1975,26 +2064,27 @@ class DynamicObstacle :
     kShowRelativeAccHorizontalFieldNumber = 20,
     kShowRelativeDistVerticalFieldNumber = 21,
     kShowRelativeDistHorizontalFieldNumber = 22,
+    kPolyIdFieldNumber = 25,
     kAgeFieldNumber = 13,
   };
-  // string strid = 23;
-  void clear_strid();
-  const std::string& strid() const;
-  void set_strid(const std::string& value);
-  void set_strid(std::string&& value);
-  void set_strid(const char* value);
-  void set_strid(const char* value, size_t size);
-  std::string* mutable_strid();
-  std::string* release_strid();
-  void set_allocated_strid(std::string* strid);
+  // string strid = 23 [deprecated = true];
+  PROTOBUF_DEPRECATED void clear_strid();
+  PROTOBUF_DEPRECATED const std::string& strid() const;
+  PROTOBUF_DEPRECATED void set_strid(const std::string& value);
+  PROTOBUF_DEPRECATED void set_strid(std::string&& value);
+  PROTOBUF_DEPRECATED void set_strid(const char* value);
+  PROTOBUF_DEPRECATED void set_strid(const char* value, size_t size);
+  PROTOBUF_DEPRECATED std::string* mutable_strid();
+  PROTOBUF_DEPRECATED std::string* release_strid();
+  PROTOBUF_DEPRECATED void set_allocated_strid(std::string* strid);
 
-  // .sim_msg.TwinInfo twin_data = 24;
-  bool has_twin_data() const;
-  void clear_twin_data();
-  const ::sim_msg::TwinInfo& twin_data() const;
-  ::sim_msg::TwinInfo* release_twin_data();
-  ::sim_msg::TwinInfo* mutable_twin_data();
-  void set_allocated_twin_data(::sim_msg::TwinInfo* twin_data);
+  // .sim_msg.TwinInfo twin_data = 24 [deprecated = true];
+  PROTOBUF_DEPRECATED bool has_twin_data() const;
+  PROTOBUF_DEPRECATED void clear_twin_data();
+  PROTOBUF_DEPRECATED const ::sim_msg::TwinInfo& twin_data() const;
+  PROTOBUF_DEPRECATED ::sim_msg::TwinInfo* release_twin_data();
+  PROTOBUF_DEPRECATED ::sim_msg::TwinInfo* mutable_twin_data();
+  PROTOBUF_DEPRECATED void set_allocated_twin_data(::sim_msg::TwinInfo* twin_data);
 
   // double t = 2;
   void clear_t();
@@ -2101,10 +2191,15 @@ class DynamicObstacle :
   double show_relative_dist_horizontal() const;
   void set_show_relative_dist_horizontal(double value);
 
-  // int32 age = 13;
-  void clear_age();
-  ::PROTOBUF_NAMESPACE_ID::int32 age() const;
-  void set_age(::PROTOBUF_NAMESPACE_ID::int32 value);
+  // int64 poly_id = 25;
+  void clear_poly_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 poly_id() const;
+  void set_poly_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+
+  // int32 age = 13 [deprecated = true];
+  PROTOBUF_DEPRECATED void clear_age();
+  PROTOBUF_DEPRECATED ::PROTOBUF_NAMESPACE_ID::int32 age() const;
+  PROTOBUF_DEPRECATED void set_age(::PROTOBUF_NAMESPACE_ID::int32 value);
 
   // @@protoc_insertion_point(class_scope:sim_msg.DynamicObstacle)
  private:
@@ -2134,6 +2229,7 @@ class DynamicObstacle :
   double show_relative_acc_horizontal_;
   double show_relative_dist_vertical_;
   double show_relative_dist_horizontal_;
+  ::PROTOBUF_NAMESPACE_ID::int64 poly_id_;
   ::PROTOBUF_NAMESPACE_ID::int32 age_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_traffic_2eproto;
@@ -2511,15 +2607,15 @@ class TrafficLight :
   double z() const;
   void set_z(double value);
 
-  // uint64 tx_road_id = 8;
-  void clear_tx_road_id();
-  ::PROTOBUF_NAMESPACE_ID::uint64 tx_road_id() const;
-  void set_tx_road_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  // uint64 tx_road_id = 8 [deprecated = true];
+  PROTOBUF_DEPRECATED void clear_tx_road_id();
+  PROTOBUF_DEPRECATED ::PROTOBUF_NAMESPACE_ID::uint64 tx_road_id() const;
+  PROTOBUF_DEPRECATED void set_tx_road_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
 
-  // uint64 tx_section_id = 9;
-  void clear_tx_section_id();
-  ::PROTOBUF_NAMESPACE_ID::uint64 tx_section_id() const;
-  void set_tx_section_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  // uint64 tx_section_id = 9 [deprecated = true];
+  PROTOBUF_DEPRECATED void clear_tx_section_id();
+  PROTOBUF_DEPRECATED ::PROTOBUF_NAMESPACE_ID::uint64 tx_section_id() const;
+  PROTOBUF_DEPRECATED void set_tx_section_id(::PROTOBUF_NAMESPACE_ID::uint64 value);
 
   // int32 age = 6;
   void clear_age();
@@ -2531,10 +2627,10 @@ class TrafficLight :
   ::PROTOBUF_NAMESPACE_ID::int32 next_color() const;
   void set_next_color(::PROTOBUF_NAMESPACE_ID::int32 value);
 
-  // int64 tx_lane_id = 10;
-  void clear_tx_lane_id();
-  ::PROTOBUF_NAMESPACE_ID::int64 tx_lane_id() const;
-  void set_tx_lane_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+  // int64 tx_lane_id = 10 [deprecated = true];
+  PROTOBUF_DEPRECATED void clear_tx_lane_id();
+  PROTOBUF_DEPRECATED ::PROTOBUF_NAMESPACE_ID::int64 tx_lane_id() const;
+  PROTOBUF_DEPRECATED void set_tx_lane_id(::PROTOBUF_NAMESPACE_ID::int64 value);
 
   // int32 next_age = 14;
   void clear_next_age();
@@ -2715,6 +2811,814 @@ class EgoInfo :
 };
 // -------------------------------------------------------------------
 
+class Capsule :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:sim_msg.Capsule) */ {
+ public:
+  Capsule();
+  virtual ~Capsule();
+
+  Capsule(const Capsule& from);
+  Capsule(Capsule&& from) noexcept
+    : Capsule() {
+    *this = ::std::move(from);
+  }
+
+  inline Capsule& operator=(const Capsule& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Capsule& operator=(Capsule&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Capsule& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Capsule* internal_default_instance() {
+    return reinterpret_cast<const Capsule*>(
+               &_Capsule_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    12;
+
+  friend void swap(Capsule& a, Capsule& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Capsule* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Capsule* New() const final {
+    return CreateMaybeMessage<Capsule>(nullptr);
+  }
+
+  Capsule* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Capsule>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Capsule& from);
+  void MergeFrom(const Capsule& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  #else
+  bool MergePartialFromCodedStream(
+      ::PROTOBUF_NAMESPACE_ID::io::CodedInputStream* input) final;
+  #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+  void SerializeWithCachedSizes(
+      ::PROTOBUF_NAMESPACE_ID::io::CodedOutputStream* output) const final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Capsule* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "sim_msg.Capsule";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_traffic_2eproto);
+    return ::descriptor_table_traffic_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kPlanIdFieldNumber = 20,
+    kIdFieldNumber = 1,
+    kDroneIdFieldNumber = 2,
+    kTFieldNumber = 3,
+    kXFieldNumber = 4,
+    kYFieldNumber = 5,
+    kZFieldNumber = 6,
+    kHeadingFieldNumber = 7,
+    kPitchFieldNumber = 8,
+    kRollFieldNumber = 9,
+    kHeadAFieldNumber = 10,
+    kHeadBFieldNumber = 11,
+    kBodyLFieldNumber = 12,
+    kTailAFieldNumber = 13,
+    kTailBFieldNumber = 14,
+    kHeightFieldNumber = 15,
+    kVFieldNumber = 16,
+    kAccFieldNumber = 17,
+    kTypeFieldNumber = 18,
+    kTxAirwayIdFieldNumber = 19,
+    kPriortyFieldNumber = 21,
+  };
+  // string plan_id = 20;
+  void clear_plan_id();
+  const std::string& plan_id() const;
+  void set_plan_id(const std::string& value);
+  void set_plan_id(std::string&& value);
+  void set_plan_id(const char* value);
+  void set_plan_id(const char* value, size_t size);
+  std::string* mutable_plan_id();
+  std::string* release_plan_id();
+  void set_allocated_plan_id(std::string* plan_id);
+
+  // int64 id = 1;
+  void clear_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 id() const;
+  void set_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+
+  // int64 drone_id = 2;
+  void clear_drone_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 drone_id() const;
+  void set_drone_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+
+  // double t = 3;
+  void clear_t();
+  double t() const;
+  void set_t(double value);
+
+  // double x = 4;
+  void clear_x();
+  double x() const;
+  void set_x(double value);
+
+  // double y = 5;
+  void clear_y();
+  double y() const;
+  void set_y(double value);
+
+  // double z = 6;
+  void clear_z();
+  double z() const;
+  void set_z(double value);
+
+  // double heading = 7;
+  void clear_heading();
+  double heading() const;
+  void set_heading(double value);
+
+  // double pitch = 8;
+  void clear_pitch();
+  double pitch() const;
+  void set_pitch(double value);
+
+  // double roll = 9;
+  void clear_roll();
+  double roll() const;
+  void set_roll(double value);
+
+  // double head_a = 10;
+  void clear_head_a();
+  double head_a() const;
+  void set_head_a(double value);
+
+  // double head_b = 11;
+  void clear_head_b();
+  double head_b() const;
+  void set_head_b(double value);
+
+  // double body_l = 12;
+  void clear_body_l();
+  double body_l() const;
+  void set_body_l(double value);
+
+  // double tail_a = 13;
+  void clear_tail_a();
+  double tail_a() const;
+  void set_tail_a(double value);
+
+  // double tail_b = 14;
+  void clear_tail_b();
+  double tail_b() const;
+  void set_tail_b(double value);
+
+  // double height = 15;
+  void clear_height();
+  double height() const;
+  void set_height(double value);
+
+  // double v = 16;
+  void clear_v();
+  double v() const;
+  void set_v(double value);
+
+  // double acc = 17;
+  void clear_acc();
+  double acc() const;
+  void set_acc(double value);
+
+  // int32 type = 18;
+  void clear_type();
+  ::PROTOBUF_NAMESPACE_ID::int32 type() const;
+  void set_type(::PROTOBUF_NAMESPACE_ID::int32 value);
+
+  // int32 tx_airway_id = 19;
+  void clear_tx_airway_id();
+  ::PROTOBUF_NAMESPACE_ID::int32 tx_airway_id() const;
+  void set_tx_airway_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+
+  // int32 priorty = 21;
+  void clear_priorty();
+  ::PROTOBUF_NAMESPACE_ID::int32 priorty() const;
+  void set_priorty(::PROTOBUF_NAMESPACE_ID::int32 value);
+
+  // @@protoc_insertion_point(class_scope:sim_msg.Capsule)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr plan_id_;
+  ::PROTOBUF_NAMESPACE_ID::int64 id_;
+  ::PROTOBUF_NAMESPACE_ID::int64 drone_id_;
+  double t_;
+  double x_;
+  double y_;
+  double z_;
+  double heading_;
+  double pitch_;
+  double roll_;
+  double head_a_;
+  double head_b_;
+  double body_l_;
+  double tail_a_;
+  double tail_b_;
+  double height_;
+  double v_;
+  double acc_;
+  ::PROTOBUF_NAMESPACE_ID::int32 type_;
+  ::PROTOBUF_NAMESPACE_ID::int32 tx_airway_id_;
+  ::PROTOBUF_NAMESPACE_ID::int32 priorty_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_traffic_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Drone :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:sim_msg.Drone) */ {
+ public:
+  Drone();
+  virtual ~Drone();
+
+  Drone(const Drone& from);
+  Drone(Drone&& from) noexcept
+    : Drone() {
+    *this = ::std::move(from);
+  }
+
+  inline Drone& operator=(const Drone& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Drone& operator=(Drone&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Drone& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Drone* internal_default_instance() {
+    return reinterpret_cast<const Drone*>(
+               &_Drone_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    13;
+
+  friend void swap(Drone& a, Drone& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Drone* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Drone* New() const final {
+    return CreateMaybeMessage<Drone>(nullptr);
+  }
+
+  Drone* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Drone>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Drone& from);
+  void MergeFrom(const Drone& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  #else
+  bool MergePartialFromCodedStream(
+      ::PROTOBUF_NAMESPACE_ID::io::CodedInputStream* input) final;
+  #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+  void SerializeWithCachedSizes(
+      ::PROTOBUF_NAMESPACE_ID::io::CodedOutputStream* output) const final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Drone* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "sim_msg.Drone";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_traffic_2eproto);
+    return ::descriptor_table_traffic_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kNameFieldNumber = 3,
+    kOwnerFieldNumber = 4,
+    kPlanIdFieldNumber = 15,
+    kIdFieldNumber = 1,
+    kTFieldNumber = 2,
+    kXFieldNumber = 5,
+    kYFieldNumber = 6,
+    kZFieldNumber = 7,
+    kHeadingFieldNumber = 8,
+    kPitchFieldNumber = 9,
+    kRollFieldNumber = 10,
+    kVFieldNumber = 11,
+    kAccFieldNumber = 12,
+    kTypeFieldNumber = 13,
+    kTxAirwayIdFieldNumber = 14,
+    kPriortyFieldNumber = 16,
+    kStatusFieldNumber = 17,
+  };
+  // string name = 3;
+  void clear_name();
+  const std::string& name() const;
+  void set_name(const std::string& value);
+  void set_name(std::string&& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  std::string* mutable_name();
+  std::string* release_name();
+  void set_allocated_name(std::string* name);
+
+  // string owner = 4;
+  void clear_owner();
+  const std::string& owner() const;
+  void set_owner(const std::string& value);
+  void set_owner(std::string&& value);
+  void set_owner(const char* value);
+  void set_owner(const char* value, size_t size);
+  std::string* mutable_owner();
+  std::string* release_owner();
+  void set_allocated_owner(std::string* owner);
+
+  // string plan_id = 15;
+  void clear_plan_id();
+  const std::string& plan_id() const;
+  void set_plan_id(const std::string& value);
+  void set_plan_id(std::string&& value);
+  void set_plan_id(const char* value);
+  void set_plan_id(const char* value, size_t size);
+  std::string* mutable_plan_id();
+  std::string* release_plan_id();
+  void set_allocated_plan_id(std::string* plan_id);
+
+  // int64 id = 1;
+  void clear_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 id() const;
+  void set_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+
+  // double t = 2;
+  void clear_t();
+  double t() const;
+  void set_t(double value);
+
+  // double x = 5;
+  void clear_x();
+  double x() const;
+  void set_x(double value);
+
+  // double y = 6;
+  void clear_y();
+  double y() const;
+  void set_y(double value);
+
+  // double z = 7;
+  void clear_z();
+  double z() const;
+  void set_z(double value);
+
+  // double heading = 8;
+  void clear_heading();
+  double heading() const;
+  void set_heading(double value);
+
+  // double pitch = 9;
+  void clear_pitch();
+  double pitch() const;
+  void set_pitch(double value);
+
+  // double roll = 10;
+  void clear_roll();
+  double roll() const;
+  void set_roll(double value);
+
+  // double v = 11;
+  void clear_v();
+  double v() const;
+  void set_v(double value);
+
+  // double acc = 12;
+  void clear_acc();
+  double acc() const;
+  void set_acc(double value);
+
+  // int32 type = 13;
+  void clear_type();
+  ::PROTOBUF_NAMESPACE_ID::int32 type() const;
+  void set_type(::PROTOBUF_NAMESPACE_ID::int32 value);
+
+  // int32 tx_airway_id = 14;
+  void clear_tx_airway_id();
+  ::PROTOBUF_NAMESPACE_ID::int32 tx_airway_id() const;
+  void set_tx_airway_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+
+  // int32 priorty = 16;
+  void clear_priorty();
+  ::PROTOBUF_NAMESPACE_ID::int32 priorty() const;
+  void set_priorty(::PROTOBUF_NAMESPACE_ID::int32 value);
+
+  // int32 status = 17;
+  void clear_status();
+  ::PROTOBUF_NAMESPACE_ID::int32 status() const;
+  void set_status(::PROTOBUF_NAMESPACE_ID::int32 value);
+
+  // @@protoc_insertion_point(class_scope:sim_msg.Drone)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr owner_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr plan_id_;
+  ::PROTOBUF_NAMESPACE_ID::int64 id_;
+  double t_;
+  double x_;
+  double y_;
+  double z_;
+  double heading_;
+  double pitch_;
+  double roll_;
+  double v_;
+  double acc_;
+  ::PROTOBUF_NAMESPACE_ID::int32 type_;
+  ::PROTOBUF_NAMESPACE_ID::int32 tx_airway_id_;
+  ::PROTOBUF_NAMESPACE_ID::int32 priorty_;
+  ::PROTOBUF_NAMESPACE_ID::int32 status_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_traffic_2eproto;
+};
+// -------------------------------------------------------------------
+
+class Detection :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:sim_msg.Detection) */ {
+ public:
+  Detection();
+  virtual ~Detection();
+
+  Detection(const Detection& from);
+  Detection(Detection&& from) noexcept
+    : Detection() {
+    *this = ::std::move(from);
+  }
+
+  inline Detection& operator=(const Detection& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Detection& operator=(Detection&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const Detection& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const Detection* internal_default_instance() {
+    return reinterpret_cast<const Detection*>(
+               &_Detection_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    14;
+
+  friend void swap(Detection& a, Detection& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Detection* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline Detection* New() const final {
+    return CreateMaybeMessage<Detection>(nullptr);
+  }
+
+  Detection* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<Detection>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const Detection& from);
+  void MergeFrom(const Detection& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  #else
+  bool MergePartialFromCodedStream(
+      ::PROTOBUF_NAMESPACE_ID::io::CodedInputStream* input) final;
+  #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+  void SerializeWithCachedSizes(
+      ::PROTOBUF_NAMESPACE_ID::io::CodedOutputStream* output) const final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Detection* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "sim_msg.Detection";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_traffic_2eproto);
+    return ::descriptor_table_traffic_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  typedef Detection_DetectionType DetectionType;
+  static constexpr DetectionType OFFTRACK_CAPSULE =
+    Detection_DetectionType_OFFTRACK_CAPSULE;
+  static constexpr DetectionType OFFTRACK_AIRWAY =
+    Detection_DetectionType_OFFTRACK_AIRWAY;
+  static inline bool DetectionType_IsValid(int value) {
+    return Detection_DetectionType_IsValid(value);
+  }
+  static constexpr DetectionType DetectionType_MIN =
+    Detection_DetectionType_DetectionType_MIN;
+  static constexpr DetectionType DetectionType_MAX =
+    Detection_DetectionType_DetectionType_MAX;
+  static constexpr int DetectionType_ARRAYSIZE =
+    Detection_DetectionType_DetectionType_ARRAYSIZE;
+  static inline const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor*
+  DetectionType_descriptor() {
+    return Detection_DetectionType_descriptor();
+  }
+  template<typename T>
+  static inline const std::string& DetectionType_Name(T enum_t_value) {
+    static_assert(::std::is_same<T, DetectionType>::value ||
+      ::std::is_integral<T>::value,
+      "Incorrect type passed to function DetectionType_Name.");
+    return Detection_DetectionType_Name(enum_t_value);
+  }
+  static inline bool DetectionType_Parse(const std::string& name,
+      DetectionType* value) {
+    return Detection_DetectionType_Parse(name, value);
+  }
+
+  typedef Detection_DetectionStatus DetectionStatus;
+  static constexpr DetectionStatus OFFTRACK_START =
+    Detection_DetectionStatus_OFFTRACK_START;
+  static constexpr DetectionStatus OFFTRACK_END =
+    Detection_DetectionStatus_OFFTRACK_END;
+  static inline bool DetectionStatus_IsValid(int value) {
+    return Detection_DetectionStatus_IsValid(value);
+  }
+  static constexpr DetectionStatus DetectionStatus_MIN =
+    Detection_DetectionStatus_DetectionStatus_MIN;
+  static constexpr DetectionStatus DetectionStatus_MAX =
+    Detection_DetectionStatus_DetectionStatus_MAX;
+  static constexpr int DetectionStatus_ARRAYSIZE =
+    Detection_DetectionStatus_DetectionStatus_ARRAYSIZE;
+  static inline const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor*
+  DetectionStatus_descriptor() {
+    return Detection_DetectionStatus_descriptor();
+  }
+  template<typename T>
+  static inline const std::string& DetectionStatus_Name(T enum_t_value) {
+    static_assert(::std::is_same<T, DetectionStatus>::value ||
+      ::std::is_integral<T>::value,
+      "Incorrect type passed to function DetectionStatus_Name.");
+    return Detection_DetectionStatus_Name(enum_t_value);
+  }
+  static inline bool DetectionStatus_Parse(const std::string& name,
+      DetectionStatus* value) {
+    return Detection_DetectionStatus_Parse(name, value);
+  }
+
+  typedef Detection_ExceptionStatus ExceptionStatus;
+  static constexpr ExceptionStatus EXCEPTION_START =
+    Detection_ExceptionStatus_EXCEPTION_START;
+  static constexpr ExceptionStatus EXCEPTION_UNSTART =
+    Detection_ExceptionStatus_EXCEPTION_UNSTART;
+  static inline bool ExceptionStatus_IsValid(int value) {
+    return Detection_ExceptionStatus_IsValid(value);
+  }
+  static constexpr ExceptionStatus ExceptionStatus_MIN =
+    Detection_ExceptionStatus_ExceptionStatus_MIN;
+  static constexpr ExceptionStatus ExceptionStatus_MAX =
+    Detection_ExceptionStatus_ExceptionStatus_MAX;
+  static constexpr int ExceptionStatus_ARRAYSIZE =
+    Detection_ExceptionStatus_ExceptionStatus_ARRAYSIZE;
+  static inline const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor*
+  ExceptionStatus_descriptor() {
+    return Detection_ExceptionStatus_descriptor();
+  }
+  template<typename T>
+  static inline const std::string& ExceptionStatus_Name(T enum_t_value) {
+    static_assert(::std::is_same<T, ExceptionStatus>::value ||
+      ::std::is_integral<T>::value,
+      "Incorrect type passed to function ExceptionStatus_Name.");
+    return Detection_ExceptionStatus_Name(enum_t_value);
+  }
+  static inline bool ExceptionStatus_Parse(const std::string& name,
+      ExceptionStatus* value) {
+    return Detection_ExceptionStatus_Parse(name, value);
+  }
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kIdFieldNumber = 1,
+    kTFieldNumber = 2,
+    kDroneIdFieldNumber = 3,
+    kCapsuleIdFieldNumber = 4,
+    kDetectionTypeFieldNumber = 5,
+    kTxAirwayIdFieldNumber = 6,
+    kDetectionStatusFieldNumber = 7,
+    kExceptionStatusFieldNumber = 8,
+  };
+  // int64 id = 1;
+  void clear_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 id() const;
+  void set_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+
+  // double t = 2;
+  void clear_t();
+  double t() const;
+  void set_t(double value);
+
+  // int64 drone_id = 3;
+  void clear_drone_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 drone_id() const;
+  void set_drone_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+
+  // int64 capsule_id = 4;
+  void clear_capsule_id();
+  ::PROTOBUF_NAMESPACE_ID::int64 capsule_id() const;
+  void set_capsule_id(::PROTOBUF_NAMESPACE_ID::int64 value);
+
+  // .sim_msg.Detection.DetectionType detection_type = 5;
+  void clear_detection_type();
+  ::sim_msg::Detection_DetectionType detection_type() const;
+  void set_detection_type(::sim_msg::Detection_DetectionType value);
+
+  // int32 tx_airway_id = 6;
+  void clear_tx_airway_id();
+  ::PROTOBUF_NAMESPACE_ID::int32 tx_airway_id() const;
+  void set_tx_airway_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+
+  // .sim_msg.Detection.DetectionStatus detection_status = 7;
+  void clear_detection_status();
+  ::sim_msg::Detection_DetectionStatus detection_status() const;
+  void set_detection_status(::sim_msg::Detection_DetectionStatus value);
+
+  // .sim_msg.Detection.ExceptionStatus exception_status = 8;
+  void clear_exception_status();
+  ::sim_msg::Detection_ExceptionStatus exception_status() const;
+  void set_exception_status(::sim_msg::Detection_ExceptionStatus value);
+
+  // @@protoc_insertion_point(class_scope:sim_msg.Detection)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::int64 id_;
+  double t_;
+  ::PROTOBUF_NAMESPACE_ID::int64 drone_id_;
+  ::PROTOBUF_NAMESPACE_ID::int64 capsule_id_;
+  int detection_type_;
+  ::PROTOBUF_NAMESPACE_ID::int32 tx_airway_id_;
+  int detection_status_;
+  int exception_status_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_traffic_2eproto;
+};
+// -------------------------------------------------------------------
+
 class Traffic :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:sim_msg.Traffic) */ {
  public:
@@ -2757,7 +3661,7 @@ class Traffic :
                &_Traffic_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    15;
 
   friend void swap(Traffic& a, Traffic& b) {
     a.Swap(&b);
@@ -2833,6 +3737,9 @@ class Traffic :
     kDynamicObstaclesFieldNumber = 3,
     kTrafficLightsFieldNumber = 4,
     kEgosFieldNumber = 8,
+    kDronesFieldNumber = 9,
+    kCapsulesFieldNumber = 10,
+    kDetectionsFieldNumber = 11,
     kRoadNetworkAverVelocityFieldNumber = 5,
     kTimeFieldNumber = 7,
     kRoadNetworkTotalVehicleCountFieldNumber = 6,
@@ -2892,6 +3799,39 @@ class Traffic :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::EgoInfo >&
       egos() const;
 
+  // repeated .sim_msg.Drone drones = 9;
+  int drones_size() const;
+  void clear_drones();
+  ::sim_msg::Drone* mutable_drones(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Drone >*
+      mutable_drones();
+  const ::sim_msg::Drone& drones(int index) const;
+  ::sim_msg::Drone* add_drones();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Drone >&
+      drones() const;
+
+  // repeated .sim_msg.Capsule capsules = 10;
+  int capsules_size() const;
+  void clear_capsules();
+  ::sim_msg::Capsule* mutable_capsules(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Capsule >*
+      mutable_capsules();
+  const ::sim_msg::Capsule& capsules(int index) const;
+  ::sim_msg::Capsule* add_capsules();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Capsule >&
+      capsules() const;
+
+  // repeated .sim_msg.Detection detections = 11;
+  int detections_size() const;
+  void clear_detections();
+  ::sim_msg::Detection* mutable_detections(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Detection >*
+      mutable_detections();
+  const ::sim_msg::Detection& detections(int index) const;
+  ::sim_msg::Detection* add_detections();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Detection >&
+      detections() const;
+
   // double road_network_aver_velocity = 5;
   void clear_road_network_aver_velocity();
   double road_network_aver_velocity() const;
@@ -2917,6 +3857,9 @@ class Traffic :
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::DynamicObstacle > dynamicobstacles_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::TrafficLight > trafficlights_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::EgoInfo > egos_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Drone > drones_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Capsule > capsules_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Detection > detections_;
   double road_network_aver_velocity_;
   ::PROTOBUF_NAMESPACE_ID::uint64 time_;
   ::PROTOBUF_NAMESPACE_ID::int32 road_network_total_vehicle_count_;
@@ -2967,7 +3910,7 @@ class TrafficRecords :
                &_TrafficRecords_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    16;
 
   friend void swap(TrafficRecords& a, TrafficRecords& b) {
     a.Swap(&b);
@@ -3104,7 +4047,7 @@ class TrajectoryInfo :
                &_TrajectoryInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    17;
 
   friend void swap(TrajectoryInfo& a, TrajectoryInfo& b) {
     a.Swap(&b);
@@ -3245,7 +4188,7 @@ class TrafficRecords4Logsim_DisengageEventInfo :
                &_TrafficRecords4Logsim_DisengageEventInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    18;
 
   friend void swap(TrafficRecords4Logsim_DisengageEventInfo& a, TrafficRecords4Logsim_DisengageEventInfo& b) {
     a.Swap(&b);
@@ -3383,7 +4326,7 @@ class TrafficRecords4Logsim :
                &_TrafficRecords4Logsim_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    19;
 
   friend void swap(TrafficRecords4Logsim& a, TrafficRecords4Logsim& b) {
     a.Swap(&b);
@@ -4113,7 +5056,7 @@ inline void Car::set_acc(double value) {
   // @@protoc_insertion_point(field_set:sim_msg.Car.acc)
 }
 
-// int32 age = 15;
+// int32 age = 15 [deprecated = true];
 inline void Car::clear_age() {
   age_ = 0;
 }
@@ -4398,7 +5341,7 @@ Car::show_nearestobjectinfo() const {
   return show_nearestobjectinfo_;
 }
 
-// double angle_along_centerline_degree = 32;
+// double angle_along_centerline_degree = 32 [deprecated = true];
 inline void Car::clear_angle_along_centerline_degree() {
   angle_along_centerline_degree_ = 0;
 }
@@ -4412,7 +5355,7 @@ inline void Car::set_angle_along_centerline_degree(double value) {
   // @@protoc_insertion_point(field_set:sim_msg.Car.angle_along_centerline_degree)
 }
 
-// string strid = 33;
+// string strid = 33 [deprecated = true];
 inline void Car::clear_strid() {
   strid_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -4463,7 +5406,7 @@ inline void Car::set_allocated_strid(std::string* strid) {
   // @@protoc_insertion_point(field_set_allocated:sim_msg.Car.strid)
 }
 
-// .sim_msg.TwinInfo twin_data = 34;
+// .sim_msg.TwinInfo twin_data = 34 [deprecated = true];
 inline bool Car::has_twin_data() const {
   return this != internal_default_instance() && twin_data_ != nullptr;
 }
@@ -4895,7 +5838,7 @@ inline void StaticObstacle::set_z(double value) {
   // @@protoc_insertion_point(field_set:sim_msg.StaticObstacle.z)
 }
 
-// string strid = 12;
+// string strid = 12 [deprecated = true];
 inline void StaticObstacle::clear_strid() {
   strid_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -4946,7 +5889,7 @@ inline void StaticObstacle::set_allocated_strid(std::string* strid) {
   // @@protoc_insertion_point(field_set_allocated:sim_msg.StaticObstacle.strid)
 }
 
-// .sim_msg.TwinInfo twin_data = 13;
+// .sim_msg.TwinInfo twin_data = 13 [deprecated = true];
 inline bool StaticObstacle::has_twin_data() const {
   return this != internal_default_instance() && twin_data_ != nullptr;
 }
@@ -5169,7 +6112,7 @@ inline void DynamicObstacle::set_acc(double value) {
   // @@protoc_insertion_point(field_set:sim_msg.DynamicObstacle.acc)
 }
 
-// int32 age = 13;
+// int32 age = 13 [deprecated = true];
 inline void DynamicObstacle::clear_age() {
   age_ = 0;
 }
@@ -5309,7 +6252,7 @@ inline void DynamicObstacle::set_show_relative_dist_horizontal(double value) {
   // @@protoc_insertion_point(field_set:sim_msg.DynamicObstacle.show_relative_dist_horizontal)
 }
 
-// string strid = 23;
+// string strid = 23 [deprecated = true];
 inline void DynamicObstacle::clear_strid() {
   strid_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -5360,7 +6303,7 @@ inline void DynamicObstacle::set_allocated_strid(std::string* strid) {
   // @@protoc_insertion_point(field_set_allocated:sim_msg.DynamicObstacle.strid)
 }
 
-// .sim_msg.TwinInfo twin_data = 24;
+// .sim_msg.TwinInfo twin_data = 24 [deprecated = true];
 inline bool DynamicObstacle::has_twin_data() const {
   return this != internal_default_instance() && twin_data_ != nullptr;
 }
@@ -5409,6 +6352,20 @@ inline void DynamicObstacle::set_allocated_twin_data(::sim_msg::TwinInfo* twin_d
   }
   twin_data_ = twin_data;
   // @@protoc_insertion_point(field_set_allocated:sim_msg.DynamicObstacle.twin_data)
+}
+
+// int64 poly_id = 25;
+inline void DynamicObstacle::clear_poly_id() {
+  poly_id_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 DynamicObstacle::poly_id() const {
+  // @@protoc_insertion_point(field_get:sim_msg.DynamicObstacle.poly_id)
+  return poly_id_;
+}
+inline void DynamicObstacle::set_poly_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  poly_id_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.DynamicObstacle.poly_id)
 }
 
 // -------------------------------------------------------------------
@@ -5559,7 +6516,7 @@ inline void TrafficLight::set_z(double value) {
   // @@protoc_insertion_point(field_set:sim_msg.TrafficLight.z)
 }
 
-// uint64 tx_road_id = 8;
+// uint64 tx_road_id = 8 [deprecated = true];
 inline void TrafficLight::clear_tx_road_id() {
   tx_road_id_ = PROTOBUF_ULONGLONG(0);
 }
@@ -5573,7 +6530,7 @@ inline void TrafficLight::set_tx_road_id(::PROTOBUF_NAMESPACE_ID::uint64 value) 
   // @@protoc_insertion_point(field_set:sim_msg.TrafficLight.tx_road_id)
 }
 
-// uint64 tx_section_id = 9;
+// uint64 tx_section_id = 9 [deprecated = true];
 inline void TrafficLight::clear_tx_section_id() {
   tx_section_id_ = PROTOBUF_ULONGLONG(0);
 }
@@ -5587,7 +6544,7 @@ inline void TrafficLight::set_tx_section_id(::PROTOBUF_NAMESPACE_ID::uint64 valu
   // @@protoc_insertion_point(field_set:sim_msg.TrafficLight.tx_section_id)
 }
 
-// int64 tx_lane_id = 10;
+// int64 tx_lane_id = 10 [deprecated = true];
 inline void TrafficLight::clear_tx_lane_id() {
   tx_lane_id_ = PROTOBUF_LONGLONG(0);
 }
@@ -5941,6 +6898,810 @@ inline void EgoInfo::set_slope(float value) {
 
 // -------------------------------------------------------------------
 
+// Capsule
+
+// int64 id = 1;
+inline void Capsule::clear_id() {
+  id_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Capsule::id() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.id)
+  return id_;
+}
+inline void Capsule::set_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  id_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.id)
+}
+
+// int64 drone_id = 2;
+inline void Capsule::clear_drone_id() {
+  drone_id_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Capsule::drone_id() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.drone_id)
+  return drone_id_;
+}
+inline void Capsule::set_drone_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  drone_id_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.drone_id)
+}
+
+// double t = 3;
+inline void Capsule::clear_t() {
+  t_ = 0;
+}
+inline double Capsule::t() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.t)
+  return t_;
+}
+inline void Capsule::set_t(double value) {
+  
+  t_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.t)
+}
+
+// double x = 4;
+inline void Capsule::clear_x() {
+  x_ = 0;
+}
+inline double Capsule::x() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.x)
+  return x_;
+}
+inline void Capsule::set_x(double value) {
+  
+  x_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.x)
+}
+
+// double y = 5;
+inline void Capsule::clear_y() {
+  y_ = 0;
+}
+inline double Capsule::y() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.y)
+  return y_;
+}
+inline void Capsule::set_y(double value) {
+  
+  y_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.y)
+}
+
+// double z = 6;
+inline void Capsule::clear_z() {
+  z_ = 0;
+}
+inline double Capsule::z() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.z)
+  return z_;
+}
+inline void Capsule::set_z(double value) {
+  
+  z_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.z)
+}
+
+// double heading = 7;
+inline void Capsule::clear_heading() {
+  heading_ = 0;
+}
+inline double Capsule::heading() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.heading)
+  return heading_;
+}
+inline void Capsule::set_heading(double value) {
+  
+  heading_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.heading)
+}
+
+// double pitch = 8;
+inline void Capsule::clear_pitch() {
+  pitch_ = 0;
+}
+inline double Capsule::pitch() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.pitch)
+  return pitch_;
+}
+inline void Capsule::set_pitch(double value) {
+  
+  pitch_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.pitch)
+}
+
+// double roll = 9;
+inline void Capsule::clear_roll() {
+  roll_ = 0;
+}
+inline double Capsule::roll() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.roll)
+  return roll_;
+}
+inline void Capsule::set_roll(double value) {
+  
+  roll_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.roll)
+}
+
+// double head_a = 10;
+inline void Capsule::clear_head_a() {
+  head_a_ = 0;
+}
+inline double Capsule::head_a() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.head_a)
+  return head_a_;
+}
+inline void Capsule::set_head_a(double value) {
+  
+  head_a_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.head_a)
+}
+
+// double head_b = 11;
+inline void Capsule::clear_head_b() {
+  head_b_ = 0;
+}
+inline double Capsule::head_b() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.head_b)
+  return head_b_;
+}
+inline void Capsule::set_head_b(double value) {
+  
+  head_b_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.head_b)
+}
+
+// double body_l = 12;
+inline void Capsule::clear_body_l() {
+  body_l_ = 0;
+}
+inline double Capsule::body_l() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.body_l)
+  return body_l_;
+}
+inline void Capsule::set_body_l(double value) {
+  
+  body_l_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.body_l)
+}
+
+// double tail_a = 13;
+inline void Capsule::clear_tail_a() {
+  tail_a_ = 0;
+}
+inline double Capsule::tail_a() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.tail_a)
+  return tail_a_;
+}
+inline void Capsule::set_tail_a(double value) {
+  
+  tail_a_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.tail_a)
+}
+
+// double tail_b = 14;
+inline void Capsule::clear_tail_b() {
+  tail_b_ = 0;
+}
+inline double Capsule::tail_b() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.tail_b)
+  return tail_b_;
+}
+inline void Capsule::set_tail_b(double value) {
+  
+  tail_b_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.tail_b)
+}
+
+// double height = 15;
+inline void Capsule::clear_height() {
+  height_ = 0;
+}
+inline double Capsule::height() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.height)
+  return height_;
+}
+inline void Capsule::set_height(double value) {
+  
+  height_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.height)
+}
+
+// double v = 16;
+inline void Capsule::clear_v() {
+  v_ = 0;
+}
+inline double Capsule::v() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.v)
+  return v_;
+}
+inline void Capsule::set_v(double value) {
+  
+  v_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.v)
+}
+
+// double acc = 17;
+inline void Capsule::clear_acc() {
+  acc_ = 0;
+}
+inline double Capsule::acc() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.acc)
+  return acc_;
+}
+inline void Capsule::set_acc(double value) {
+  
+  acc_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.acc)
+}
+
+// int32 type = 18;
+inline void Capsule::clear_type() {
+  type_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Capsule::type() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.type)
+  return type_;
+}
+inline void Capsule::set_type(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  type_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.type)
+}
+
+// int32 tx_airway_id = 19;
+inline void Capsule::clear_tx_airway_id() {
+  tx_airway_id_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Capsule::tx_airway_id() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.tx_airway_id)
+  return tx_airway_id_;
+}
+inline void Capsule::set_tx_airway_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  tx_airway_id_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.tx_airway_id)
+}
+
+// string plan_id = 20;
+inline void Capsule::clear_plan_id() {
+  plan_id_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& Capsule::plan_id() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.plan_id)
+  return plan_id_.GetNoArena();
+}
+inline void Capsule::set_plan_id(const std::string& value) {
+  
+  plan_id_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.plan_id)
+}
+inline void Capsule::set_plan_id(std::string&& value) {
+  
+  plan_id_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:sim_msg.Capsule.plan_id)
+}
+inline void Capsule::set_plan_id(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  plan_id_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:sim_msg.Capsule.plan_id)
+}
+inline void Capsule::set_plan_id(const char* value, size_t size) {
+  
+  plan_id_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:sim_msg.Capsule.plan_id)
+}
+inline std::string* Capsule::mutable_plan_id() {
+  
+  // @@protoc_insertion_point(field_mutable:sim_msg.Capsule.plan_id)
+  return plan_id_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* Capsule::release_plan_id() {
+  // @@protoc_insertion_point(field_release:sim_msg.Capsule.plan_id)
+  
+  return plan_id_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void Capsule::set_allocated_plan_id(std::string* plan_id) {
+  if (plan_id != nullptr) {
+    
+  } else {
+    
+  }
+  plan_id_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), plan_id);
+  // @@protoc_insertion_point(field_set_allocated:sim_msg.Capsule.plan_id)
+}
+
+// int32 priorty = 21;
+inline void Capsule::clear_priorty() {
+  priorty_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Capsule::priorty() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Capsule.priorty)
+  return priorty_;
+}
+inline void Capsule::set_priorty(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  priorty_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Capsule.priorty)
+}
+
+// -------------------------------------------------------------------
+
+// Drone
+
+// int64 id = 1;
+inline void Drone::clear_id() {
+  id_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Drone::id() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.id)
+  return id_;
+}
+inline void Drone::set_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  id_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.id)
+}
+
+// double t = 2;
+inline void Drone::clear_t() {
+  t_ = 0;
+}
+inline double Drone::t() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.t)
+  return t_;
+}
+inline void Drone::set_t(double value) {
+  
+  t_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.t)
+}
+
+// string name = 3;
+inline void Drone::clear_name() {
+  name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& Drone::name() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.name)
+  return name_.GetNoArena();
+}
+inline void Drone::set_name(const std::string& value) {
+  
+  name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.name)
+}
+inline void Drone::set_name(std::string&& value) {
+  
+  name_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:sim_msg.Drone.name)
+}
+inline void Drone::set_name(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:sim_msg.Drone.name)
+}
+inline void Drone::set_name(const char* value, size_t size) {
+  
+  name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:sim_msg.Drone.name)
+}
+inline std::string* Drone::mutable_name() {
+  
+  // @@protoc_insertion_point(field_mutable:sim_msg.Drone.name)
+  return name_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* Drone::release_name() {
+  // @@protoc_insertion_point(field_release:sim_msg.Drone.name)
+  
+  return name_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void Drone::set_allocated_name(std::string* name) {
+  if (name != nullptr) {
+    
+  } else {
+    
+  }
+  name_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), name);
+  // @@protoc_insertion_point(field_set_allocated:sim_msg.Drone.name)
+}
+
+// string owner = 4;
+inline void Drone::clear_owner() {
+  owner_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& Drone::owner() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.owner)
+  return owner_.GetNoArena();
+}
+inline void Drone::set_owner(const std::string& value) {
+  
+  owner_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.owner)
+}
+inline void Drone::set_owner(std::string&& value) {
+  
+  owner_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:sim_msg.Drone.owner)
+}
+inline void Drone::set_owner(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  owner_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:sim_msg.Drone.owner)
+}
+inline void Drone::set_owner(const char* value, size_t size) {
+  
+  owner_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:sim_msg.Drone.owner)
+}
+inline std::string* Drone::mutable_owner() {
+  
+  // @@protoc_insertion_point(field_mutable:sim_msg.Drone.owner)
+  return owner_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* Drone::release_owner() {
+  // @@protoc_insertion_point(field_release:sim_msg.Drone.owner)
+  
+  return owner_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void Drone::set_allocated_owner(std::string* owner) {
+  if (owner != nullptr) {
+    
+  } else {
+    
+  }
+  owner_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), owner);
+  // @@protoc_insertion_point(field_set_allocated:sim_msg.Drone.owner)
+}
+
+// double x = 5;
+inline void Drone::clear_x() {
+  x_ = 0;
+}
+inline double Drone::x() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.x)
+  return x_;
+}
+inline void Drone::set_x(double value) {
+  
+  x_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.x)
+}
+
+// double y = 6;
+inline void Drone::clear_y() {
+  y_ = 0;
+}
+inline double Drone::y() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.y)
+  return y_;
+}
+inline void Drone::set_y(double value) {
+  
+  y_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.y)
+}
+
+// double z = 7;
+inline void Drone::clear_z() {
+  z_ = 0;
+}
+inline double Drone::z() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.z)
+  return z_;
+}
+inline void Drone::set_z(double value) {
+  
+  z_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.z)
+}
+
+// double heading = 8;
+inline void Drone::clear_heading() {
+  heading_ = 0;
+}
+inline double Drone::heading() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.heading)
+  return heading_;
+}
+inline void Drone::set_heading(double value) {
+  
+  heading_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.heading)
+}
+
+// double pitch = 9;
+inline void Drone::clear_pitch() {
+  pitch_ = 0;
+}
+inline double Drone::pitch() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.pitch)
+  return pitch_;
+}
+inline void Drone::set_pitch(double value) {
+  
+  pitch_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.pitch)
+}
+
+// double roll = 10;
+inline void Drone::clear_roll() {
+  roll_ = 0;
+}
+inline double Drone::roll() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.roll)
+  return roll_;
+}
+inline void Drone::set_roll(double value) {
+  
+  roll_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.roll)
+}
+
+// double v = 11;
+inline void Drone::clear_v() {
+  v_ = 0;
+}
+inline double Drone::v() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.v)
+  return v_;
+}
+inline void Drone::set_v(double value) {
+  
+  v_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.v)
+}
+
+// double acc = 12;
+inline void Drone::clear_acc() {
+  acc_ = 0;
+}
+inline double Drone::acc() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.acc)
+  return acc_;
+}
+inline void Drone::set_acc(double value) {
+  
+  acc_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.acc)
+}
+
+// int32 type = 13;
+inline void Drone::clear_type() {
+  type_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Drone::type() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.type)
+  return type_;
+}
+inline void Drone::set_type(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  type_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.type)
+}
+
+// int32 tx_airway_id = 14;
+inline void Drone::clear_tx_airway_id() {
+  tx_airway_id_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Drone::tx_airway_id() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.tx_airway_id)
+  return tx_airway_id_;
+}
+inline void Drone::set_tx_airway_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  tx_airway_id_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.tx_airway_id)
+}
+
+// string plan_id = 15;
+inline void Drone::clear_plan_id() {
+  plan_id_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& Drone::plan_id() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.plan_id)
+  return plan_id_.GetNoArena();
+}
+inline void Drone::set_plan_id(const std::string& value) {
+  
+  plan_id_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.plan_id)
+}
+inline void Drone::set_plan_id(std::string&& value) {
+  
+  plan_id_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:sim_msg.Drone.plan_id)
+}
+inline void Drone::set_plan_id(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  plan_id_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:sim_msg.Drone.plan_id)
+}
+inline void Drone::set_plan_id(const char* value, size_t size) {
+  
+  plan_id_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:sim_msg.Drone.plan_id)
+}
+inline std::string* Drone::mutable_plan_id() {
+  
+  // @@protoc_insertion_point(field_mutable:sim_msg.Drone.plan_id)
+  return plan_id_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* Drone::release_plan_id() {
+  // @@protoc_insertion_point(field_release:sim_msg.Drone.plan_id)
+  
+  return plan_id_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void Drone::set_allocated_plan_id(std::string* plan_id) {
+  if (plan_id != nullptr) {
+    
+  } else {
+    
+  }
+  plan_id_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), plan_id);
+  // @@protoc_insertion_point(field_set_allocated:sim_msg.Drone.plan_id)
+}
+
+// int32 priorty = 16;
+inline void Drone::clear_priorty() {
+  priorty_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Drone::priorty() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.priorty)
+  return priorty_;
+}
+inline void Drone::set_priorty(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  priorty_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.priorty)
+}
+
+// int32 status = 17;
+inline void Drone::clear_status() {
+  status_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Drone::status() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Drone.status)
+  return status_;
+}
+inline void Drone::set_status(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  status_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Drone.status)
+}
+
+// -------------------------------------------------------------------
+
+// Detection
+
+// int64 id = 1;
+inline void Detection::clear_id() {
+  id_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Detection::id() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Detection.id)
+  return id_;
+}
+inline void Detection::set_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  id_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Detection.id)
+}
+
+// double t = 2;
+inline void Detection::clear_t() {
+  t_ = 0;
+}
+inline double Detection::t() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Detection.t)
+  return t_;
+}
+inline void Detection::set_t(double value) {
+  
+  t_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Detection.t)
+}
+
+// int64 drone_id = 3;
+inline void Detection::clear_drone_id() {
+  drone_id_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Detection::drone_id() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Detection.drone_id)
+  return drone_id_;
+}
+inline void Detection::set_drone_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  drone_id_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Detection.drone_id)
+}
+
+// int64 capsule_id = 4;
+inline void Detection::clear_capsule_id() {
+  capsule_id_ = PROTOBUF_LONGLONG(0);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int64 Detection::capsule_id() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Detection.capsule_id)
+  return capsule_id_;
+}
+inline void Detection::set_capsule_id(::PROTOBUF_NAMESPACE_ID::int64 value) {
+  
+  capsule_id_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Detection.capsule_id)
+}
+
+// .sim_msg.Detection.DetectionType detection_type = 5;
+inline void Detection::clear_detection_type() {
+  detection_type_ = 0;
+}
+inline ::sim_msg::Detection_DetectionType Detection::detection_type() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Detection.detection_type)
+  return static_cast< ::sim_msg::Detection_DetectionType >(detection_type_);
+}
+inline void Detection::set_detection_type(::sim_msg::Detection_DetectionType value) {
+  
+  detection_type_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Detection.detection_type)
+}
+
+// int32 tx_airway_id = 6;
+inline void Detection::clear_tx_airway_id() {
+  tx_airway_id_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 Detection::tx_airway_id() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Detection.tx_airway_id)
+  return tx_airway_id_;
+}
+inline void Detection::set_tx_airway_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  tx_airway_id_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Detection.tx_airway_id)
+}
+
+// .sim_msg.Detection.DetectionStatus detection_status = 7;
+inline void Detection::clear_detection_status() {
+  detection_status_ = 0;
+}
+inline ::sim_msg::Detection_DetectionStatus Detection::detection_status() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Detection.detection_status)
+  return static_cast< ::sim_msg::Detection_DetectionStatus >(detection_status_);
+}
+inline void Detection::set_detection_status(::sim_msg::Detection_DetectionStatus value) {
+  
+  detection_status_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Detection.detection_status)
+}
+
+// .sim_msg.Detection.ExceptionStatus exception_status = 8;
+inline void Detection::clear_exception_status() {
+  exception_status_ = 0;
+}
+inline ::sim_msg::Detection_ExceptionStatus Detection::exception_status() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Detection.exception_status)
+  return static_cast< ::sim_msg::Detection_ExceptionStatus >(exception_status_);
+}
+inline void Detection::set_exception_status(::sim_msg::Detection_ExceptionStatus value) {
+  
+  exception_status_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Detection.exception_status)
+}
+
+// -------------------------------------------------------------------
+
 // Traffic
 
 // repeated .sim_msg.Car cars = 1;
@@ -6133,6 +7894,96 @@ inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::EgoInfo >&
 Traffic::egos() const {
   // @@protoc_insertion_point(field_list:sim_msg.Traffic.egos)
   return egos_;
+}
+
+// repeated .sim_msg.Drone drones = 9;
+inline int Traffic::drones_size() const {
+  return drones_.size();
+}
+inline void Traffic::clear_drones() {
+  drones_.Clear();
+}
+inline ::sim_msg::Drone* Traffic::mutable_drones(int index) {
+  // @@protoc_insertion_point(field_mutable:sim_msg.Traffic.drones)
+  return drones_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Drone >*
+Traffic::mutable_drones() {
+  // @@protoc_insertion_point(field_mutable_list:sim_msg.Traffic.drones)
+  return &drones_;
+}
+inline const ::sim_msg::Drone& Traffic::drones(int index) const {
+  // @@protoc_insertion_point(field_get:sim_msg.Traffic.drones)
+  return drones_.Get(index);
+}
+inline ::sim_msg::Drone* Traffic::add_drones() {
+  // @@protoc_insertion_point(field_add:sim_msg.Traffic.drones)
+  return drones_.Add();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Drone >&
+Traffic::drones() const {
+  // @@protoc_insertion_point(field_list:sim_msg.Traffic.drones)
+  return drones_;
+}
+
+// repeated .sim_msg.Capsule capsules = 10;
+inline int Traffic::capsules_size() const {
+  return capsules_.size();
+}
+inline void Traffic::clear_capsules() {
+  capsules_.Clear();
+}
+inline ::sim_msg::Capsule* Traffic::mutable_capsules(int index) {
+  // @@protoc_insertion_point(field_mutable:sim_msg.Traffic.capsules)
+  return capsules_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Capsule >*
+Traffic::mutable_capsules() {
+  // @@protoc_insertion_point(field_mutable_list:sim_msg.Traffic.capsules)
+  return &capsules_;
+}
+inline const ::sim_msg::Capsule& Traffic::capsules(int index) const {
+  // @@protoc_insertion_point(field_get:sim_msg.Traffic.capsules)
+  return capsules_.Get(index);
+}
+inline ::sim_msg::Capsule* Traffic::add_capsules() {
+  // @@protoc_insertion_point(field_add:sim_msg.Traffic.capsules)
+  return capsules_.Add();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Capsule >&
+Traffic::capsules() const {
+  // @@protoc_insertion_point(field_list:sim_msg.Traffic.capsules)
+  return capsules_;
+}
+
+// repeated .sim_msg.Detection detections = 11;
+inline int Traffic::detections_size() const {
+  return detections_.size();
+}
+inline void Traffic::clear_detections() {
+  detections_.Clear();
+}
+inline ::sim_msg::Detection* Traffic::mutable_detections(int index) {
+  // @@protoc_insertion_point(field_mutable:sim_msg.Traffic.detections)
+  return detections_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Detection >*
+Traffic::mutable_detections() {
+  // @@protoc_insertion_point(field_mutable_list:sim_msg.Traffic.detections)
+  return &detections_;
+}
+inline const ::sim_msg::Detection& Traffic::detections(int index) const {
+  // @@protoc_insertion_point(field_get:sim_msg.Traffic.detections)
+  return detections_.Get(index);
+}
+inline ::sim_msg::Detection* Traffic::add_detections() {
+  // @@protoc_insertion_point(field_add:sim_msg.Traffic.detections)
+  return detections_.Add();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Detection >&
+Traffic::detections() const {
+  // @@protoc_insertion_point(field_list:sim_msg.Traffic.detections)
+  return detections_;
 }
 
 // -------------------------------------------------------------------
@@ -6434,6 +8285,12 @@ TrafficRecords4Logsim::ego_trajectory() const {
 
 // -------------------------------------------------------------------
 
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 
 // @@protoc_insertion_point(namespace_scope)
 
@@ -6441,6 +8298,21 @@ TrafficRecords4Logsim::ego_trajectory() const {
 
 PROTOBUF_NAMESPACE_OPEN
 
+template <> struct is_proto_enum< ::sim_msg::Detection_DetectionType> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::sim_msg::Detection_DetectionType>() {
+  return ::sim_msg::Detection_DetectionType_descriptor();
+}
+template <> struct is_proto_enum< ::sim_msg::Detection_DetectionStatus> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::sim_msg::Detection_DetectionStatus>() {
+  return ::sim_msg::Detection_DetectionStatus_descriptor();
+}
+template <> struct is_proto_enum< ::sim_msg::Detection_ExceptionStatus> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::sim_msg::Detection_ExceptionStatus>() {
+  return ::sim_msg::Detection_ExceptionStatus_descriptor();
+}
 template <> struct is_proto_enum< ::sim_msg::ControlState> : ::std::true_type {};
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::sim_msg::ControlState>() {

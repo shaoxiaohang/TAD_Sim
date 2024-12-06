@@ -19,6 +19,8 @@ class Catalog {
   // second
   bool load_contour(const std::string &dir);
 
+  Eigen::Vector3d getCenterOffset(std::pair<int, int> type) const;
+
   std::vector<Eigen::Vector3d> getBboxPts(std::pair<int, int> type, const Eigen::Vector3d &pos, double roll,
                                           double pitch, double yaw) const;
 

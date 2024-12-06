@@ -1,10 +1,10 @@
 #include "VehicleManager.h"
-#include "Objects/Transports/Vehicle/VehiclePawn.h"
+
 #include "Framework/DisplayGameInstance.h"
 #include "Objects/SimActorFactory.h"
+#include "Objects/Transports/Vehicle/VehiclePawn.h"
 
 DEFINE_LOG_CATEGORY_STATIC(SimLogVehicleManager, Log, All);
-
 
 AVehicleManager::AVehicleManager()
 {
@@ -14,7 +14,7 @@ AVehicleManager::AVehicleManager()
     if (!vehicleClass.Get())
     {
         vehicleClass = AVehiclePawn::StaticClass();
-    } 
+    }
 }
 
 void AVehicleManager::Init(const FManagerConfig& Config)
@@ -41,8 +41,7 @@ void AVehicleManager::Init(const FManagerConfig& Config)
                 VehicleConfig.CustomMesh =
                     GI->GetRuntimeMeshLoader()->LoadStaticMeshFromFBX(ModelPath, true, EMeshType::MT_VEHICLE);
 
-                 UE_LOG(SimLogVehicleManager, Warning, TEXT("VehicleConfig.CustomMesh %s : %s"), *Elem.Name,
-                 *ModelPath);
+                UE_LOG(SimLogVehicleManager, Warning, TEXT("VehicleConfig.CustomMesh %s : %s"), *Elem.Name, *ModelPath);
             }
             Class = vehicleClass;
         }
@@ -58,8 +57,8 @@ void AVehicleManager::Init(const FManagerConfig& Config)
                 // }
                 // else
                 // {
-                    NewVehicle->ApplyCatalogOffset(GI->GetCatalogDataSource()->GetOffset(VehicleConfig.Name));
-               // }
+                NewVehicle->ApplyCatalogOffset(GI->GetCatalogDataSource()->GetOffset(VehicleConfig.Name));
+                // }
             }
             egoArry.Add(NewVehicle);
         }
@@ -74,6 +73,8 @@ void AVehicleManager::Update(const FManagerIn& Input, FManagerOut& Output)
 {
     const FVehicleManagerIn* TInput = Cast_Data<const FVehicleManagerIn>(Input);
     check(TInput);
+
+    UE_LOG(SimLogVehicleManager, Log, TEXT("AVehicleManager::Update %f"), Input.timeStamp);
 
     FVehicleManagerOut* TOutput = Cast_Data<FVehicleManagerOut>(Output);
     check(TOutput);
@@ -106,6 +107,7 @@ void AVehicleManager::Update(const FManagerIn& Input, FManagerOut& Output)
         if (!IsAssigned)    // Add
         {
             FVehicleConfig VehicleConfig;
+            VehicleConfig.type = TInput->trafficVehicleInputArry[i].type;
             VehicleConfig.id = TInput->trafficVehicleInputArry[i].id;
             VehicleConfig.startLocation = TInput->trafficVehicleInputArry[i].location;
             VehicleConfig.startRotation = TInput->trafficVehicleInputArry[i].rotation;
@@ -117,6 +119,8 @@ void AVehicleManager::Update(const FManagerIn& Input, FManagerOut& Output)
             {
                 VehicleConfig.isEgoSnap = false;
             }
+            UE_LOG(SimLogVehicleManager, Display, TEXT("Adding New Vehicle: type : %d id : %d typename: %s"),
+                VehicleConfig.type, VehicleConfig.id, *VehicleConfig.typeName);
             TSubclassOf<AVehiclePawn> Class = GetBPResource<AVehiclePawn>(
                 TInput->trafficVehicleInputArry[i].typeName, ECatalogType::CT_TrafficVehicle, vehicleClassMap);
             if (!Class.Get())
@@ -146,6 +150,7 @@ void AVehicleManager::Update(const FManagerIn& Input, FManagerOut& Output)
                     }
                 }
                 NewVehicle->Update(TInput->trafficVehicleInputArry[i], TOutput->trafficOutArry[i]);
+                NewVehicle->SetupComponents();
             }
             else
             {
@@ -202,6 +207,7 @@ void AVehicleManager::Update(const FManagerIn& Input, FManagerOut& Output)
         if (!IsAssigned)    // Add
         {
             FVehicleConfig VehicleConfig;
+            VehicleConfig.type = TInput->egoVehicleInputArry[i].type;
             VehicleConfig.id = TInput->egoVehicleInputArry[i].id;
             VehicleConfig.startLocation = TInput->egoVehicleInputArry[i].location;
             VehicleConfig.startRotation = TInput->egoVehicleInputArry[i].rotation;

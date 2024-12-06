@@ -83,6 +83,15 @@ public:
 };
 
 USTRUCT()
+struct FLocalResetOut : public FLocalOut
+{
+    GENERATED_BODY()
+public:
+    UPROPERTY()
+    FString message;
+};
+
+USTRUCT()
 struct FLocalUpdateOut : public FLocalOut
 {
     GENERATED_BODY()

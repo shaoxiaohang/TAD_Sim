@@ -1,25 +1,29 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
-
+// #include "SimInterface.h"
 #include "GameFramework/GameStateBase.h"
-#include "Framework/DisplayGameModeBase.h"
-#include "Managers/SensorManager.h"
 #include "Managers/TransportManager.h"
 #include "Managers/CreatureManager.h"
 #include "Managers/ObstacleManager.h"
+#include "Managers/SensorManager.h"
 
+#include "Framework/DisplayGameModeBase.h"
 #include "DisplayGameStateBase.generated.h"
 
+// struct FLocalResetIn;
+// struct FLocalUpdateIn;
+// struct FLocalData;
 
 UCLASS()
 class DISPLAY_API ASyncSystem : public AActor
 {
     GENERATED_BODY()
-
 public:
     FLocalUpdateOut SyncSimActors(const FLocalData& _Data);
-
+    // void SyncSensorActors(const FLocalData& _Data);
 public:
     // TransportManager
     TWeakObjectPtr<ATransportManager> transportManager = NULL;
@@ -33,21 +37,28 @@ public:
     // ObstacleManager
     AObstacleManager* obstacleManager = NULL;
 
-protected:
-    /* Spawn all private managers */
-    bool SpawnAndInitAllManagers();
-
-    FLocalUpdateOut UpdateAllManagers(const FLocalUpdateIn& _In);
-
-    void OnAllManagersInit();
-
-
+    //// UI
+    // UOutlineWidget* outlineWidget = NULL;
 protected:
     FLocalResetIn resetIn;
     FLocalUpdateIn updateIn;
     FLocalUpdateOut updateOut;
+
+protected:
+    /* Spawn all private managers */
+    bool SpawnAndInitAllManagers();
+
+    /* Init all private managers */
+    FLocalUpdateOut UpdateAllManagers(const FLocalUpdateIn& _In);
+
+    void OnAllManagersInit();
+
+    void OnAllManagersUpdate();
 };
 
+/**
+ *
+ */
 UCLASS()
 class DISPLAY_API ADisplayGameStateBase : public AGameStateBase
 {
@@ -62,10 +73,14 @@ public:
     // Gameinstance input simdata to gamestat
     virtual void SimInput(const FLocalData& _Data);
 
-public:
+protected:
+    FLocalResetIn resetIn;
+    FLocalUpdateIn updateIn;
 
+public:
     ASyncSystem* syncSystem = NULL;
 
+protected:
 protected:
     /**
      * Called by GameMode, run reset event.
@@ -82,8 +97,7 @@ protected:
     virtual void Multicast_Update(FLocalUpdateIn _UpdateData);
 
 protected:
-    FLocalResetIn resetIn;
-    FLocalUpdateIn updateIn;
-    FLocalUpdateOut updateOut;
-
+    /* Engine Interface */
+    /** Overridable native event for when play begins for this actor. */
+    virtual void BeginPlay();
 };

@@ -189,25 +189,25 @@ class Location_EgoLane :
     kRoadpkidFieldNumber = 3,
     kDist2RefLineFieldNumber = 4,
   };
-  // int64 lanepkid = 1;
-  void clear_lanepkid();
-  ::PROTOBUF_NAMESPACE_ID::int64 lanepkid() const;
-  void set_lanepkid(::PROTOBUF_NAMESPACE_ID::int64 value);
+  // int64 lanepkid = 1 [deprecated = true];
+  PROTOBUF_DEPRECATED void clear_lanepkid();
+  PROTOBUF_DEPRECATED ::PROTOBUF_NAMESPACE_ID::int64 lanepkid() const;
+  PROTOBUF_DEPRECATED void set_lanepkid(::PROTOBUF_NAMESPACE_ID::int64 value);
 
-  // uint64 sectionpkid = 2;
-  void clear_sectionpkid();
-  ::PROTOBUF_NAMESPACE_ID::uint64 sectionpkid() const;
-  void set_sectionpkid(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  // uint64 sectionpkid = 2 [deprecated = true];
+  PROTOBUF_DEPRECATED void clear_sectionpkid();
+  PROTOBUF_DEPRECATED ::PROTOBUF_NAMESPACE_ID::uint64 sectionpkid() const;
+  PROTOBUF_DEPRECATED void set_sectionpkid(::PROTOBUF_NAMESPACE_ID::uint64 value);
 
-  // uint64 roadpkid = 3;
-  void clear_roadpkid();
-  ::PROTOBUF_NAMESPACE_ID::uint64 roadpkid() const;
-  void set_roadpkid(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  // uint64 roadpkid = 3 [deprecated = true];
+  PROTOBUF_DEPRECATED void clear_roadpkid();
+  PROTOBUF_DEPRECATED ::PROTOBUF_NAMESPACE_ID::uint64 roadpkid() const;
+  PROTOBUF_DEPRECATED void set_roadpkid(::PROTOBUF_NAMESPACE_ID::uint64 value);
 
-  // double dist_2_ref_line = 4;
-  void clear_dist_2_ref_line();
-  double dist_2_ref_line() const;
-  void set_dist_2_ref_line(double value);
+  // double dist_2_ref_line = 4 [deprecated = true];
+  PROTOBUF_DEPRECATED void clear_dist_2_ref_line();
+  PROTOBUF_DEPRECATED double dist_2_ref_line() const;
+  PROTOBUF_DEPRECATED void set_dist_2_ref_line(double value);
 
   // @@protoc_insertion_point(class_scope:sim_msg.Location.EgoLane)
  private:
@@ -386,13 +386,13 @@ class Location :
   ::sim_msg::Vec3* mutable_acceleration();
   void set_allocated_acceleration(::sim_msg::Vec3* acceleration);
 
-  // .sim_msg.Location.EgoLane ego_lane = 7;
-  bool has_ego_lane() const;
-  void clear_ego_lane();
-  const ::sim_msg::Location_EgoLane& ego_lane() const;
-  ::sim_msg::Location_EgoLane* release_ego_lane();
-  ::sim_msg::Location_EgoLane* mutable_ego_lane();
-  void set_allocated_ego_lane(::sim_msg::Location_EgoLane* ego_lane);
+  // .sim_msg.Location.EgoLane ego_lane = 7 [deprecated = true];
+  PROTOBUF_DEPRECATED bool has_ego_lane() const;
+  PROTOBUF_DEPRECATED void clear_ego_lane();
+  PROTOBUF_DEPRECATED const ::sim_msg::Location_EgoLane& ego_lane() const;
+  PROTOBUF_DEPRECATED ::sim_msg::Location_EgoLane* release_ego_lane();
+  PROTOBUF_DEPRECATED ::sim_msg::Location_EgoLane* mutable_ego_lane();
+  PROTOBUF_DEPRECATED void set_allocated_ego_lane(::sim_msg::Location_EgoLane* ego_lane);
 
   // double t = 1;
   void clear_t();
@@ -425,7 +425,7 @@ class Location :
 #endif  // __GNUC__
 // Location_EgoLane
 
-// int64 lanepkid = 1;
+// int64 lanepkid = 1 [deprecated = true];
 inline void Location_EgoLane::clear_lanepkid() {
   lanepkid_ = PROTOBUF_LONGLONG(0);
 }
@@ -439,7 +439,7 @@ inline void Location_EgoLane::set_lanepkid(::PROTOBUF_NAMESPACE_ID::int64 value)
   // @@protoc_insertion_point(field_set:sim_msg.Location.EgoLane.lanepkid)
 }
 
-// uint64 sectionpkid = 2;
+// uint64 sectionpkid = 2 [deprecated = true];
 inline void Location_EgoLane::clear_sectionpkid() {
   sectionpkid_ = PROTOBUF_ULONGLONG(0);
 }
@@ -453,7 +453,7 @@ inline void Location_EgoLane::set_sectionpkid(::PROTOBUF_NAMESPACE_ID::uint64 va
   // @@protoc_insertion_point(field_set:sim_msg.Location.EgoLane.sectionpkid)
 }
 
-// uint64 roadpkid = 3;
+// uint64 roadpkid = 3 [deprecated = true];
 inline void Location_EgoLane::clear_roadpkid() {
   roadpkid_ = PROTOBUF_ULONGLONG(0);
 }
@@ -467,7 +467,7 @@ inline void Location_EgoLane::set_roadpkid(::PROTOBUF_NAMESPACE_ID::uint64 value
   // @@protoc_insertion_point(field_set:sim_msg.Location.EgoLane.roadpkid)
 }
 
-// double dist_2_ref_line = 4;
+// double dist_2_ref_line = 4 [deprecated = true];
 inline void Location_EgoLane::clear_dist_2_ref_line() {
   dist_2_ref_line_ = 0;
 }
@@ -724,7 +724,7 @@ inline void Location::set_allocated_acceleration(::sim_msg::Vec3* acceleration) 
   // @@protoc_insertion_point(field_set_allocated:sim_msg.Location.acceleration)
 }
 
-// .sim_msg.Location.EgoLane ego_lane = 7;
+// .sim_msg.Location.EgoLane ego_lane = 7 [deprecated = true];
 inline bool Location::has_ego_lane() const {
   return this != internal_default_instance() && ego_lane_ != nullptr;
 }

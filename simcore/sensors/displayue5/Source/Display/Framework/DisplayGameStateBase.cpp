@@ -1,9 +1,121 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #include "DisplayGameStateBase.h"
+#include "DisplayGameModeBase.h"
+#include "Engine/World.h"
 #include "DisplayPlayerController.h"
+#include "Managers/TransportManager.h"
+#include "Managers/CreatureManager.h"
+#include "Managers/ObstacleManager.h"
+#include "Managers/SensorManager.h"
 #include "Objects/Transports/TransportPawn.h"
 
-
 DEFINE_LOG_CATEGORY_STATIC(LogDebugGameState, Log, All);
+
+ADisplayGameStateBase::ADisplayGameStateBase(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+}
+
+void ADisplayGameStateBase::Multicast_Reset_Implementation(FLocalResetIn _ResetData)
+{
+    UE_LOG(LogDebugGameState, Log, TEXT("Multicast_Reset"));
+
+    // TODO: Delete all managers
+    //..
+
+    if (GetGameInstance()->IsDedicatedServerInstance())
+    {
+        UE_LOG(LogDebugGameState, Log, TEXT("Execute Multicast_Reset Server."));
+    }
+    else
+    {
+        resetIn = _ResetData;
+        if (!syncSystem)
+        {
+            syncSystem = GetWorld()->SpawnActor<ASyncSystem>();
+        }
+        syncSystem->SyncSimActors(resetIn);
+
+        FLocalResetOut ResetOut;
+        ResetOut.name = TEXT("RESET");
+        GetWorld()->GetFirstPlayerController<ADisplayPlayerController>()->Server_SimResetOutput(ResetOut);
+        UE_LOG(LogDebugGameState, Log, TEXT("Execute Multicast_Reset client."));
+    }
+}
+
+bool ADisplayGameStateBase::Multicast_Reset_Validate(FLocalResetIn _ResetData)
+{
+    return true;
+}
+
+void ADisplayGameStateBase::Multicast_Update_Implementation(FLocalUpdateIn _UpdateData)
+{
+    if (GetGameInstance()->IsDedicatedServerInstance())
+    {
+        UE_LOG(LogDebugGameState, Log, TEXT("Execute Multicast_Update Server."));
+    }
+    else
+    {
+        if (_UpdateData.name == TEXT("UPDATE"))
+        {
+            updateIn = _UpdateData;
+            FLocalUpdateOut UpdateOut = syncSystem->SyncSimActors(updateIn);
+            UpdateOut.timeStamp = _UpdateData.timeStamp;
+            // UpdateOut.timeStamp = 10000.f + _UpdateData.timeStamp;
+            UpdateOut.name = TEXT("UPDATE");
+            GetWorld()->GetFirstPlayerController<ADisplayPlayerController>()->Server_SimUpdateOutput(UpdateOut);
+        }
+        if (_UpdateData.name == TEXT("OUTPUT_SENSOR"))
+        {
+            FLocalUpdateOut UpdateOut = syncSystem->SyncSimActors(_UpdateData);
+            UpdateOut.name = TEXT("OUTPUT_SENSOR");
+            UpdateOut.timeStamp = _UpdateData.timeStamp;
+            UpdateOut.timeStamp_ego = _UpdateData.timeStamp_ego;
+            UpdateOut.timeStamp_tail = _UpdateData.timeStamp_tail;
+            GetWorld()->GetFirstPlayerController<ADisplayPlayerController>()->Server_SimUpdateOutput(UpdateOut);
+        }
+    }
+}
+
+bool ADisplayGameStateBase::Multicast_Update_Validate(FLocalUpdateIn _UpdateData)
+{
+    return true;
+}
+
+void ADisplayGameStateBase::SimInput(const FLocalData& _Data)
+{
+    if (_Data.name == TEXT("RESET"))
+    {
+        resetIn = *static_cast<const FLocalResetIn*>(&_Data);
+        Multicast_Reset(resetIn);
+    }
+    else if (_Data.name == TEXT("UPDATE"))
+    {
+        updateIn = *static_cast<const FLocalUpdateIn*>(&_Data);
+        Multicast_Update(updateIn);
+    }
+    else if (_Data.name == TEXT("OUTPUT_SENSOR"))
+    {
+        FLocalUpdateIn InData;
+        InData.timeStamp = _Data.timeStamp;
+        InData.name = _Data.name;
+        InData.timeStamp_ego = _Data.timeStamp_ego;
+        InData.timeStamp_tail = _Data.timeStamp_tail;
+        Multicast_Update(InData);
+    }
+}
+
+void ADisplayGameStateBase::BeginPlay()
+{
+    Super::BeginPlay();
+    if (!GetGameInstance()->IsDedicatedServerInstance())
+    {
+        if (!syncSystem)
+        {
+            syncSystem = GetWorld()->SpawnActor<ASyncSystem>();
+        }
+    }
+}
 
 FLocalUpdateOut ASyncSystem::SyncSimActors(const FLocalData& _Data)
 {
@@ -25,6 +137,7 @@ FLocalUpdateOut ASyncSystem::SyncSimActors(const FLocalData& _Data)
         SensorManager->Update(updateIn.sensorManager, updateOut.sensorManager);
         updateOut.message = TEXT("SUCCESS");
     }
+
     return updateOut;
 }
 
@@ -96,11 +209,14 @@ FLocalUpdateOut ASyncSystem::UpdateAllManagers(const FLocalUpdateIn& _In)
 
     UpdateOut.message = TEXT("SUCCESS");
 
+    OnAllManagersUpdate();
     return UpdateOut;
 }
 
 void ASyncSystem::OnAllManagersInit()
 {
+    // Possess to ego pawn
+
     bool SwitchCameraToEgo = false;
     if (transportManager.IsValid() && transportManager->vehicleManager)
     {
@@ -110,6 +226,7 @@ void ASyncSystem::OnAllManagersInit()
             if (Ego)
             {
                 GetWorld()->GetFirstPlayerController<ADisplayPlayerController>()->SwitchPawnToEgo();
+                // Ego->SwitchCamera(defaultCameraName);
                 SwitchCameraToEgo = true;
             }
         }
@@ -120,91 +237,6 @@ void ASyncSystem::OnAllManagersInit()
     }
 }
 
-ADisplayGameStateBase::ADisplayGameStateBase(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+void ASyncSystem::OnAllManagersUpdate()
 {
-}
-
-void ADisplayGameStateBase::SimInput(const FLocalData& _Data)
-{
-    if (_Data.name == TEXT("RESET"))
-    {
-        resetIn = *static_cast<const FLocalResetIn*>(&_Data);
-        Multicast_Reset(resetIn);
-    }
-    else if (_Data.name == TEXT("UPDATE"))
-    {
-        updateIn = *static_cast<const FLocalUpdateIn*>(&_Data);
-        Multicast_Update(updateIn);
-    }
-    else if (_Data.name == TEXT("OUTPUT_SENSOR"))
-    {
-        FLocalUpdateIn InData;
-        InData.timeStamp = _Data.timeStamp;
-        InData.name = _Data.name;
-        InData.timeStamp_ego = _Data.timeStamp_ego;
-        InData.timeStamp_tail = _Data.timeStamp_tail;
-        Multicast_Update(InData);
-    }
-}
-
-void ADisplayGameStateBase::Multicast_Reset_Implementation(FLocalResetIn _ResetData)
-{
-    UE_LOG(LogDebugGameState, Log, TEXT("Multicast_Reset"));
-
-    if (GetGameInstance()->IsDedicatedServerInstance())
-    {
-        UE_LOG(LogDebugGameState, Log, TEXT("Execute Multicast_Reset Server."));
-    }
-    else
-    {
-        resetIn = _ResetData;
-        if (!syncSystem)
-        {
-            syncSystem = GetWorld()->SpawnActor<ASyncSystem>();
-        }
-        syncSystem->SyncSimActors(resetIn);
-    }
-}
-
-bool ADisplayGameStateBase::Multicast_Reset_Validate(FLocalResetIn _ResetData)
-{
-    // TODO: check value is legal
-    // ..
-    return true;
-}
-
-void ADisplayGameStateBase::Multicast_Update_Implementation(FLocalUpdateIn _UpdateData)
-{
-    if (GetGameInstance()->IsDedicatedServerInstance())
-    {
-        UE_LOG(LogDebugGameState, Log, TEXT("Execute Multicast_Update Server."));
-    }
-    else
-    {
-        if (_UpdateData.name == TEXT("UPDATE"))
-        {
-            updateIn = _UpdateData;
-            FLocalUpdateOut UpdateOut = syncSystem->SyncSimActors(updateIn);
-            UpdateOut.timeStamp = _UpdateData.timeStamp;
-            UpdateOut.name = TEXT("UPDATE");
-            GetWorld()->GetFirstPlayerController<ADisplayPlayerController>()->Server_SimUpdateOutput(UpdateOut);
-        }
-        if (_UpdateData.name == TEXT("OUTPUT_SENSOR"))
-        {
-            FLocalUpdateOut UpdateOut = syncSystem->SyncSimActors(_UpdateData);
-            UpdateOut.name = TEXT("OUTPUT_SENSOR");
-            UpdateOut.timeStamp = _UpdateData.timeStamp;
-            UpdateOut.timeStamp_ego = _UpdateData.timeStamp_ego;
-            UpdateOut.timeStamp_tail = _UpdateData.timeStamp_tail;
-            GetWorld()->GetFirstPlayerController<ADisplayPlayerController>()->Server_SimUpdateOutput(UpdateOut);
-        }
-    }
-}
-
-
-bool ADisplayGameStateBase::Multicast_Update_Validate(FLocalUpdateIn _UpdateData)
-{
-    // TODO: check value is legal
-    // ..
-    return true;
 }

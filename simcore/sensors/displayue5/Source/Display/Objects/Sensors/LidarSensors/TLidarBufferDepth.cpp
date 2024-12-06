@@ -214,6 +214,11 @@ bool ALidarBufferDepth::Init(const FLidarConfig& _config, std::shared_ptr<lidar:
     return true;
 }
 
+TArray<class ADepthLidarBuffer*>& ALidarBufferDepth::GetDepthCameraActors()
+{
+    return depthCameraActors;
+}
+
 TSharedPtr<LidarBuffer> ALidarBufferDepth::GetTBuffer(const FTLidarMeasurement& measure)
 {
     // 设置天气
@@ -268,34 +273,34 @@ TSharedPtr<LidarBuffer> ALidarBufferDepth::GetTBuffer(const FTLidarMeasurement& 
                 hascpu = true;
             }
         }
-        // test
-        /*
-        IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked< IImageWrapperModule
-        >("ImageWrapper"); TSharedPtr<IImageWrapper> ImageWrapper =
-        ImageWrapperModule.CreateImageWrapper(EImageFormat::JPEG); UGameInstance* GI =
-        actor->GetWorld()->GetGameInstance(); if (GI)
-        {
-            UDisplayGameInstance*    DGI = Cast<UDisplayGameInstance>(GI);
+        // // test
+        // IImageWrapperModule& ImageWrapperModule =
+        //     FModuleManager::LoadModuleChecked<IImageWrapperModule>("ImageWrapper");
+        // TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
+        // UGameInstance* GI = actor->GetWorld()->GetGameInstance();
+        // if (GI)
+        // {
+        //     UDisplayGameInstance* DGI = Cast<UDisplayGameInstance>(GI);
 
-            FString savePath = TEXT("e:/test/display/");
-            if (BitMap[ii].Num() && ImageWrapper->SetRaw(BitMap[ii].GetData(), BitMap[ii].Num() * sizeof(FColor),
-                depthCameraActors[ii]->renderTarget2D->SizeX, depthCameraActors[ii]->renderTarget2D->SizeY,
-        ERGBFormat::BGRA, 8))
-            {
-                if (FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(*savePath))
-                {
-                    static int aaa = 0;
-                    FString SaveDir = savePath + FString::FromInt(aaa++) + TEXT(".") + FString::FromInt(ii) + TEXT(".")
-        + TEXT("jpg");//FString(GETENUMSTRING("EImageFormat", imageFormat)).ToLower();
-                    //UE_LOG(LogTemp, Warning, TEXT("CameraSensorComponent INFO: SaveDir is  %s"), *SaveDir);
+        //     FString savePath = TEXT("/home/aaa/workspace/hsim/log/");
+        //     if (buffer->imgBuffer[ii].cpuImg.Num() && ImageWrapper->SetRaw(buffer->imgBuffer[ii].cpuImg.GetData(),
+        //     buffer->imgBuffer[ii].cpuImg.Num() * sizeof(FColor),
+        //                                 depthCameraActors[ii]->renderTarget2D->SizeX,
+        //                                 depthCameraActors[ii]->renderTarget2D->SizeY, ERGBFormat::BGRA, 8))
+        //     {
+        //         if (FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(*savePath))
+        //         {
+        //             static int aaa = 0;
+        //             FString SaveDir = savePath + FString::FromInt(aaa++) + TEXT(".") + FString::FromInt(ii) +
+        //                               TEXT(".") +
+        //                               TEXT("png");    // FString(GETENUMSTRING("EImageFormat",
+        //                               imageFormat)).ToLower();
+        //             UE_LOG(LogTemp, Warning, TEXT("CameraSensorComponent INFO: SaveDir is  %s"), *SaveDir);
 
-                    DGI->GetSaveDataHandle()->SaveJPG(ImageWrapper->GetCompressed(80), SaveDir);
-
-                }
-            }
-        }
-
-        //*/
+        //             DGI->GetSaveDataHandle()->SaveJPG(ImageWrapper->GetCompressed(80), SaveDir);
+        //         }
+        //     }
+        // }
     }
     // cuda失败，使用ue自带函数获取
     if (hascpu)
@@ -537,13 +542,21 @@ bool ALidarBufferDepth::GetPoints(
                         pt.distance = distance;
                         pt.norinter = (float) color00.B * 0.00390625f;
                         int tag = color00.A;
-                        if (stencilMap.find(tag) == stencilMap.end())
-                            tag = 0;
-                        pt.tag_c = stencilMap[tag].first;
-                        pt.tag_t = stencilMap[tag].second;
+                        // if (tag != 0)
+                        // {
+                        //     UE_LOG(LogTemp, Log, TEXT("tag: %d"), tag);
+                        // }
+                        auto tag_c = tag;
+                        if (stencilMap.find(tag_c) == stencilMap.end())
+                            tag_c = 0;
+                        auto tag_t = stencilMap[tag_c].second;
+                        tag_c = stencilMap[tag_c].first;
+                        pt.tag_c = tag;
+                        pt.tag_t = tag_t;
+
                         // LIDAR 模型
-                        // if (lidarMd)
-                        //     lidarMd->simulator(pt.norinter, pt.tag_c, pt.tag_t, pt.distance, pt.instensity);
+                        if (lidarMd)
+                            lidarMd->simulator(pt.norinter, tag_c, tag_t, pt.distance, pt.instensity);
                         if (pt.distance > 0.01f && pt.distance < 327.f)
                         {
                             auto yawpitch = lidarSensor->getYawPitchAngle(dd.hor_pos, c);

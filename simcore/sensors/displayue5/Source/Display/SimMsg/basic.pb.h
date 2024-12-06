@@ -4,8 +4,6 @@
 #ifndef GOOGLE_PROTOBUF_INCLUDED_basic_2eproto
 #define GOOGLE_PROTOBUF_INCLUDED_basic_2eproto
 
-#pragma warning(disable : 4946) 
-
 #include <limits>
 #include <string>
 

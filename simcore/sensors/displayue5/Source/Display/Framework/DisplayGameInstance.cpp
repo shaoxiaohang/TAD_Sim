@@ -1,11 +1,12 @@
 #include "DisplayGameInstance.h"
-#include "DisplayPlayerState.h"
+
+#include "Data/CatalogDataSource.h"
 #include "DisplayGameModeBase.h"
 #include "DisplayNetworkManager.h"
-#include "SaveDataThread.h"
-#include "Data/CatalogDataSource.h"
-#include "LoaderBPFunctionLibrary.h"
+#include "DisplayPlayerState.h"
 #include "Kismet/KismetInternationalizationLibrary.h"
+#include "LoaderBPFunctionLibrary.h"
+#include "SaveDataThread.h"
 
 // hadmap
 #include "HadmapManager.h"
@@ -15,7 +16,6 @@
 DEFINE_LOG_CATEGORY(LogSimSystem);
 DEFINE_LOG_CATEGORY(LogSimDebug);
 DEFINE_LOG_CATEGORY_STATIC(LogSimGameInstance, Log, All);
-
 
 UDisplayGameInstance::UDisplayGameInstance(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -134,6 +134,10 @@ SaveDataThread* UDisplayGameInstance::GetSaveDataHandle() const
 
 bool UDisplayGameInstance::Tick(float DeltaSeconds)
 {
+#if WITH_EDITOR
+    return true;
+#endif
+
     // check clients all connected
     if (!bAllClientsLogin)
     {
@@ -148,9 +152,9 @@ bool UDisplayGameInstance::Tick(float DeltaSeconds)
     }
     else
     {
-        OutputData();        // SensorManger update
+        OutputData();        // SensorManger update, sensor update from last location
         ReceiveSimData();    // read location, begin of step and waiting for step
-        SyncSimData();       // location update.
+        SyncSimData();       // update all actor location.
         SendSimData();       // public sensor
     }
     return true;
@@ -158,6 +162,11 @@ bool UDisplayGameInstance::Tick(float DeltaSeconds)
 
 void UDisplayGameInstance::OutputData()
 {
+    if (currentSimInData)
+    {
+        UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.OutputData = %s %f"), *currentSimInData->name,
+            currentSimInData->timeStamp);
+    }
     if (!currentSimInData || currentSimInData->bIsConsumed > 0)
     {
         return;
@@ -167,6 +176,7 @@ void UDisplayGameInstance::OutputData()
         FSimIn SensorInData;
         SensorInData.name = TEXT("OUTPUT_SENSOR");
         SensorInData.timeStamp = currentSimInData->timeStamp;
+        UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.OUTPUT_SENSOR = %f"), SensorInData.timeStamp);
         FSimUpdateIn* UpdateIn = StaticCast<FSimUpdateIn*>(currentSimInData.Get());
         if (sim_msg::Location* Location = UpdateIn->egoData.Find(ModuleGroupName))
         {
@@ -224,12 +234,19 @@ void UDisplayGameInstance::ReceiveSimData()
         }
 
         currentSimInData = simInDataArry.Top();
+        UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.ReceiveSimData = %s %f"),
+         *currentSimInData->name, currentSimInData->timeStamp);
         currentSimInData->bIsConsumed = 0;
     }
 }
 
 void UDisplayGameInstance::SendSimData()
 {
+    if(currentSimInData)
+    {
+        UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.SendSimData = %s %f"),
+            *currentSimInData->name, currentSimInData->timeStamp);
+    }
     if (!currentSimInData || currentSimInData->bIsConsumed > 0)
     {
         return;
@@ -247,11 +264,19 @@ void UDisplayGameInstance::SendSimData()
         {
             FScopeLock ScopeLock(&displayNetworkManager->displayModule->mutex_Output);
             // Write output data
-            if (currentSimOutData.IsValid()){
+            if (currentSimOutData.IsValid())
+            {
+                UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.AddSimData = %s %f"),
+                    *currentSimOutData->name, currentSimOutData->timeStamp);
                 simOutDataArry.Add(currentSimOutData);
             }
             if (currentSimSensorOutData.IsValid())
+            {
+                UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.AddSimSensorData = %s %f"),
+                    *currentSimSensorOutData->name, currentSimSensorOutData->timeStamp);
                 simOutDataArry.Add(currentSimSensorOutData);
+            }
+                
             currentSimOutData = nullptr;
             currentSimSensorOutData = nullptr;
         }
@@ -267,6 +292,11 @@ void UDisplayGameInstance::SendSimData()
 
 void UDisplayGameInstance::SyncSimData()
 {
+    if(currentSimInData)
+    {
+        UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.SyncSimData = %s %f"),
+            *currentSimInData->name, currentSimInData->timeStamp);
+    }
     if (!currentSimInData || currentSimInData->bIsConsumed > 0)
     {
         return;
@@ -333,7 +363,6 @@ void UDisplayGameInstance::SimInput(const FSimData& Data)
 {
     GetWorld()->GetAuthGameMode<ADisplayGameModeBase>()->SimInput(Data);
 }
-
 
 void UDisplayGameInstance::SimOutput(const FSimData& _Data)
 {
@@ -405,8 +434,12 @@ bool UDisplayGameInstance::RegisterClientToSim(APlayerController* NewPlayer)
         if (clientConfigArry.Num() == clientNum)
         {
             bAllClientsLogin = true;
-            // Create SimModuleThread to connect coordinator.
+// Create SimModuleThread to connect coordinator.
+#if WITH_EDITOR
+            UE_LOG(LogSimSystem, Log, TEXT("Editor Mode"));
+#else
             CreateSimModuleThread();
+#endif
         }
         return true;
     }
@@ -500,7 +533,7 @@ void UDisplayGameInstance::Sim_InitBeginLoadWorld()
     {
         UE_LOG(LogSimGameInstance, Warning, TEXT("Server Travel Level Failed!"));
     }
-    bIsAllClientsLoadedWorld = false;   
+    bIsAllClientsLoadedWorld = false;
     UE_LOG(LogSimGameInstance, Warning, TEXT("Server Travel Level Good!"));
 }
 
@@ -651,7 +684,7 @@ void UDisplayGameInstance::ReadSceneFileAndConfig(FSimIn& _InData)
         UE_LOG(LogSimGameMode, Warning, TEXT("ParseFromString faild."));
         return;
     }
-    //UE_LOG(LogSimGameInstance, Log, TEXT("scenesceneBuffer : %s"), UTF8_TO_TCHAR(scene.DebugString().c_str()));
+    // UE_LOG(LogSimGameInstance, Log, TEXT("scenesceneBuffer : %s"), UTF8_TO_TCHAR(scene.DebugString().c_str()));
     SimResetInPtr->mapIndex = getMapIndex(SimResetInPtr->mapDataBaseName);
     SimResetInPtr->ModelPath = UTF8_TO_TCHAR(scene.setting().model3d_pathdir().c_str());
     if (SimResetInPtr->mapIndex == 0 && !FPaths::FileExists(SimResetInPtr->mapDataBasePath))
@@ -693,8 +726,10 @@ void UDisplayGameInstance::ReadSceneFileAndConfig(FSimIn& _InData)
 
         Type = ANSI_TO_TCHAR(EgoData.physicles(0).common().model_3d().c_str());
         InitInfo.egoName = Type;
-        if (!Type.IsEmpty()) {
-            if (Type.Contains(TEXT("mainsuv/sm_mainsuv1.fbx"))) {
+        if (!Type.IsEmpty())
+        {
+            if (Type.Contains(TEXT("mainsuv/sm_mainsuv1.fbx")))
+            {
                 InitInfo.egoType = TEXT("transport/Type-1");
             }
         }
@@ -717,7 +752,8 @@ int32 UDisplayGameInstance::getMapIndex(const FString& mapname)
     }
     for (FConfigSection::TIterator It(*Sec); It; ++It)
     {
-        UE_LOG(LogSimGameInstance, Log, TEXT("getMapIndex key: %s value : %s"), *It.Key().ToString(), *It.Value().GetValue());
+        UE_LOG(LogSimGameInstance, Log, TEXT("getMapIndex key: %s value : %s"), *It.Key().ToString(),
+            *It.Value().GetValue());
         FRegexPattern pattern(It.Key().ToString());
         FRegexMatcher matcher(pattern, mapname);
         if (matcher.FindNext() && !It.Value().GetValue().IsEmpty())
@@ -729,7 +765,8 @@ int32 UDisplayGameInstance::getMapIndex(const FString& mapname)
     return 0;
 }
 
-bool UDisplayGameInstance::GetMapInfo(int32 MapIndex, const FString& MapFileName, FMapInfo& MapInfo, FString& ErrorMessage)
+bool UDisplayGameInstance::GetMapInfo(
+    int32 MapIndex, const FString& MapFileName, FMapInfo& MapInfo, FString& ErrorMessage)
 {
     MapIndex = getMapIndex(MapFileName);
     if (!GConfig->GetString(TEXT("MapName"), *FString::FromInt(MapIndex), MapInfo.mapName, GGameIni))
@@ -793,4 +830,3 @@ bool UDisplayGameInstance::GetMapInfo(int32 MapIndex, const FString& MapFileName
 
     return true;
 }
-

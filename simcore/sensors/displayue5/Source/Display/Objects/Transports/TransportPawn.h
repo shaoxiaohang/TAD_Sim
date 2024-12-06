@@ -76,8 +76,8 @@ protected:
     class USkeletalMeshComponent* meshComp = NULL;
 
     // Light component
-    UPROPERTY(VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
-    class ULightMasterComp* lightMasterComp = NULL;
+    // UPROPERTY(VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
+    // class ULightMasterComp* lightMasterComp = NULL;
 
     // Camera component
     class UCameraMasterComponent* cameraMasterComp = NULL;

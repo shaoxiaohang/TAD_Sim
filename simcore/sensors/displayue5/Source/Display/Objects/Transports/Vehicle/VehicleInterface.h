@@ -108,6 +108,21 @@ struct FVehicleOut : public FTransportOut
     FRotator rotPose;
     UPROPERTY()
     bool bHasPose = false;
+
+    UPROPERTY()
+    FVector bboxCenter = FVector(0);
+
+
+    UPROPERTY()
+    bool bHasSubComponent = false;
+    UPROPERTY()
+    FVector subComponentBboxCenter = FVector(0);
+    UPROPERTY()
+    FVector subComponentSize = FVector(0);
+    UPROPERTY()
+    FRotator subComponentRotation = FRotator(0);
+    UPROPERTY()
+    FVector subComponentLocation = FVector(0);
 };
 
 // This class does not need to be modified.

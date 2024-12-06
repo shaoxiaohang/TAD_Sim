@@ -34,7 +34,7 @@ public:
     FString typeName;
 
     // Time stamp
-    double timeStamp = 0.f;
+    double timeStamp = -1.0f;
 
     // LonLat location
     double lon = 0.f;

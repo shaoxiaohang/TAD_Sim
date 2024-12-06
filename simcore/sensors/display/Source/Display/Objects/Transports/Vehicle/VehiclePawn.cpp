@@ -19,6 +19,8 @@
 #include "Framework/DisplayPlayerController.h"
 #include "Components/DriveWidget.h"
 #include "WheeledVehicleMovementComponent4W.h"
+#include "Data/CatalogDataSource.h"
+#include "Framework/DisplayGameInstance.h"
 
 DEFINE_LOG_CATEGORY_STATIC(SimLogVehicle, Log, All);
 
@@ -90,7 +92,7 @@ void AVehiclePawn::Init(const FSimActorConfig& _Config)
     check(VehicleConfig);
     vehicleConfig = *VehicleConfig;
 
-    UE_LOG(LogTemp, Warning, TEXT("Name: %s, uuid: %d"), *VehicleConfig->typeName, uuid);
+    UE_LOG(LogTemp, Warning, TEXT("Name: %s, uuid: %d"), *VehicleConfig->typeName, vehicleConfig.type);
 
     // Generate ui for driving
     if (driving_ui && bActiveDrivingUI)
@@ -211,6 +213,11 @@ void AVehiclePawn::Update(const FSimActorInput& _Input, FSimActorOutput& _Output
     FVehicleOut* VehicleOut = Cast_Sim<FVehicleOut>(_Output);
     *(FSimActorInput*) VehicleOut = _Input;
     check(VehicleIn);
+    UDisplayGameInstance* GI = Cast<UDisplayGameInstance>(GetWorld()->GetGameInstance());
+    if (!GI)
+    {
+        return;
+    }
     // FTransform NewTransform = GetSnapGroundTransform(*VehicleIn);
     // SetActorTransform(NewTransform);
     // basicInfoComp->timeStamp = VehicleIn->timeStamp;
@@ -272,7 +279,17 @@ void AVehiclePawn::Update(const FSimActorInput& _Input, FSimActorOutput& _Output
         VehicleOut->type = vehicleConfig.type;
         VehicleOut->typeName = vehicleConfig.typeName;
     }
-    VehicleOut->sizeLWH = GetComponentsBoundingBox().GetSize();
+    if(vehicleConfig.type == -1)
+    {
+        VehicleOut->sizeLWH = GI->GetCatalogDataSource()->GetDimension(vehicleConfig.Name) * 100;
+    }
+    else
+    {
+        VehicleOut->sizeLWH = GI->GetCatalogDataSource()->GetDimension(ECatalogType::CT_TrafficVehicle, vehicleConfig.type) * 100;
+    }
+    UE_LOG(SimLogVehicle, Warning, TEXT("Vehicle Pawn %d %s, Pos %s , Size: %f %f %f"), vehicleConfig.type,
+     *VehicleOut->typeName ,*VehicleOut->locPose.ToString(),
+        VehicleOut->sizeLWH.X, VehicleOut->sizeLWH.Y, VehicleOut->sizeLWH.Z);
 }
 
 void AVehiclePawn::Destroy()

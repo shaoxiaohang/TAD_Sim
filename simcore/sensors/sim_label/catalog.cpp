@@ -104,6 +104,7 @@ bool Catalog::load_contour(const std::string &dir) {
   for (auto &obj : _objects) {
     for (auto &model : obj.second.models) {
       std::string path = dir + "/models/" + model.model + ".smp";
+      std::cout << " load contour " << path << std::endl;
       std::ifstream in(path, std::ios::binary);
       if (in.is_open()) {
         in.seekg(0, std::ios::end);
@@ -181,6 +182,18 @@ std::vector<Eigen::Vector3d> Catalog::getBboxPts(std::pair<int, int> type, const
   return bpts;
 }
 
+Eigen::Vector3d Catalog::getCenterOffset(std::pair<int, int> type) const{
+  if (_objects.find(type) == _objects.end()) {
+    std::cout << " cant find type " << type.first << " " << type.second << std::endl;
+    return Eigen::Vector3d::Zero();
+  }
+  const auto &obj = _objects.at(type);
+  for(const auto & model : obj.models){
+    return model.cen;
+  }
+  return Eigen::Vector3d::Zero();
+}
+
 /**
  * @brief generates bounding box points around a specified origin point based
  * on length, width, height, heading angle, sampling distance, scaling factor,
@@ -227,7 +240,8 @@ std::string findTypeFromUE(const std::string &type) {
       {"transport/Sedan", "car"},        {"transport/SUV", "car"},
       {"transport/Car", "car"},          {"transport/MPV", "car"},
       {"transport/Truck", "truck"},      {"transport/AIV", "truck"},
-      {"transport/Bus", "bus"},          {"creature/pedestrian.", "pedestrian"},
+      {"transport/Bus", "bus"},          {"transport/Trailer", "truck"},
+      {"creature/pedestrian.", "pedestrian"},
       {"creature/bike", "bike"},         {"creature/elecBike", "bike"},
       {"creature/tricycle", "bike"},     {"creature/moto", "bike"},
       {"creature/Honda", "bike"},        {"creature/Animal", "animal"},

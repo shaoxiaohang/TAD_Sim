@@ -41,6 +41,8 @@ public:
     // virtual void Update(double _TimeStamp, struct FSensorDataStruct &_NewData);
     // virtual bool SaveData();
 
+    virtual ISimActorInterface* Install(const FSensorConfig& _Config);
+
 private:
     /// Creates a Laser.
     bool CreateLasers();

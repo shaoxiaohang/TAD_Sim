@@ -12,7 +12,9 @@
 #include "HadMap/Public/HadmapManager.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "SimMsg/sensor_raw.pb.h"
+#include "TLidarBufferDepth.h"
 #include "TLidarBufferRaycast.h"
+#include "DepthCamera.h"
 #include "lidar/HSLidar.h"
 #include "lidar/LidarModel.h"
 
@@ -81,8 +83,8 @@ FString ATLidarSensor::LoadAngleDefinition(const FString& fpath)
         {
             FString commandLine = param + batpath + TEXT(" ") + fpath + TEXT(" ") + srcpath;
             UE_LOG(LogTemp, Log, TEXT("Run script: %s %s"), *exepath, *commandLine);
-            auto proc = FPlatformProcess::CreateProc(
-                *exepath, *commandLine, false, true, true, nullptr, 0, nullptr, nullptr);
+            auto proc =
+                FPlatformProcess::CreateProc(*exepath, *commandLine, false, true, true, nullptr, 0, nullptr, nullptr);
             FPlatformProcess::WaitForProc(proc);
         }
         else
@@ -126,6 +128,11 @@ bool ATLidarSensor::CreateLasers()
         if (config.model == "HS32")
         {
         }
+        else if (config.model == "HS128")
+        {
+            LidarSensor = std::make_shared<hslidar::HSLidar128>();
+            lidarMd.set_intensity(0.0009f);    // 200m (on 10% reflectivity target
+        }
         else if (config.model == "HS128AT")
         {
             LidarSensor = std::make_shared<hslidar::HSLidar128AT>();
@@ -142,12 +149,10 @@ bool ATLidarSensor::CreateLasers()
         if (!static_cast<hslidar::HSLidar*>(LidarSensor.get())
                  ->setAngleFromString(LoadAngleDefinition(config.AngleDefinition)))
         {
-            if (!static_cast<hslidar::HSLidar*>(LidarSensor.get())
-                     ->loadInterReference(TCHAR_TO_ANSI(*(cfgdir))))
+            if (!static_cast<hslidar::HSLidar*>(LidarSensor.get())->loadInterReference(TCHAR_TO_ANSI(*(cfgdir))))
             {
                 UE_LOG(LogTemp, Warning, TEXT("Create Lidar faild:%s"),
-                    ANSI_TO_TCHAR(
-                        static_cast<hslidar::HSLidar*>(LidarSensor.get())->error().c_str()));
+                    ANSI_TO_TCHAR(static_cast<hslidar::HSLidar*>(LidarSensor.get())->error().c_str()));
                 return false;
             }
         }
@@ -197,12 +202,10 @@ bool ATLidarSensor::CreateLasers()
     {
         // UE_LOG(LogTemp, Log, TEXT("Lidar info: type is %d"), LidarSensor->getType());
         UE_LOG(LogTemp, Log, TEXT("Lidar info: ray num is %d"), LidarSensor->getRaysNum());
-        UE_LOG(LogTemp, Log, TEXT("Lidar info: horizontal scan min unit is %d"),
-            LidarSensor->getHorizontalScanMinUnit());
-        UE_LOG(LogTemp, Log, TEXT("Lidar info: rotation frequency is %f"),
-            LidarSensor->getRotationFrequency());
-        UE_LOG(LogTemp, Log, TEXT("Lidar info: horizontal scan count is %d"),
-            LidarSensor->getHorizontalScanCount());
+        UE_LOG(
+            LogTemp, Log, TEXT("Lidar info: horizontal scan min unit is %d"), LidarSensor->getHorizontalScanMinUnit());
+        UE_LOG(LogTemp, Log, TEXT("Lidar info: rotation frequency is %f"), LidarSensor->getRotationFrequency());
+        UE_LOG(LogTemp, Log, TEXT("Lidar info: horizontal scan count is %d"), LidarSensor->getHorizontalScanCount());
     }
 
     return LidarSensor.get() != nullptr;
@@ -270,8 +273,7 @@ bool ATLidarSensor::Init(const FSensorConfig& _Config)
     config.hil = (GetDisplayInstance() && GetDisplayInstance()->nHILpos.X > 0) || !public_msg;
 
     lidarBuffer->Init(config, LidarSensor, this, &lidarMd);
-    if (!config.savePath.IsEmpty() &&
-        !FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(*config.savePath))
+    if (!config.savePath.IsEmpty() && !FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(*config.savePath))
     {
         // UE_LOG(LogTemp, Log, TEXT("CameraSensorComponent: Generate savePath."));
         FPlatformFileManager::Get().GetPlatformFile().CreateDirectoryTree(*config.savePath);
@@ -316,10 +318,17 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
     }
     const FLidarInput* Input = Cast_Sim<const FLidarInput>(_Input);
     // 频率控制
-    if (lidarFrameAlign && config.frequency > 0 &&
-        (Input->timeStamp - timeStamp_last) < 999.9999999 / config.frequency)
+    if (lidarFrameAlign && config.frequency > 0 && (Input->timeStamp - timeStamp_last) < 999.9999999 / config.frequency)
     {
         return;
+    }
+    if (lidarFrameAlign)
+    {
+        UE_LOG(LogTemp, Log, TEXT("LidarFrameAlign: %f"), Input->timeStamp);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Log, TEXT("Not LidarFrameAlign %f %f"), Input->timeStamp, config.frequency);
     }
     timeStamp_last = Input->timeStamp;
 
@@ -370,15 +379,18 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
     // 计算当前帧的旋转角度
     if (LidarMeasurement.TimeStamp0 < 0)
     {
+        UE_LOG(LogTemp, Log, TEXT("LidarMeasurement.TimeStamp0 < 0 %f"), timeStamp);
         LidarMeasurement.TimeStamp0 = timeStamp;
         LidarMeasurement.LidarBodyLoc0 = GetActorLocation();
         return;
     }
     LidarMeasurement.TimeStamp = timeStamp;
     float DeltaTime = (timeStamp - LidarMeasurement.TimeStamp0) * 0.001f;
-
+    UE_LOG(LogTemp, Log, TEXT("DeltaTime  %f %f %f "), DeltaTime, timeStamp, LidarMeasurement.TimeStamp0);
     if ((DeltaTime - 1.f / LidarSensor->getRotationFrequency()) > -0.001f)
     {
+        UE_LOG(
+            LogTemp, Log, TEXT("DeltaTime  %f %f %f"), timeStamp, DeltaTime, 1.f / LidarSensor->getRotationFrequency());
         LidarMeasurement.HorizontalPos = 0;
         DeltaTime = 1.f / LidarSensor->getRotationFrequency();
     }
@@ -390,16 +402,16 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
         LidarMeasurement.HorizontalPos = 0;
         LidarMeasurement.HorizontalToScan = LidarSensor->getHorizontalScanCount();
     }
-    LidarMeasurement.HorizontalToScan -=
-        LidarMeasurement.HorizontalToScan % LidarSensor->getHorizontalScanMinUnit();
+    LidarMeasurement.HorizontalToScan -= LidarMeasurement.HorizontalToScan % LidarSensor->getHorizontalScanMinUnit();
 
     if (LidarMeasurement.HorizontalToScan == 0)
     {
         return;
     }
-    LidarMeasurement.TimeSpan =
-        (double) LidarMeasurement.HorizontalToScan * 1000.0 /
-        (LidarSensor->getRotationFrequency() * LidarSensor->getHorizontalScanCount());
+    LidarMeasurement.TimeSpan = (double) LidarMeasurement.HorizontalToScan * 1000.0 /
+                                (LidarSensor->getRotationFrequency() * LidarSensor->getHorizontalScanCount());
+
+    UE_LOG(LogTemp, Log, TEXT("HorizontalToScan %f %d"), LidarMeasurement.TimeSpan, LidarMeasurement.HorizontalToScan);
 
     lidarMd.set_null();
 
@@ -420,6 +432,9 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
     //     lidarMd.set_rain(weather.RainFall);
     //     lidarMd.set_fog(weather.Visibility);
     // }
+    lidarMd.set_snow(0);
+    lidarMd.set_rain(0);
+    lidarMd.set_fog(30000);
 
     check(LidarMeasurement.HorizontalToScan % LidarSensor->getHorizontalScanMinUnit() == 0);
 
@@ -446,8 +461,7 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
 
     // publish msg
     if ((public_msg || !config.savePath.IsEmpty()) &&
-        (LidarMeasurement.HorizontalPos + LidarMeasurement.HorizontalToScan) >=
-            LidarSensor->getHorizontalScanCount())
+        (LidarMeasurement.HorizontalPos + LidarMeasurement.HorizontalToScan) >= LidarSensor->getHorizontalScanCount())
     {
         // UE_LOG(LogTemp, Log, TEXT("--------waiting msg begin: %d"),
         // std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() -
@@ -457,8 +471,7 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
         {
             FPlatformProcess::Sleep(0.001);
             senddataThreadHandle->m_lidarFrame.Lock();
-            if (!senddataThreadHandle->lidarFrame.empty() &&
-                senddataThreadHandle->lidarFrame.front()->ok)
+            if (!senddataThreadHandle->lidarFrame.empty() && senddataThreadHandle->lidarFrame.front()->ok)
             {
                 tframe = senddataThreadHandle->lidarFrame.front();
                 senddataThreadHandle->lidarFrame.pop_front();
@@ -522,10 +535,8 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
             if (coordType == TEXT("vehicle"))
             {
                 lraw.set_coord_type(sim_msg::LidarRaw_CoordType_COORD_VEHICLE);
-                rot0 =
-                    UKismetMathLibrary::ComposeRotators(config.installRotation.GetInverse(), rot0);
-                rot1 =
-                    UKismetMathLibrary::ComposeRotators(config.installRotation.GetInverse(), rot1);
+                rot0 = UKismetMathLibrary::ComposeRotators(config.installRotation.GetInverse(), rot0);
+                rot1 = UKismetMathLibrary::ComposeRotators(config.installRotation.GetInverse(), rot1);
                 loc0 -= rot0.RotateVector(config.installLocation);
                 loc1 -= rot1.RotateVector(config.installLocation);
             }
@@ -570,10 +581,31 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
     }
     // prepare for next frame
     LidarMeasurement.HorizontalPos =
-        (LidarMeasurement.HorizontalPos + LidarMeasurement.HorizontalToScan) %
-        LidarSensor->getHorizontalScanCount();
+        (LidarMeasurement.HorizontalPos + LidarMeasurement.HorizontalToScan) % LidarSensor->getHorizontalScanCount();
     LidarMeasurement.TimeStamp0 = timeStamp;
     LidarMeasurement.LidarBodyLoc0 = GetActorLocation();
+}
+
+ISimActorInterface* ATLidarSensor::Install(const FSensorConfig& _Config)
+{
+    auto SimActor = Super::Install(_Config);
+    auto DepthLidar = static_cast<ALidarBufferDepth*>(lidarBuffer.get());
+    if (DepthLidar && SimActor)
+    {
+        AActor* Ego = Cast<AActor>(SimActor);
+        if (Ego)
+        {
+            auto& DepthCameras = DepthLidar->GetDepthCameraActors();
+            for (auto& DepthCamera : DepthCameras)
+            {
+                if (DepthCamera)
+                {
+                    DepthCamera->IngoreActor(Ego);
+                }
+            }
+        }
+    }
+    return SimActor;
 }
 
 // 点云保存pcd
@@ -601,8 +633,8 @@ bool ATLidarSensor::Save(const lidar::TraditionalLidar::lidar_ptset& data, doubl
     {
         return true;
     }
-    FString savename = config.savePath + config.model + TEXT("_") + FString::FromInt(config.id) +
-                       TEXT("_") + FString::FromInt(timeStamp) + TEXT(".") + TEXT("pcd");
+    FString savename = config.savePath + config.model + TEXT("_") + FString::FromInt(config.id) + TEXT("_") +
+                       FString::FromInt(timeStamp) + TEXT(".") + TEXT("pcd");
 
     FString StringData;
     StringData += "# .PCD v.7 - Point Cloud Data file format\r\n";
@@ -613,7 +645,7 @@ bool ATLidarSensor::Save(const lidar::TraditionalLidar::lidar_ptset& data, doubl
     StringData += "COUNT 1 1 1 1 1\r\n";
     StringData += FString(TEXT("WIDTH ")) + FString::FromInt(pn) + LINE_TERMINATOR;
     StringData += "HEIGHT 1\r\n";
-    StringData += "VIEWPOINT 0 0 0 1 -1 0 0\r\n";
+    StringData += "VIEWPOINT 0 0 0 1 0 0 0\r\n";
     StringData += FString(TEXT("POINTS ")) + FString::FromInt(pn) + LINE_TERMINATOR;
     StringData += "DATA ascii\r\n";
 
@@ -652,10 +684,8 @@ ATLidarSensor::SendDataThread::SendDataThread(ATLidarSensor* ls) : lidarActor(ls
     // 生成多个线程，一个负责发送，其余的负责处理点云
     send_key = true;
     // Initialize FEvent (as a cross platform (Confirmed Mac/Windows))
-    Thread.Add(
-        FRunnableThread::Create(this, TEXT("SendDataThread0"), 0, EThreadPriority::TPri_Normal));
-    Thread.Add(
-        FRunnableThread::Create(this, TEXT("SendDataThread1"), 0, EThreadPriority::TPri_Normal));
+    Thread.Add(FRunnableThread::Create(this, TEXT("SendDataThread0"), 0, EThreadPriority::TPri_Normal));
+    Thread.Add(FRunnableThread::Create(this, TEXT("SendDataThread1"), 0, EThreadPriority::TPri_Normal));
     m_Kill = false;
 }
 
@@ -671,8 +701,7 @@ ATLidarSensor::SendDataThread::~SendDataThread()
     }
 }
 
-void ATLidarSensor::SendDataThread::SetData(
-    const FTLidarMeasurement& measure, TSharedPtr<LidarBuffer> buffer)
+void ATLidarSensor::SendDataThread::SetData(const FTLidarMeasurement& measure, TSharedPtr<LidarBuffer> buffer)
 {
     // 保存接受到的数据
     m_lidarBuffer.Lock();
@@ -723,13 +752,13 @@ uint32 ATLidarSensor::SendDataThread::Run()
                 lidarBuffers.pop_front();
                 lidarBuffers.pop_front();
             }
-            // 当前的数据有多余的，去掉
             if (!lidarBuffers.empty() && lidarBuffers.front().state == 2)
             {
                 Buffer = lidarBuffers.front().dataPtr;
                 timestamp = lidarBuffers.front().measure.TimeStamp;
                 loc = lidarBuffers.front().measure.LidarBodyLoc;
                 rot = lidarBuffers.front().measure.LidarBodyRot;
+                UE_LOG(LogTemp, Warning, TEXT("lidarBuffers %d %f"), lidarBuffers.size(), timestamp);
                 lidarBuffers.pop_front();
             }
             m_lidarBuffer.Unlock();
@@ -794,10 +823,10 @@ uint32 ATLidarSensor::SendDataThread::Run()
                     }
                 }
                 // 更新当前的刻度
-                nstframe->data.channels.insert(nstframe->data.channels.end(),
-                    Buffer->channels.begin(), Buffer->channels.begin() + fd0);
-                nstframe->data.points.insert(nstframe->data.points.end(), Buffer->points.begin(),
-                    Buffer->points.begin() + fd0 * rn * rtn);
+                nstframe->data.channels.insert(
+                    nstframe->data.channels.end(), Buffer->channels.begin(), Buffer->channels.begin() + fd0);
+                nstframe->data.points.insert(
+                    nstframe->data.points.end(), Buffer->points.begin(), Buffer->points.begin() + fd0 * rn * rtn);
                 nstframe->timestamp0 = std::min(timestamp, nstframe->timestamp0);
                 nstframe->timestamp1 = std::max(timestamp, nstframe->timestamp1);
                 nstframe->loc1 = loc;
@@ -830,10 +859,10 @@ uint32 ATLidarSensor::SendDataThread::Run()
                     m_lidarFrame.Unlock();
                     if (fd0 < Buffer->channels.size())
                     {
-                        nstframe->data.channels.insert(nstframe->data.channels.end(),
-                            Buffer->channels.begin() + fd0, Buffer->channels.end());
-                        nstframe->data.points.insert(nstframe->data.points.end(),
-                            Buffer->points.begin() + fd0 * rn * rtn, Buffer->points.end());
+                        nstframe->data.channels.insert(
+                            nstframe->data.channels.end(), Buffer->channels.begin() + fd0, Buffer->channels.end());
+                        nstframe->data.points.insert(
+                            nstframe->data.points.end(), Buffer->points.begin() + fd0 * rn * rtn, Buffer->points.end());
                         nstframe->timestamp0 = std::min(timestamp, nstframe->timestamp0);
                         nstframe->timestamp1 = std::max(timestamp, nstframe->timestamp1);
                     }
@@ -843,7 +872,7 @@ uint32 ATLidarSensor::SendDataThread::Run()
             // std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()
             // - ttttt0).count());
             //  发送当前包，一般为DUP方式，由具体型号决定
-            //uint32_t pn = lidarActor->LidarSensor->package(*Buffer);
+            // uint32_t pn = lidarActor->LidarSensor->package(*Buffer);
             // UE_LOG(LogTemp, Log, TEXT("sendth:%d, %d, %d"), Buffer.measure.HorizontalPos,
             // Buffer.measure.HorizontalToScan, pn);
         }
@@ -870,10 +899,6 @@ uint32 ATLidarSensor::SendDataThread::Run()
             }
             m_lidarBuffer.Unlock();
 
-            if(buffer){
-                //const RaycastLidarBuffer* buffer = StaticCast<const RaycastLidarBuffer*>(buffer);
-            }
-
             if (!buffer)
             {
                 FPlatformProcess::Sleep(0.001);
@@ -892,8 +917,7 @@ uint32 ATLidarSensor::SendDataThread::Run()
                 lidarActor->lidarBuffer->setRotationTranslation(tf);
             }
             // 调用点云处理
-            if (lidarActor->lidarBuffer->GetPoints(
-                    buffer->buffer.Get(), buffer->measure, *buffer->dataPtr))
+            if (lidarActor->lidarBuffer->GetPoints(buffer->buffer.Get(), buffer->measure, *buffer->dataPtr))
             {
                 // UE_LOG(LogTemp, Log, TEXT("--------get pt over: %d"),
                 // std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()

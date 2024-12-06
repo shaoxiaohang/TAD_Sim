@@ -93,6 +93,88 @@ protected:
     void split_string(const std::string& s, const std::string& delim, std::vector<std::string>& ret);
 };
 
+class point_data128
+{
+public:
+    static const uint32_t BLOCK_HEADER_SIZE = 2;
+    static const uint32_t CHANNEL_SIZE = 3;
+    static const uint32_t CHANNELS_PER_BLOCK = 128;
+    static const uint32_t BLOCK_CHANNEL_SIZE = (CHANNEL_SIZE * CHANNELS_PER_BLOCK);    // 384
+    static const uint32_t BLOCK_SIZE = (BLOCK_CHANNEL_SIZE + BLOCK_HEADER_SIZE);       // 386
+    static const uint32_t BLOCKS_CRC = 4;
+    static const uint32_t BLOCKS_PER_PACKAGE = 2;
+    static const uint32_t PACKAGE_DATA_SIZE = (BLOCKS_PER_PACKAGE * BLOCK_SIZE + BLOCKS_CRC);    // 776
+
+    static const uint32_t PACKAGE_HEADER_SIZE = 6;
+    static const uint32_t DATA_HEADER_SIZE = 6;
+    static const uint32_t PACKAGE_SEC_SIZE = 17;    // 17;
+    static const uint32_t PACKAGE_TAIL_SIZE = 30;
+    static const uint32_t PACKAGE_TAIL_IMU_SIZE = 22;    // NOT USE
+    static const uint32_t PACKAGE_TAIL_CRC_SIZE = 4;
+    static const uint32_t PACKAGE_TAIL_SEC_SIZE = 32;    // NOT USE
+    static const uint32_t PTS_SIZE = (PACKAGE_DATA_SIZE + PACKAGE_HEADER_SIZE + DATA_HEADER_SIZE + PACKAGE_SEC_SIZE +
+                                      PACKAGE_TAIL_SIZE + PACKAGE_TAIL_IMU_SIZE + PACKAGE_TAIL_CRC_SIZE);
+    static const uint32_t PTS_RESERVE = 1024;
+    static const uint32_t PTS_TOTAL_SIZE = (PTS_SIZE + PTS_RESERVE);
+    static const uint32_t GPS_SIZE = 512;
+
+    point_data128();
+    virtual ~point_data128();
+    const uint8_t* pt_data() const;
+    const uint8_t* gps_data() const;
+
+    void set_block_azimuth(uint8_t bn, uint16_t azimuth);
+    void set_channel_data(uint8_t bn, uint8_t cn, uint16_t distance, uint8_t reflectivity);
+    void set_data_crc();
+    void set_tail_crc();
+    void set_return_mode(uint8_t return_mode);
+    void set_frequency(uint8_t f);
+    uint8_t get_return_mode() const;
+    void set_udp_sequence(uint32_t sqc);
+
+    virtual void set_time(const utm_time& utime);
+
+protected:
+    uint8_t _data[PTS_TOTAL_SIZE];
+    uint8_t _GPS[GPS_SIZE];
+    uint8_t* _channel_data_ptr[BLOCKS_PER_PACKAGE][CHANNELS_PER_BLOCK];
+    uint8_t* _tail_ptr;
+};
+
+class HSLidar128 : public HSLidar
+{
+public:
+    HSLidar128();
+    ~HSLidar128();
+
+    virtual lidar::LidarType getType() const
+    {
+        return lidar::LT_HS128;
+    }
+    virtual uint32_t getRaysNum() const
+    {
+        return point_data128::CHANNELS_PER_BLOCK;
+    }
+    virtual float getRotationFrequency() const;
+    virtual lidar::ReturnMode getReturnMode() const;
+
+    // 5hz 10hz 20hz
+    virtual void setRotationFrequency(float rf);
+    virtual void setReturnMode(lidar::ReturnMode rm);
+    virtual uint32_t getHorizontalScanMinUnit() const;
+
+    virtual bool loadInterReference(const std::string& dir);
+    virtual bool Init();
+    virtual uint32_t package(const lidar_ptset& datas);
+
+protected:
+    uint32_t udp_seq = 0;
+    std::shared_ptr<point_data128> _pt_data;
+
+    virtual utm_time to_utime(std::time_t t) const;
+    virtual void send_data(std::time_t t);
+};
+
 class point_data128at
 {
 public:
@@ -135,7 +217,6 @@ protected:
     uint8_t* _tail_ptr;
 
 };
-
 
 class HSLidar128AT : public HSLidar
 {

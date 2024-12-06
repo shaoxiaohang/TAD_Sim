@@ -131,6 +131,7 @@ void linetrace(UWorld* world, uint32 scanfrom, uint32 scanto, const FTLidarMeasu
                     }
                     p->tag_c = u1;
                     p->tag_t = u2;
+                    UE_LOG(LogTemp, Log, TEXT("tag_c=%d, tag_t=%d"), u1, u2);
                 }
             }
             else

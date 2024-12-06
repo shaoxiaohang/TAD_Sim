@@ -20,17 +20,16 @@
 #include <regex>
 #include "camera_sensor.h"
 #include "catalog.h"
-#include "fisheye_sensor.h"
-#include "image_label.h"
-#include "lidar_sensor.h"
-#include "visable_calculate.h"
 #include "common/coord_trans.h"
+#include "fisheye_sensor.h"
 #include "google/protobuf/util/json_util.h"
+#include "image_label.h"
 #include "json/json.h"
+#include "lidar_sensor.h"
 #include "osi_datarecording.pb.h"
 #include "scene.pb.h"
 #include "sensor_raw.pb.h"
-
+#include "visable_calculate.h"
 
 /**
  * @brief define FS_TRY
@@ -77,6 +76,11 @@ void sim_label::Init(tx_sim::InitHelper &helper) {
   if (!NumOfDisplay.empty()) {
     disNum = std::atoi(NumOfDisplay.c_str());
   }
+
+  disNum = 1;
+
+  std::cout << "display num " << disNum << std::endl;
+
   // set the path of the data saved.
   if (!helper.GetParameter("DataSavePath").empty()) savePathBase = helper.GetParameter("DataSavePath");
 
@@ -94,6 +98,7 @@ void sim_label::Init(tx_sim::InitHelper &helper) {
 
   tmp = helper.GetParameter("DebugFiles");
   if (tmp == "1" || tmp == "true" || tmp == "enable") debugFiles = true;
+  debugFiles = true;
   config_dir = helper.GetParameter(tx_sim::constant::kInitKeyModuleSharedLibDirectory);
   // write path to logs
   std::cout << "savePathBase=" << savePathBase << std::endl;
@@ -186,9 +191,6 @@ void sim_label::Step(tx_sim::StepHelper &helper) {
     display_timstamp.clear();
   }
 
-  // Print current simulation timestamp followed by a colon
-  std::cout << helper.timestamp() << ": ";
-
   // Check if truth mode is enabled
   // Get subscribed messages from various sources
   // Process Display Pose messages
@@ -201,7 +203,14 @@ void sim_label::Step(tx_sim::StepHelper &helper) {
 
     // Deserialize incoming message
     sim_msg::DisplayPose trafficPose;
-    if (payload_.empty() || !trafficPose.ParseFromString(payload_)) continue;
+    if (payload_.empty() || !trafficPose.ParseFromString(payload_)) {
+    }
+
+    std::cout << " DISPLAYPOSE " << trafficPose.DebugString() << std::endl;
+
+    // Print current simulation timestamp followed by a colon
+    std::cout << helper.timestamp() << ": ";
+
     // Update the timestamp field
     trafficPose_all.set_timestamp(trafficPose.timestamp());
     // Extract unique EGO IDs,
@@ -209,7 +218,6 @@ void sim_label::Step(tx_sim::StepHelper &helper) {
       // std::cout << " OBJ ID " << obj.id() << std::endl;
       // std::cout << " EGO ID " << ego_id << std::endl;
       if (obj.id() == ego_id) {
-        //std::cout << " SKIP " << std::endl;
         continue;
       }
       if (egoid.find(obj.id()) == egoid.end()) {
@@ -219,10 +227,10 @@ void sim_label::Step(tx_sim::StepHelper &helper) {
     }
     // Extract unique CAR IDs,
     for (const auto &obj : trafficPose.cars()) {
-      if (carid.find(obj.id()) == carid.end()) {
-        *trafficPose_all.add_cars() = obj;
-        carid.insert(obj.id());
-      }
+      // if (carid.find(obj.id()) == carid.end()) {
+      *trafficPose_all.add_cars() = obj;
+      // carid.insert(obj.id());
+      //}
     }
     // Extract unique STATIONARY OBJECT IDs
     for (const auto &obj : trafficPose.staticobstacles()) {
@@ -253,6 +261,8 @@ void sim_label::Step(tx_sim::StepHelper &helper) {
     sim_msg::SensorRaw sensorraw;
     if (payload_.empty() || !sensorraw.ParseFromString(payload_)) continue;
 
+    std::cout << "sensor timestamp " << sensorraw.timestamp() << std::endl;
+
     // time is not now
     if (sensorraw.timestamp() == display_timstamp[i]) {
       continue;
@@ -263,6 +273,7 @@ void sim_label::Step(tx_sim::StepHelper &helper) {
     std::cout << "[" << i << ", " << sensorraw.timestamp() << ": ";
     // Process raw sensor data
     for (const auto &sensor : sensorraw.sensor()) {
+      std::cout << "sensor size " << sensorraw.sensor().size() << std::endl;
       // Add parsed image information to queue
       if (sensor.type() == sim_msg::SensorRaw::TYPE_CAMERA) {
         ImageInfo info;
@@ -395,12 +406,13 @@ bool sim_label::parseLidar(const std::string &buf, PcInfo &info) {
   pcdbuf << "COUNT 1 1 1 1 1\n";
   pcdbuf << "WIDTH " << num << "\n";
   pcdbuf << "HEIGHT 1\n";
-  pcdbuf << "VIEWPOINT 0 0 0 1 -1 0 0\n";
+  pcdbuf << "VIEWPOINT 0 0 0 1 0 0 0\n";
   pcdbuf << "POINTS " << num << "\n";
   pcdbuf << "DATA binary\n";
 
   // write point raw
   if (lidar.point_lists().size() > 0) {
+    std::cout << "use bytes" << std::endl;
     pcdbuf.write(lidar.point_lists().data(), lidar.point_lists().size());
   } else {
     // or write x y z i by order
@@ -445,6 +457,22 @@ bool sim_label::parseLidar(const std::string &buf, PcInfo &info) {
   info.pose.yaw = lidar.pose_last().yaw();
   info.timestamp_bg = lidar.timestamp_begin();
   info.timestamp_ed = lidar.timestamp_end();
+
+  std::cout << "add lidar " << info.id << " pose first " << lidar.pose_first().longitude() << " "
+            << lidar.pose_first().latitude() << " " << lidar.pose_first().altitude() << " "
+            << " roll " << lidar.pose_first().roll() << " pitch " << lidar.pose_first().pitch() << " yaw "
+            << lidar.pose_first().yaw() << " pose last " << lidar.pose_last().longitude() << " "
+            << lidar.pose_last().latitude() << " " << lidar.pose_last().altitude() << " roll "
+            << lidar.pose_last().roll() << " pitch " << lidar.pose_last().pitch() << " yaw " << lidar.pose_last().yaw()
+            << " timestamp begin " << lidar.timestamp_begin() << " timestamp end " << lidar.timestamp_end()
+            << std::endl;
+
+  // " pose last "
+  // << info.pose_last().longitude() << " " << info.pose_last().latitude() << " " << info.pose_last().altitude()
+  // << " roll " << info.pose.roll << " pitch " << info.pose.pitch << " yaw " << info.pose.yaw << " timestamp "
+  // << info.timestamp << " timestamp begin " << info.timestamp_bg << " timestamp end " << info.timestamp_ed
+  // << std::endl;
+
   return true;
 }
 
@@ -563,7 +591,8 @@ void sim_label::saveImageLabel(const ImagePackage &info) {
  * @param info pcd info
  */
 void sim_label::savePcdLabel(const PcdPackage &info) {
-  std::cout << "savePcdLabel " << std::endl;
+  std::cout << "savePcdLabel obj " << info.obj.timestamp()
+  << " lidar "   <<  info.lidar.timestamp << std::endl;
   // Get timestamp string and UTC date/time string from lidar package
   std::string tss = timeStarmString(info.lidar.timestamp);
   std::string utc = getUTC();
@@ -590,6 +619,10 @@ void sim_label::savePcdLabel(const PcdPackage &info) {
     auto &lidar = lidars[info.lidar.id];
     lidar->setCarPosition(Eigen::Vector3d::Zero());
     lidar->setCarRotation(info.lidar.pose.roll, info.lidar.pose.pitch, info.lidar.pose.yaw);
+    std::cout << " lidar roll " << info.lidar.pose.roll << " pitch " << info.lidar.pose.pitch << " yaw "
+              << info.lidar.pose.yaw << std::endl;
+    std::cout << " lidar x " << info.lidar.pose.x << " y " << info.lidar.pose.y << " z " << info.lidar.pose.z
+              << std::endl;
     std::vector<std::pair<int, sim_msg::DisplayPose::Object>> dobjects;
     for (const auto &car : obj_ops.egos()) {
       dobjects.push_back(std::make_pair(-1, car));
@@ -606,29 +639,55 @@ void sim_label::savePcdLabel(const PcdPackage &info) {
 
     for (const auto &dobj : dobjects) {
       Eigen::Vector3d pos(dobj.second.pose().longitude(), dobj.second.pose().latitude(), dobj.second.pose().altitude());
+      std::cout << " obj coor " << dobj.second.id() << " type " << dobj.second.type() << " raw type "
+                << dobj.second.raw_type() << " x " << pos.x() << " y " << pos.y() << " z " << pos.z() << std::endl;
       coord_trans_api::lonlat2enu(pos.x(), pos.y(), pos.z(), info.lidar.pose.x, info.lidar.pose.y, info.lidar.pose.z);
+      std::cout << " local coor " << dobj.second.id() << " type " << dobj.second.type() << " x " << pos.x() << " y "
+                << pos.y() << " z " << pos.z() << std::endl;
       double distance = pos.norm();
       // filter by distance
       if (distance > maxDistance) {
         continue;
       }
       // filter by fov
-      if (!lidar->inFov(Catalog::getInstance().getBboxPts(
-              std::make_pair(dobj.first, dobj.first == -1 ? dobj.second.id() : dobj.second.raw_type()), pos,
-              dobj.second.pose().roll(), dobj.second.pose().pitch(), dobj.second.pose().yaw()))) {
-        continue;
-      }
+      // if (!lidar->inFov(Catalog::getInstance().getBboxPts(
+      //         std::make_pair(dobj.first, dobj.first == -1 ? dobj.second.id() : dobj.second.raw_type()), pos,
+      //         dobj.second.pose().roll(), dobj.second.pose().pitch(), dobj.second.pose().yaw()))) {
+      //   continue;
+      // }
       pos = lidar->FovVectorOnlyCar(pos);
       TempObject tobj;
+      auto center = Catalog::getInstance().getCenterOffset(
+          std::make_pair(dobj.first, dobj.first == -1 ? dobj.second.id() : dobj.second.raw_type()));
+      std::cout << " obj in lidar coor " << dobj.second.id() << " type " << dobj.second.type() << " x " << pos.x()
+                << " y " << pos.y() << " z " << pos.z() << std::endl;
+      std::cout << " obj " << dobj.second.raw_type() << " bbox center " << dobj.second.center_x() << " "
+                << dobj.second.center_y() << " " << dobj.second.center_z() << " center offset x " << center.x() << " y "
+                << center.y() << " z " << center.z() << std::endl;
       tobj.t = dobj.first;
       tobj.obj = dobj.second;
-      tobj.x = pos.x();
-      tobj.y = pos.y();
-      tobj.z = pos.z();
+
       tobj.roll = dobj.second.pose().roll();
       tobj.pitch = dobj.second.pose().pitch();
       tobj.yaw = dobj.second.pose().yaw();
+
+
+
+
       lidar->FovRotator(tobj.roll, tobj.pitch, tobj.yaw);
+
+      Eigen::Quaterniond q(Eigen::AngleAxisd(tobj.yaw, Eigen::Vector3d::UnitZ()));
+      Eigen::Vector3d offset_local(center.x() + dobj.second.center_x(), center.y() + dobj.second.center_y(),
+                                   center.z() + dobj.second.center_z());
+
+      auto offset = q * offset_local;
+      tobj.x = pos.x() + offset.x();
+      tobj.y = pos.y() + offset.y();
+      tobj.z = pos.z() + offset.z();
+
+      std::cout << "OFFSET " << offset.x() << " " << offset.y() << " " << offset.z() << " " << tobj.roll << " " << tobj.pitch
+                << " " << tobj.yaw << std::endl;  
+
       detect_objects.push_back(tobj);
     }
   }
@@ -665,7 +724,7 @@ void sim_label::savePcdLabel(const PcdPackage &info) {
   cs["pose_wrt_parent"]["sequence"] = "zyx";
   // streams
   Json::Value &stream = label["streams"][sensor_cs];
-  stream["type"] = "camera";
+  stream["type"] = "lidar";
   stream["description"] = sensor_cs;
   stream["uri"] = "lidar/pcd/" + pcdinfo.fpath;
 
@@ -682,8 +741,12 @@ void sim_label::savePcdLabel(const PcdPackage &info) {
       name = "dynamic obstacle";
     }
     Json::Value &obj = objects[std::to_string(id)];
-    obj["type"] = findTypeFromUE(detection.obj.type());
-    obj["name"] = name;
+    obj["name"] = findTypeFromUE(detection.obj.type());
+    if (obj["name"] == "truck" && detection.obj.raw_type() == -1) {
+      obj["type"] = "trailer";
+    } else {
+      obj["type"] = name;
+    }
     obj["coordinate_system"] = sensor_cs;
     obj["object_data"]["cuboid"].resize(1);
     Json::Value &odata = obj["object_data"]["cuboid"][0];
@@ -718,6 +781,10 @@ void sim_label::savePcdLabel(const PcdPackage &info) {
       auto &info = detection;
       Eigen::Quaterniond q(Eigen::AngleAxisd(info.yaw, Eigen::Vector3d::UnitZ()));
       Eigen::Affine3d tfs = Eigen::Translation3d(info.x, info.y, info.z) * q.toRotationMatrix();
+
+      std::cout << "debug " << info.obj.raw_type() << " " << info.x << " " << info.y << " " << info.z << " "
+                << " " << info.yaw << " " << info.obj.length() << " " << info.obj.width() << " " << info.obj.height()
+                << std::endl;
 
       const double offx[8] = {-0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5};
       const double offy[8] = {-0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5};

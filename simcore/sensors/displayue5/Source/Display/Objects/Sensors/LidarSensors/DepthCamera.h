@@ -29,6 +29,8 @@ public:
     bool GetCaptureImage(TArray<FColor>& BitMap);
     bool GetCaptureImage(uint8_t*& imgbuf);
 
+    void IngoreActor(AActor* actor);
+
 protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;

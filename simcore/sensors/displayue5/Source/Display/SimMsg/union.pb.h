@@ -47,7 +47,7 @@ struct TableStruct_union_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[2]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[3]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -55,6 +55,9 @@ struct TableStruct_union_2eproto {
 };
 extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_union_2eproto;
 namespace sim_msg {
+class HighlightGroup;
+class HighlightGroupDefaultTypeInternal;
+extern HighlightGroupDefaultTypeInternal _HighlightGroup_default_instance_;
 class MsgPair;
 class MsgPairDefaultTypeInternal;
 extern MsgPairDefaultTypeInternal _MsgPair_default_instance_;
@@ -63,6 +66,7 @@ class UnionDefaultTypeInternal;
 extern UnionDefaultTypeInternal _Union_default_instance_;
 }  // namespace sim_msg
 PROTOBUF_NAMESPACE_OPEN
+template<> ::sim_msg::HighlightGroup* Arena::CreateMaybeMessage<::sim_msg::HighlightGroup>(Arena*);
 template<> ::sim_msg::MsgPair* Arena::CreateMaybeMessage<::sim_msg::MsgPair>(Arena*);
 template<> ::sim_msg::Union* Arena::CreateMaybeMessage<::sim_msg::Union>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
@@ -355,6 +359,143 @@ class Union :
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_union_2eproto;
 };
+// -------------------------------------------------------------------
+
+class HighlightGroup :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:sim_msg.HighlightGroup) */ {
+ public:
+  HighlightGroup();
+  virtual ~HighlightGroup();
+
+  HighlightGroup(const HighlightGroup& from);
+  HighlightGroup(HighlightGroup&& from) noexcept
+    : HighlightGroup() {
+    *this = ::std::move(from);
+  }
+
+  inline HighlightGroup& operator=(const HighlightGroup& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline HighlightGroup& operator=(HighlightGroup&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const HighlightGroup& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const HighlightGroup* internal_default_instance() {
+    return reinterpret_cast<const HighlightGroup*>(
+               &_HighlightGroup_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    2;
+
+  friend void swap(HighlightGroup& a, HighlightGroup& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(HighlightGroup* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline HighlightGroup* New() const final {
+    return CreateMaybeMessage<HighlightGroup>(nullptr);
+  }
+
+  HighlightGroup* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<HighlightGroup>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const HighlightGroup& from);
+  void MergeFrom(const HighlightGroup& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  #else
+  bool MergePartialFromCodedStream(
+      ::PROTOBUF_NAMESPACE_ID::io::CodedInputStream* input) final;
+  #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+  void SerializeWithCachedSizes(
+      ::PROTOBUF_NAMESPACE_ID::io::CodedOutputStream* output) const final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* InternalSerializeWithCachedSizesToArray(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(HighlightGroup* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "sim_msg.HighlightGroup";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_union_2eproto);
+    return ::descriptor_table_union_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kGroupnameFieldNumber = 1,
+  };
+  // string groupname = 1;
+  void clear_groupname();
+  const std::string& groupname() const;
+  void set_groupname(const std::string& value);
+  void set_groupname(std::string&& value);
+  void set_groupname(const char* value);
+  void set_groupname(const char* value, size_t size);
+  std::string* mutable_groupname();
+  std::string* release_groupname();
+  void set_allocated_groupname(std::string* groupname);
+
+  // @@protoc_insertion_point(class_scope:sim_msg.HighlightGroup)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr groupname_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_union_2eproto;
+};
 // ===================================================================
 
 
@@ -502,9 +643,66 @@ Union::messages() const {
   return messages_;
 }
 
+// -------------------------------------------------------------------
+
+// HighlightGroup
+
+// string groupname = 1;
+inline void HighlightGroup::clear_groupname() {
+  groupname_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& HighlightGroup::groupname() const {
+  // @@protoc_insertion_point(field_get:sim_msg.HighlightGroup.groupname)
+  return groupname_.GetNoArena();
+}
+inline void HighlightGroup::set_groupname(const std::string& value) {
+  
+  groupname_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:sim_msg.HighlightGroup.groupname)
+}
+inline void HighlightGroup::set_groupname(std::string&& value) {
+  
+  groupname_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:sim_msg.HighlightGroup.groupname)
+}
+inline void HighlightGroup::set_groupname(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  groupname_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:sim_msg.HighlightGroup.groupname)
+}
+inline void HighlightGroup::set_groupname(const char* value, size_t size) {
+  
+  groupname_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:sim_msg.HighlightGroup.groupname)
+}
+inline std::string* HighlightGroup::mutable_groupname() {
+  
+  // @@protoc_insertion_point(field_mutable:sim_msg.HighlightGroup.groupname)
+  return groupname_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* HighlightGroup::release_groupname() {
+  // @@protoc_insertion_point(field_release:sim_msg.HighlightGroup.groupname)
+  
+  return groupname_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void HighlightGroup::set_allocated_groupname(std::string* groupname) {
+  if (groupname != nullptr) {
+    
+  } else {
+    
+  }
+  groupname_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), groupname);
+  // @@protoc_insertion_point(field_set_allocated:sim_msg.HighlightGroup.groupname)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 

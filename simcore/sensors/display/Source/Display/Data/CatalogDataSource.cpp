@@ -59,6 +59,16 @@ FVector UCatalogDataSource::GetOffset(const FString& TypeName)
     return FVector(0.f);
 }
 
+FVector UCatalogDataSource::GetDimension(const FString& TypeName)
+{
+    if (TrafficCatalogData.Contains(ECatalogType::CT_EgoVehicle) &&
+        TrafficCatalogData[ECatalogType::CT_EgoVehicle].Contains(TypeName))
+    {
+        return TrafficCatalogData[ECatalogType::CT_EgoVehicle][TypeName]->Dimension;
+    }
+    return FVector(0.f);
+}
+
 FTruckCatalogData UCatalogDataSource::GetTruckOffset(const FString& TypeName)    // for ego truck catalog
 {
     if (TruckOffsetData.Contains(TypeName))
@@ -95,6 +105,39 @@ FVector UCatalogDataSource::GetOffset(ECatalogType CatalogType, int32 Type)
     if (TrafficCatalogData.Contains(CatalogType) && TrafficCatalogData[CatalogType].Contains(TypeName))
     {
         return TrafficCatalogData[CatalogType][TypeName]->CenterOffset;
+    }
+    else
+        UE_LOG(LogTemp, Log, TEXT("catalog  not find ,typeName : %s"), *TypeName);
+    return FVector(0.f);
+}
+
+FVector UCatalogDataSource::GetDimension(ECatalogType CatalogType, int32 Type)
+{
+    FString TypeName = "";
+    switch (CatalogType)
+    {
+        case ECatalogType::CT_TrafficVehicle:
+            if (VehicleMap_Name_Type.Contains(Type))
+                TypeName = VehicleMap_Name_Type[Type];
+            else
+                UE_LOG(LogTemp, Log, TEXT("vehicle catalog type not find ,type : %d"), Type);
+            break;
+        case ECatalogType::CT_Creature:
+            if (CreatureMap_Name_Type.Contains(Type))
+            {
+                TypeName = CreatureMap_Name_Type[Type];
+            }
+            break;
+        case ECatalogType::CT_Obstacle:
+            if (Obstacle_Name_Type.Contains(Type))
+            {
+                TypeName = Obstacle_Name_Type[Type];
+            }
+            break;
+    }
+    if (TrafficCatalogData.Contains(CatalogType) && TrafficCatalogData[CatalogType].Contains(TypeName))
+    {
+        return TrafficCatalogData[CatalogType][TypeName]->Dimension;
     }
     else
         UE_LOG(LogTemp, Log, TEXT("catalog  not find ,typeName : %s"), *TypeName);
@@ -192,6 +235,7 @@ bool UCatalogDataSource::LoadSceneBuffer(const std::string& Buffer)
     }
 
     std::string DebugStr = scene.DebugString();
+    UE_LOG(SimLogCatalog, Log, TEXT("sceneBuffer %s "), UTF8_TO_TCHAR(DebugStr.c_str()));
     FString ModelRootDir = UTF8_TO_TCHAR(scene.setting().model3d_pathdir().c_str());
     ModelRootDir.Append(TEXT("/"));
     {
@@ -245,6 +289,10 @@ bool UCatalogDataSource::LoadSceneBuffer(const std::string& Buffer)
                 float Y = scene.egos(i).physicles(0).common().bounding_box().center().y();
                 float Z = scene.egos(i).physicles(0).common().bounding_box().center().z();
 
+                float SizeX = scene.egos(i).physicles(0).common().bounding_box().length();
+                float SizeY = scene.egos(i).physicles(0).common().bounding_box().width();
+                float SizeZ = scene.egos(i).physicles(0).common().bounding_box().higth();
+
                 CommonData->ModelID = ID;
                 CommonData->CenterOffset = FVector(X, Y, Z);
                 CommonData->ModelPath =
@@ -271,11 +319,16 @@ bool UCatalogDataSource::LoadSceneBuffer(const std::string& Buffer)
             float Y = scene.vehicles(i).physicle().common().bounding_box().center().y();
             float Z = scene.vehicles(i).physicle().common().bounding_box().center().z();
 
+            float SizeX = scene.vehicles(i).physicle().common().bounding_box().length();
+            float SizeY = scene.vehicles(i).physicle().common().bounding_box().width();
+            float SizeZ = scene.vehicles(i).physicle().common().bounding_box().higth();
+
             CommonData->ModelID = ID;
             CommonData->CenterOffset = FVector(X, Y, Z);
             CommonData->ModelPath =
                 ModelRootDir + UTF8_TO_TCHAR(scene.vehicles(i).physicle().common().model_3d().c_str());
             CommonData->TypeName = TypeName;
+            CommonData->Dimension = FVector(SizeX, SizeY, SizeZ);
 
             VehicleMap_Name_Type.Add(ID, TypeName);
             VehicleData.Add(TypeName, CommonData);

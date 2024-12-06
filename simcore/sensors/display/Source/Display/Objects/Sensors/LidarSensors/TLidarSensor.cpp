@@ -587,12 +587,16 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
         lidarMd.set_snow(FMath::Max(weather.SnowFall, weather.RainFall * 0.1f));
         lidarMd.set_rain(weather.RainFall);
         lidarMd.set_fog(weather.Visibility);
+
+        UE_LOG(LogTemp, Log, TEXT("Weather: %f %f %f"), weather.Visibility, FMath::Max(weather.SnowFall, weather.RainFall * 0.1f), weather.RainFall);
     }
 
     check(LidarMeasurement.HorizontalToScan % LidarSensor->getHorizontalScanMinUnit() == 0);
 
     LidarMeasurement.LidarBodyLoc = GetActorLocation();
     LidarMeasurement.LidarBodyRot = GetActorRotation();
+
+    UE_LOG(LogTemp, Log, TEXT("Update Lidar %f %s"), timeStamp, *LidarMeasurement.LidarBodyLoc.ToString());
 
     // 获取深度数据
     // UE_LOG(LogTemp, Log, TEXT("--------gettbuffer begin: %d"),
@@ -696,21 +700,27 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
                 rot0 = FRotator(0, 0, 0);
                 rot1 = FRotator(0, 0, 0);
             }
+            UE_LOG(LogTemp, Log, TEXT("Update Lidar loc0 %f %s"), timeStamp, *loc0.ToString());
+            UE_LOG(LogTemp, Log, TEXT("Update Lidar loc1 %f %s"), timeStamp, *loc1.ToString());
             double X = 0, Y = 0, Z = 0;
             hadmapue4::HadmapManager::Get()->LocalToLonLat(loc0, X, Y, Z);
             lraw.mutable_pose_first()->set_longitude(X);
             lraw.mutable_pose_first()->set_latitude(Y);
             lraw.mutable_pose_first()->set_altitude(Z);
+            UE_LOG(LogTemp, Log, TEXT("Update Lidar post first %f %6f %6f %6f"), timeStamp,X,Y,Z);
             hadmapue4::HadmapManager::Get()->LocalToLonLat(loc1, X, Y, Z);
             lraw.mutable_pose_last()->set_longitude(X);
             lraw.mutable_pose_last()->set_latitude(Y);
             lraw.mutable_pose_last()->set_altitude(Z);
+            UE_LOG(LogTemp, Log, TEXT("Update Lidar post last %f %6f %6f %6f"), timeStamp,X,Y,Z);
             lraw.mutable_pose_first()->set_roll(rot0.Roll * PI / 180.f);
             lraw.mutable_pose_first()->set_pitch(-rot0.Pitch * PI / 180.f);
             lraw.mutable_pose_first()->set_yaw(-(rot0.Yaw + 90.f) * PI / 180.f);
             lraw.mutable_pose_last()->set_roll(rot1.Roll * PI / 180.f);
             lraw.mutable_pose_last()->set_pitch(-rot1.Pitch * PI / 180.f);
             lraw.mutable_pose_last()->set_yaw(-(rot1.Yaw + 90.f) * PI / 180.f);
+
+
 
             if (ptlists.Num() == 0)
             {
@@ -770,7 +780,7 @@ bool ATLidarSensor::Save(const lidar::TraditionalLidar::lidar_ptset& data, doubl
     StringData += "COUNT 1 1 1 1 1\r\n";
     StringData += FString(TEXT("WIDTH ")) + FString::FromInt(pn) + LINE_TERMINATOR;
     StringData += "HEIGHT 1\r\n";
-    StringData += "VIEWPOINT 0 0 0 1 -1 0 0\r\n";
+    StringData += "VIEWPOINT 0 0 0 1 0 0 0\r\n";
     StringData += FString(TEXT("POINTS ")) + FString::FromInt(pn) + LINE_TERMINATOR;
     StringData += "DATA ascii\r\n";
 

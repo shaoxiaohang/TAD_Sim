@@ -53,6 +53,9 @@ public:
 
     float GetMeshEnd();
 
+    UFUNCTION(BlueprintImplementableEvent)
+    void SetupComponents();
+
 protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
@@ -100,6 +103,10 @@ public:
 
     UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
     class UStaticMeshComponent* RuntimeMeshComp = nullptr;
+
+    // Skeleton container mesh component
+    UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
+    class AActor* ContainerActor = nullptr;
 
     UPROPERTY(config)
     bool bActiveDrivingUI = false;

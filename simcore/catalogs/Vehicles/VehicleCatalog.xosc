@@ -1594,5 +1594,518 @@
                 <Property name="interfaceCategory" value="car" />
             </Properties>
         </Vehicle>
+        <Vehicle name="tesla_models" vehicleCategory="car">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.1839473247528076" length="4.97530734539032" height="1.4243872235529125" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1000" />
+                <Property name="model3d" value="tesla_models/sm_tesla_models.fbx" />
+                <Property name="zhName" value="特斯拉 modelS" />
+                <Property name="enName" value="tesla modelS" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="xiaomi_su7" vehicleCategory="car">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.208137631416321" length="4.991456985473633" height="1.5266190567053854" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1001" />
+                <Property name="model3d" value="xiaomi_su7/xiaomi_su7.fbx" />
+                <Property name="zhName" value="小米 SU7" />
+                <Property name="enName" value="Xiaomi SU7" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="byd_seal" vehicleCategory="car">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.129640579223633" length="4.748377680778503" height="1.4728527660481632" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1002" />
+                <Property name="model3d" value="byd_seal/byd_seal.fbx" />
+                <Property name="zhName" value="比亚迪 海鸥" />
+                <Property name="enName" value="BYD Seal" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="ora" vehicleCategory="car">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.0371758937835693" length="4.237554907798767" height="1.5576387106557377" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1003" />
+                <Property name="model3d" value="ora/ora.fbx" />
+                <Property name="zhName" value="欧拉" />
+                <Property name="enName" value="ora" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="small_truck" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.463468909263611" length="4.8625969886779785" height="2.5185382135678083" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1004" />
+                <Property name="model3d" value="small_truck/small_truck.fbx" />
+                <Property name="zhName" value="小卡车" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head1_box1" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.8545191287994385" length="6.396005213260651" height="3.9882122799754143" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1101" />
+                <Property name="model3d" value="truck_head1_box1/truck_head1_box1.fbx" />
+                <Property name="zhName" value="拖车1" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head1_box2" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.8545191287994385" length="6.396005213260651" height="3.9882122799754143" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1102" />
+                <Property name="model3d" value="truck_head1_box2/truck_head1_box2.fbx" />
+                <Property name="zhName" value="拖车2" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head1_box3" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.8545191287994385" length="6.396005213260651" height="3.9882122799754143" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1103" />
+                <Property name="model3d" value="truck_head1_box3/truck_head1_box3.fbx" />
+                <Property name="zhName" value="拖车3" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head1_flat" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.8545191287994385" length="6.396005213260651" height="3.9882122799754143" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1104" />
+                <Property name="model3d" value="truck_head1_flat/truck_head1_flat.fbx" />
+                <Property name="zhName" value="拖车4" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head1_flat_short" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.8545191287994385" length="6.396005213260651" height="3.9882122799754143" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1105" />
+                <Property name="model3d" value="truck_head1_flat_short/truck_head1_flat_short.fbx" />
+                <Property name="zhName" value="拖车5" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head1_flat_long" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.8545191287994385" length="6.396005213260651" height="3.9882122799754143" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1106" />
+                <Property name="model3d" value="truck_head1_flat_long/truck_head1_flat_long.fbx" />
+                <Property name="zhName" value="拖车6" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head1_wire" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.8545191287994385" length="6.396005213260651" height="3.9882122799754143" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1107" />
+                <Property name="model3d" value="truck_head1_wire/truck_head1_wire.fbx" />
+                <Property name="zhName" value="拖车7" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head2_box1" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.9758106470108032" length="7.345519006252289" height="3.899437788873911" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1108" />
+                <Property name="model3d" value="truck_head2_box1/truck_head2_box1.fbx" />
+                <Property name="zhName" value="拖车8" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head2_box2" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.9758106470108032" length="7.345519006252289" height="3.899437788873911" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1109" />
+                <Property name="model3d" value="truck_head2_box2/truck_head2_box2.fbx" />
+                <Property name="zhName" value="拖车9" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head2_box3" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.9758106470108032" length="7.345519006252289" height="3.899437788873911" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1110" />
+                <Property name="model3d" value="truck_head2_box3/truck_head2_box3.fbx" />
+                <Property name="zhName" value="拖车10" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head2_flat" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.9758106470108032" length="7.345519006252289" height="3.899437788873911" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1111" />
+                <Property name="model3d" value="truck_head2_flat/truck_head2_flat.fbx" />
+                <Property name="zhName" value="拖车11" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head2_flat_short" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.9758106470108032" length="7.345519006252289" height="3.899437788873911" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1112" />
+                <Property name="model3d" value="truck_head2_flat_short/truck_head2_flat_short.fbx" />
+                <Property name="zhName" value="拖车12" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head2_flat_long" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.9758106470108032" length="7.345519006252289" height="3.899437788873911" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1113" />
+                <Property name="model3d" value="truck_head2_flat_long/truck_head2_flat_long.fbx" />
+                <Property name="zhName" value="拖车13" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head2_wire" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.9758106470108032" length="7.345519006252289" height="3.899437788873911" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1114" />
+                <Property name="model3d" value="truck_head2_wire/truck_head2_wire.fbx" />
+                <Property name="zhName" value="拖车14" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head3_box1" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.7134042978286743" length="5.680839955806732" height="3.7798105808906257" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1115" />
+                <Property name="model3d" value="truck_head3_box1/truck_head3_box1.fbx" />
+                <Property name="zhName" value="拖车15" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head3_box2" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.7134042978286743" length="5.680839955806732" height="3.7798105808906257" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1116" />
+                <Property name="model3d" value="truck_head3_box2/truck_head3_box2.fbx" />
+                <Property name="zhName" value="拖车16" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head3_box3" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.7134042978286743" length="5.680839955806732" height="3.7798105808906257" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1117" />
+                <Property name="model3d" value="truck_head3_box3/truck_head3_box3.fbx" />
+                <Property name="zhName" value="拖车17" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head3_flat" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.7134042978286743" length="5.680839955806732" height="3.7798105808906257" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1118" />
+                <Property name="model3d" value="truck_head3_flat/truck_head3_flat.fbx" />
+                <Property name="zhName" value="拖车18" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head3_flat_short" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.7134042978286743" length="5.680839955806732" height="3.7798105808906257" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1119" />
+                <Property name="model3d" value="truck_head3_flat_short/truck_head3_flat_short.fbx" />
+                <Property name="zhName" value="拖车19" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head3_flat_long" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.7134042978286743" length="5.680839955806732" height="3.7798105808906257" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1120" />
+                <Property name="model3d" value="truck_head3_flat_long/truck_head3_flat_long.fbx" />
+                <Property name="zhName" value="拖车20" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head3_wire" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.7134042978286743" length="5.680839955806732" height="3.7798105808906257" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1121" />
+                <Property name="model3d" value="truck_head3_wire/truck_head3_wire.fbx" />
+                <Property name="zhName" value="拖车21" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
+        <Vehicle name="truck_head4_car" vehicleCategory="truck">
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="0.0" />
+                <Dimensions width="2.8334978818893433" length="7.1949180364608765" height="4.273876669118181" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxAcceleration="10" maxDeceleration="30" />
+            <Axles>
+                <FrontAxle maxSteering="0.6981317" wheelDiameter="1.09418" trackWidth="2.21716" positionX="6.06448" positionZ="0.54709" />
+                <RearAxle maxSteering="0.034906585" wheelDiameter="1.09418" trackWidth="2.21716" positionX="0" positionZ="0.54709" />
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="1122" />
+                <Property name="model3d" value="truck_head4_car/truck_head4_car.fbx" />
+                <Property name="zhName" value="拖车22" />
+                <Property name="enName" value="small truck" />
+                <Property name="Preset" value="true" />
+                <Property name="interfaceCategory" value="car" />
+            </Properties>
+        </Vehicle>
     </Catalog>
 </OpenSCENARIO>

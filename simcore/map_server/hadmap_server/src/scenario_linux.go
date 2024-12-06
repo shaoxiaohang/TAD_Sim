@@ -1338,7 +1338,14 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer file.Close()
-	model_dir := ""
+
+	err = r.ParseForm()
+	if err != nil {
+		http.Error(w, "Unable to parse form", http.StatusBadRequest)
+		log.Println("Error parse the file:", err)
+		return
+	}
+	model_dir := r.FormValue("model_dir")
 	if model_dir == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Info(w, "Error retrieving the key value")
@@ -1346,6 +1353,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	files, err := filepath.Glob(filepath.Join(model_dir, "*.fbx"))
 	firstFile := files[0]
+	log.Info("parse this file:", firstFile)
 	fileName := filepath.Base(firstFile)
 	ext := filepath.Ext(fileName)
 	newFileName := "thumbnail_" + strings.TrimSuffix(fileName, ext) + ".png"

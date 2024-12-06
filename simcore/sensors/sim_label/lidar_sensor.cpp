@@ -20,6 +20,10 @@
 /// lidar sensor by id
 LidarSensor::LidarSensor(int _id) : FovFilterSensor(_id) {}
 
+void LidarSensor::SetVerAngles(const std::vector<double>& angles){
+  verAngle = angles;
+}
+
 /**
  * @brief initialize lidar sensor
  *
@@ -40,6 +44,7 @@ bool LidarSensor::Init() {
     downFOV = DBL_MAX;
     upFOV = -DBL_MAX;
     for (auto a : verAngle) {
+      //std::cout << a  << std::endl;
       downFOV = std::min(a, downFOV);
       upFOV = std::max(a, upFOV);
     }
@@ -142,6 +147,8 @@ bool LoadLidar(const sim_msg::Sensor &sensor, const std::string &device) {
   GetPropValue(sensor.intrinsic().params(), "Type", sbuf);
   GetPropValue(sensor.intrinsic().params(), "Model", sbuf);
 
+  std::cout << "lidar type " << sbuf << std::endl;
+
   // handle on hs128at
   if (sbuf == "HS128AT") {
     std::string AngleDefinition;
@@ -155,6 +162,49 @@ bool LoadLidar(const sim_msg::Sensor &sensor, const std::string &device) {
     lid->dRange = 200;
     lid->resHorizonal = a2r * 0.01 * lid->fps;
     lid->resVerial = a2r * 0.02;
+  } else if (sbuf == "HS128") {
+    // handle on hs128
+    std::string angle_file = "/home/aaa/workspace/hsim/simcore/sensors/displayue5/XMLFiles/LidarConfig/HS128/angle.csv";
+    std::ifstream ifs(angle_file);
+    std::vector<double> vertical_angles;
+    std::vector<double> horizontal_angles;
+    vertical_angles.resize(128);
+    horizontal_angles.resize(128);
+    if (ifs.good()) {
+      uint32_t loop_num = 128;
+      std::string str;
+      std::getline(ifs, str);
+      while (std::getline(ifs, str)) {
+        std::stringstream ss(str);
+        std::vector<std::string> data;
+        while (std::getline(ss, str, ',')) data.push_back(str);
+        if (data.size() < 3) {
+          std::cout <<  "Error in angle.csv." << std::endl;
+          return false;
+        }
+        uint32_t loopi = std::atoi(data[0].c_str());
+        if (loopi < 1 || loopi > loop_num) {
+          std::cout <<  "Error in angle.csv." << std::endl;
+          return false;
+        }
+        vertical_angles[loopi - 1] = std::atof(data[1].c_str());
+        horizontal_angles[loopi - 1] = std::atof(data[2].c_str());
+      }
+      lid->SetVerAngles(vertical_angles);
+    }
+    else{
+      std::cout <<  "Failed to read angle.csv" << std::endl;
+      return false;
+    }
+
+    lid->upFOV = a2r * 14.4;
+    lid->downFOV = -a2r * 25.0;
+    lid->leftFOV = -a2r * 180;
+    lid->rightFOV = a2r * 180;
+    lid->rayNum = 128;
+    lid->dRange = 200;
+    lid->resHorizonal = a2r * 0.02 * lid->fps;
+    lid->resVerial = a2r * 0.5;
   } else if (sbuf == "RSM1") {
     // handle on rsm1
     std::string AngleDefinition;

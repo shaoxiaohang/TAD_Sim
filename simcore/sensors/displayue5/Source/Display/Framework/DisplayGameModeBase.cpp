@@ -84,6 +84,8 @@ void ADisplayGameModeBase::BeginPlay()
     {
         GetGameInstance<UDisplayGameInstance>()->OnAllClientLevelLoaded();
     }
+    UE_LOG(LogSimSystem, Log, TEXT("Protocol Buffers Library Version: %s"),
+        UTF8_TO_TCHAR(google::protobuf::internal::VersionString(GOOGLE_PROTOBUF_VERSION).c_str()));
 }
 
 void ADisplayGameModeBase::SimInput(const FSimData& _Data)
@@ -173,6 +175,9 @@ void ADisplayGameModeBase::SimOutput(const FLocalData& _Data, const FUniqueNetId
 
     if (_Data.name == TEXT("RESET"))
     {
+        Data = MakeShared<FSimResetOut>();
+        Data->name = TEXT("RESET");
+        ConvertData_LocalToSim(_Data, *Data);
     }
     else if (_Data.name == TEXT("UPDATE"))
     {
@@ -380,9 +385,8 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
             double z = Elem.z();
             hadmapue4::HadmapManager::Get()->LonLatToLocal(x, y, z, TrafficInput.location);
 
-            UE_LOG(LogSimSystem, Display, TEXT("Update traffic vehicle Type %d TypaName %s %f %f %f"),
-                TrafficInput.type, *TrafficInput.typeName, TrafficInput.location.X, TrafficInput.location.Y,
-                TrafficInput.location.Z);
+            UE_LOG(LogSimSystem, Display, TEXT("Update traffic vehicle %d %s %f %f %f"), TrafficInput.type,
+                *TrafficInput.typeName, TrafficInput.location.X, TrafficInput.location.Y, TrafficInput.location.Z);
 
             // Rotation
             TrafficInput.rotation = FRotator(0, -Elem.heading() * 180 / PI + 90, 0);
@@ -397,8 +401,7 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
         /* Creature */
         for (auto& Elem : UpdateInPtr->trafficData.dynamicobstacles())
         {
-            UE_LOG(LogSimSystem, Display, TEXT("Update Creature Type %d Id %d"), Elem.type(),
-            Elem.id());
+            UE_LOG(LogSimSystem, Display, TEXT("Update Creature Type %d Id %d"), Elem.type(), Elem.id());
             /* Pedestrian */
             if (Elem.type() >= 0 && Elem.type() < 100)
             {
@@ -538,6 +541,10 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
 
 void ADisplayGameModeBase::ConvertData_LocalToSim(const FLocalData& _LocalData, FSimData& _SimData)
 {
+    if (_LocalData.name == TEXT("RESET"))
+    {
+        _SimData.name = _LocalData.name;
+    }
     if (_LocalData.name == TEXT("UPDATE"))
     {
         const FLocalUpdateOut* UpdateInPtr = static_cast<const FLocalUpdateOut*>(&_LocalData);
@@ -593,6 +600,30 @@ void ADisplayGameModeBase::ConvertData_LocalToSim(const FLocalData& _LocalData, 
                     object->set_height(out.sizeLWH.Z * 0.01);
                     object->set_type(std::string(TCHAR_TO_ANSI(*out.typeName)));
                     object->set_raw_type(out.type);
+                    object->set_center_x(out.bboxCenter.X * 0.01);
+                    object->set_center_y(out.bboxCenter.Y * 0.01);
+                    object->set_center_z(out.bboxCenter.Z * 0.01);
+                    if(out.bHasSubComponent)
+                    {
+                        hadmapue4::HadmapManager::Get()->LocalToLonLat(out.subComponentLocation, Px, Py, Pz);
+                        object = SimUpdateInPtr->trafficPose.add_cars();
+                        object->set_id(out.id);
+                        object->set_timestamp(out.timeStamp0);
+                        object->mutable_pose()->set_longitude(Px);
+                        object->mutable_pose()->set_latitude(Py);
+                        object->mutable_pose()->set_altitude(Pz);
+                        object->mutable_pose()->set_roll(out.subComponentRotation.Roll * PI / 180.f);
+                        object->mutable_pose()->set_pitch(-out.subComponentRotation.Pitch * PI / 180.f);
+                        object->mutable_pose()->set_yaw(-(out.subComponentRotation.Yaw + 90.f) * PI / 180.f);
+                        object->set_length(out.subComponentSize.X * 0.01);
+                        object->set_width(out.subComponentSize.Y * 0.01);
+                        object->set_height(out.subComponentSize.Z * 0.01);
+                        object->set_type(std::string(TCHAR_TO_ANSI(*out.typeName)));
+                        object->set_raw_type(-1);
+                        object->set_center_x(out.subComponentBboxCenter.X * 0.01);
+                        object->set_center_y(out.subComponentBboxCenter.Y * 0.01);
+                        object->set_center_z(out.subComponentBboxCenter.Z * 0.01);
+                    }
                 }
             }
         }

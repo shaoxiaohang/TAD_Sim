@@ -2796,12 +2796,48 @@ class VehicleInteraction :
   // accessors -------------------------------------------------------
 
   enum : int {
+    kCommandsFieldNumber = 6,
+    kStatusesFieldNumber = 7,
+    kGroupnameFieldNumber = 8,
     kActivateFieldNumber = 1,
     kAssignFieldNumber = 2,
     kOverrideFieldNumber = 3,
     kCommandFieldNumber = 4,
     kStatusFieldNumber = 5,
   };
+  // repeated .sim_msg.Command commands = 6;
+  int commands_size() const;
+  void clear_commands();
+  ::sim_msg::Command* mutable_commands(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Command >*
+      mutable_commands();
+  const ::sim_msg::Command& commands(int index) const;
+  ::sim_msg::Command* add_commands();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Command >&
+      commands() const;
+
+  // repeated .sim_msg.Status statuses = 7;
+  int statuses_size() const;
+  void clear_statuses();
+  ::sim_msg::Status* mutable_statuses(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Status >*
+      mutable_statuses();
+  const ::sim_msg::Status& statuses(int index) const;
+  ::sim_msg::Status* add_statuses();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Status >&
+      statuses() const;
+
+  // string groupname = 8;
+  void clear_groupname();
+  const std::string& groupname() const;
+  void set_groupname(const std::string& value);
+  void set_groupname(std::string&& value);
+  void set_groupname(const char* value);
+  void set_groupname(const char* value, size_t size);
+  std::string* mutable_groupname();
+  std::string* release_groupname();
+  void set_allocated_groupname(std::string* groupname);
+
   // .sim_msg.Activate activate = 1;
   bool has_activate() const;
   void clear_activate();
@@ -2826,27 +2862,30 @@ class VehicleInteraction :
   ::sim_msg::Override* mutable_override();
   void set_allocated_override(::sim_msg::Override* override);
 
-  // .sim_msg.Command command = 4;
-  bool has_command() const;
-  void clear_command();
-  const ::sim_msg::Command& command() const;
-  ::sim_msg::Command* release_command();
-  ::sim_msg::Command* mutable_command();
-  void set_allocated_command(::sim_msg::Command* command);
+  // .sim_msg.Command command = 4 [deprecated = true];
+  PROTOBUF_DEPRECATED bool has_command() const;
+  PROTOBUF_DEPRECATED void clear_command();
+  PROTOBUF_DEPRECATED const ::sim_msg::Command& command() const;
+  PROTOBUF_DEPRECATED ::sim_msg::Command* release_command();
+  PROTOBUF_DEPRECATED ::sim_msg::Command* mutable_command();
+  PROTOBUF_DEPRECATED void set_allocated_command(::sim_msg::Command* command);
 
-  // .sim_msg.Status status = 5;
-  bool has_status() const;
-  void clear_status();
-  const ::sim_msg::Status& status() const;
-  ::sim_msg::Status* release_status();
-  ::sim_msg::Status* mutable_status();
-  void set_allocated_status(::sim_msg::Status* status);
+  // .sim_msg.Status status = 5 [deprecated = true];
+  PROTOBUF_DEPRECATED bool has_status() const;
+  PROTOBUF_DEPRECATED void clear_status();
+  PROTOBUF_DEPRECATED const ::sim_msg::Status& status() const;
+  PROTOBUF_DEPRECATED ::sim_msg::Status* release_status();
+  PROTOBUF_DEPRECATED ::sim_msg::Status* mutable_status();
+  PROTOBUF_DEPRECATED void set_allocated_status(::sim_msg::Status* status);
 
   // @@protoc_insertion_point(class_scope:sim_msg.VehicleInteraction)
  private:
   class _Internal;
 
   ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Command > commands_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Status > statuses_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr groupname_;
   ::sim_msg::Activate* activate_;
   ::sim_msg::Assign* assign_;
   ::sim_msg::Override* override_;
@@ -5102,7 +5141,7 @@ inline void VehicleInteraction::set_allocated_override(::sim_msg::Override* over
   // @@protoc_insertion_point(field_set_allocated:sim_msg.VehicleInteraction.override)
 }
 
-// .sim_msg.Command command = 4;
+// .sim_msg.Command command = 4 [deprecated = true];
 inline bool VehicleInteraction::has_command() const {
   return this != internal_default_instance() && command_ != nullptr;
 }
@@ -5153,7 +5192,7 @@ inline void VehicleInteraction::set_allocated_command(::sim_msg::Command* comman
   // @@protoc_insertion_point(field_set_allocated:sim_msg.VehicleInteraction.command)
 }
 
-// .sim_msg.Status status = 5;
+// .sim_msg.Status status = 5 [deprecated = true];
 inline bool VehicleInteraction::has_status() const {
   return this != internal_default_instance() && status_ != nullptr;
 }
@@ -5202,6 +5241,117 @@ inline void VehicleInteraction::set_allocated_status(::sim_msg::Status* status) 
   }
   status_ = status;
   // @@protoc_insertion_point(field_set_allocated:sim_msg.VehicleInteraction.status)
+}
+
+// repeated .sim_msg.Command commands = 6;
+inline int VehicleInteraction::commands_size() const {
+  return commands_.size();
+}
+inline void VehicleInteraction::clear_commands() {
+  commands_.Clear();
+}
+inline ::sim_msg::Command* VehicleInteraction::mutable_commands(int index) {
+  // @@protoc_insertion_point(field_mutable:sim_msg.VehicleInteraction.commands)
+  return commands_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Command >*
+VehicleInteraction::mutable_commands() {
+  // @@protoc_insertion_point(field_mutable_list:sim_msg.VehicleInteraction.commands)
+  return &commands_;
+}
+inline const ::sim_msg::Command& VehicleInteraction::commands(int index) const {
+  // @@protoc_insertion_point(field_get:sim_msg.VehicleInteraction.commands)
+  return commands_.Get(index);
+}
+inline ::sim_msg::Command* VehicleInteraction::add_commands() {
+  // @@protoc_insertion_point(field_add:sim_msg.VehicleInteraction.commands)
+  return commands_.Add();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Command >&
+VehicleInteraction::commands() const {
+  // @@protoc_insertion_point(field_list:sim_msg.VehicleInteraction.commands)
+  return commands_;
+}
+
+// repeated .sim_msg.Status statuses = 7;
+inline int VehicleInteraction::statuses_size() const {
+  return statuses_.size();
+}
+inline void VehicleInteraction::clear_statuses() {
+  statuses_.Clear();
+}
+inline ::sim_msg::Status* VehicleInteraction::mutable_statuses(int index) {
+  // @@protoc_insertion_point(field_mutable:sim_msg.VehicleInteraction.statuses)
+  return statuses_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Status >*
+VehicleInteraction::mutable_statuses() {
+  // @@protoc_insertion_point(field_mutable_list:sim_msg.VehicleInteraction.statuses)
+  return &statuses_;
+}
+inline const ::sim_msg::Status& VehicleInteraction::statuses(int index) const {
+  // @@protoc_insertion_point(field_get:sim_msg.VehicleInteraction.statuses)
+  return statuses_.Get(index);
+}
+inline ::sim_msg::Status* VehicleInteraction::add_statuses() {
+  // @@protoc_insertion_point(field_add:sim_msg.VehicleInteraction.statuses)
+  return statuses_.Add();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::sim_msg::Status >&
+VehicleInteraction::statuses() const {
+  // @@protoc_insertion_point(field_list:sim_msg.VehicleInteraction.statuses)
+  return statuses_;
+}
+
+// string groupname = 8;
+inline void VehicleInteraction::clear_groupname() {
+  groupname_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline const std::string& VehicleInteraction::groupname() const {
+  // @@protoc_insertion_point(field_get:sim_msg.VehicleInteraction.groupname)
+  return groupname_.GetNoArena();
+}
+inline void VehicleInteraction::set_groupname(const std::string& value) {
+  
+  groupname_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:sim_msg.VehicleInteraction.groupname)
+}
+inline void VehicleInteraction::set_groupname(std::string&& value) {
+  
+  groupname_.SetNoArena(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:sim_msg.VehicleInteraction.groupname)
+}
+inline void VehicleInteraction::set_groupname(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  groupname_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:sim_msg.VehicleInteraction.groupname)
+}
+inline void VehicleInteraction::set_groupname(const char* value, size_t size) {
+  
+  groupname_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:sim_msg.VehicleInteraction.groupname)
+}
+inline std::string* VehicleInteraction::mutable_groupname() {
+  
+  // @@protoc_insertion_point(field_mutable:sim_msg.VehicleInteraction.groupname)
+  return groupname_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline std::string* VehicleInteraction::release_groupname() {
+  // @@protoc_insertion_point(field_release:sim_msg.VehicleInteraction.groupname)
+  
+  return groupname_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+inline void VehicleInteraction::set_allocated_groupname(std::string* groupname) {
+  if (groupname != nullptr) {
+    
+  } else {
+    
+  }
+  groupname_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), groupname);
+  // @@protoc_insertion_point(field_set_allocated:sim_msg.VehicleInteraction.groupname)
 }
 
 #ifdef __GNUC__

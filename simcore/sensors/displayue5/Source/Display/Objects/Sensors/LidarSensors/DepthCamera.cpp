@@ -44,6 +44,17 @@ ADepthLidarBuffer::ADepthLidarBuffer()
 ADepthLidarBuffer::~ADepthLidarBuffer()
 {
 }
+
+void ADepthLidarBuffer::IngoreActor(AActor* actor)
+{
+    if(actor && captureComponent)
+    {
+         captureComponent->HiddenActors.Add(actor);
+         UE_LOG(LogTemp, Log, TEXT("Ignore Actor: %s"), *actor->GetName());
+    }
+}
+
+
 bool ADepthLidarBuffer::SetCamera(const CameraSensorViewConfiguration& camCfg)
 {
     // 根据配置文件设置相机参数

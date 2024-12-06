@@ -93,6 +93,8 @@ void AVehicleManager::Init(const FManagerConfig& Config)
                     }
                     else
                     {
+                        auto offset = GI->GetCatalogDataSource()->GetOffset(VehicleConfig.Name);
+                        UE_LOG(SimLogVehicleManager, Warning, TEXT("apply ego %s offset: %s"), *VehicleConfig.Name, *offset.ToString());
                         NewVehicle->ApplyCatalogOffset(GI->GetCatalogDataSource()->GetOffset(VehicleConfig.Name));
                     }
                 }
@@ -166,6 +168,7 @@ void AVehicleManager::Update(const FManagerIn& Input, FManagerOut& Output)
         if (!IsAssigned)    // Add
         {
             FVehicleConfig VehicleConfig;
+            VehicleConfig.type = TInput->trafficVehicleInputArry[i].type;
             VehicleConfig.id = TInput->trafficVehicleInputArry[i].id;
             VehicleConfig.startLocation = TInput->trafficVehicleInputArry[i].location;
             VehicleConfig.startRotation = TInput->trafficVehicleInputArry[i].rotation;
@@ -197,8 +200,10 @@ void AVehicleManager::Update(const FManagerIn& Input, FManagerOut& Output)
                 {
                     if (GI->GetCatalogDataSource())
                     {
-                        NewVehicle->ApplyCatalogOffset(GI->GetCatalogDataSource()->GetOffset(
-                            ECatalogType::CT_TrafficVehicle, TInput->trafficVehicleInputArry[i].type));
+                        auto offset = GI->GetCatalogDataSource()->GetOffset(
+                            ECatalogType::CT_TrafficVehicle, TInput->trafficVehicleInputArry[i].type);
+                        UE_LOG(SimLogVehicleManager, Display, TEXT("apply vehicle %s offset: %s"), *TInput->trafficVehicleInputArry[i].typeName, *offset.ToString());
+                        NewVehicle->ApplyCatalogOffset(offset);
                     }
                 }
                 NewVehicle->Update(TInput->trafficVehicleInputArry[i], TOutput->trafficOutArry[i]);
@@ -258,6 +263,7 @@ void AVehicleManager::Update(const FManagerIn& Input, FManagerOut& Output)
         if (!IsAssigned)    // Add
         {
             FVehicleConfig VehicleConfig;
+            VehicleConfig.type = TInput->egoVehicleInputArry[i].type;
             VehicleConfig.id = TInput->egoVehicleInputArry[i].id;
             VehicleConfig.startLocation = TInput->egoVehicleInputArry[i].location;
             VehicleConfig.startRotation = TInput->egoVehicleInputArry[i].rotation;

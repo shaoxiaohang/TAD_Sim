@@ -140,8 +140,7 @@ void NetworkModule::Reset(tx_sim::ResetHelper& helper)
         myGameInstance->SetAsynchronousMode(asynchronousMode);
         myGameInstance->bSimInDataRefreshed = true;
 
-        myGameInstance->ModuleGroupName = TEXT("Ego_001");
-        // UTF8_TO_TCHAR(helper.group_name().c_str());
+        myGameInstance->ModuleGroupName = UTF8_TO_TCHAR(helper.group_name().c_str());
     }
 
     myGameInstance->threadSuspendedEvent->Trigger();
@@ -159,8 +158,8 @@ void NetworkModule::Reset(tx_sim::ResetHelper& helper)
 
 void NetworkModule::Step(tx_sim::StepHelper& helper)
 {
-    UE_LOG(SimLogNet, Log, TEXT("Step begin"));
     double timestamp = helper.timestamp();
+    UE_LOG(SimLogNet, Log, TEXT("NetworkModule Step %f"), timestamp);
     double bei = realstep > 0 ? ((timestamp - time0) / realstep) : 1.0;
     if (bei < 0 || FMath::Modf(bei, &bei) > 1e-4)
     {
@@ -207,6 +206,7 @@ void NetworkModule::Step(tx_sim::StepHelper& helper)
         NewInPtr->trafficData.ParseFromString(strTraffic);
         //UE_LOG(SimLogNet, Log, TEXT("TRAFFIC %f %s"), timestamp, UTF8_TO_TCHAR(NewInPtr->trafficData.DebugString().c_str()));
         myGameInstance->simInDataArry.Add(NewInPtr);
+        UE_LOG(SimLogNet, Log, TEXT("ADD SIMDATA %s %f "), *NewInPtr->name, timestamp);
         myGameInstance->bSimInDataRefreshed = true;
     }
 
@@ -255,8 +255,9 @@ void NetworkModule::PublicUpdateMessage(tx_sim::StepHelper& helper)
             payload_.clear();
             if (simOut->trafficPose.SerializeToString(&payload_) && payload_.size())
             {
-                //UE_LOG(SimLogNet, Log, TEXT("PublictrafficPose %s"),
-                    //ANSI_TO_TCHAR(simOut->trafficPose.DebugString().c_str()));
+                // UE_LOG(SimLogNet, Log, TEXT("PublictrafficPose %s"),
+                //     ANSI_TO_TCHAR(simOut->trafficPose.DebugString().c_str()));
+                UE_LOG(SimLogNet, Log, TEXT("Send trafficPose: %f"), simOut->trafficPose.timestamp());
                 helper.PublishMessage(std::string(TCHAR_TO_ANSI(*PoseTopic)), payload_);
             }
         }
@@ -269,7 +270,7 @@ void NetworkModule::PublicUpdateMessage(tx_sim::StepHelper& helper)
             {
                 helper.PublishMessage(std::string(TCHAR_TO_ANSI(*SensorTopic)), payload_);
             }
-            UE_LOG(SimLogNet, Log, TEXT("Send SensorData: %s"), *simSenOut->name);
+            UE_LOG(SimLogNet, Log, TEXT("Send SensorData: %f"), simSenOut->sensorData.timestamp());
         }
     }
     myGameInstance->simOutDataArry.SetNum(0);

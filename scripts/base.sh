@@ -14,6 +14,7 @@ TADSIM_APP_DIR=$TADSIM_BUILD_DIR/release/linux-unpacked/resources/app
 TADSIM_DEV_SERVICE_DIR=$TADSIM_BUILD_DIR/release/linux-unpacked/resources/app/service
 TADSIM_DEV_SIM_DEP_DIR=$TADSIM_BUILD_DIR/release/linux-unpacked/resources/app/service/simdeps
 TADSIM_NODE_ADDON_DIR=$TADSIM_ROOT/simcore/framework/src/node_addon
+TADSIM_DISPLAY_DIR=$TADSIM_ROOT/simcore/sensors/displayue5
 
 
 export LD_LIBRARY_PATH="$TADSIM_DEPENDENCIES_DIR:$LD_LIBRARY_PATH"

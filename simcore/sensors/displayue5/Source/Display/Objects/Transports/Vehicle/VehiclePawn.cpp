@@ -1,22 +1,25 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "VehiclePawn.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Camera/CameraComponent.h"
-#include "Misc/ConfigCacheIni.h"
-#include "Display/Components/BasicInfoComp.h"
-#include "Managers/Manager.h"
-#include "GameFramework/SpringArmComponent.h"
+
 #include "Animation/AnimBlueprint.h"
-#include "UObject/ConstructorHelpers.h"
-#include "Components/LightMasterComp.h"
-#include "Utils/DataFunctionLibrary.h"
-#include "Components/SpotLightComponent.h"
-#include "Components/SimMoveComponent.h"
+#include "Camera/CameraComponent.h"
 #include "Components/ControlDataProcessor.h"
-#include "Components/MannedControlComponent.h"
-#include "Framework/DisplayPlayerController.h"
 #include "Components/DriveWidget.h"
+#include "Components/LightMasterComp.h"
+#include "Components/MannedControlComponent.h"
+#include "Components/SimMoveComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/SpotLightComponent.h"
+#include "Data/CatalogDataSource.h"
+#include "Display/Components/BasicInfoComp.h"
+#include "Framework/DisplayGameInstance.h"
+#include "Framework/DisplayPlayerController.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Managers/Manager.h"
+#include "Misc/ConfigCacheIni.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Utils/DataFunctionLibrary.h"
 
 DEFINE_LOG_CATEGORY_STATIC(SimLogVehicle, Log, All);
 
@@ -24,6 +27,11 @@ AVehiclePawn::AVehiclePawn()
 {
     // TODO: Set collision channel
 
+#if WITH_EDITOR
+
+    PrimaryActorTick.bCanEverTick = false;
+
+#endif
     // auto TestCamera = CreateDefaultSubobject<UCameraComponent>("TestCamera");
     // TestCamera->SetupAttachment(RootComponent);
     // TestCamera->SetRelativeLocation(FVector(0, 0, 300));
@@ -209,6 +217,11 @@ void AVehiclePawn::Update(const FSimActorInput& _Input, FSimActorOutput& _Output
     FVehicleOut* VehicleOut = Cast_Sim<FVehicleOut>(_Output);
     *(FSimActorInput*) VehicleOut = _Input;
     check(VehicleIn);
+    UDisplayGameInstance* GI = Cast<UDisplayGameInstance>(GetWorld()->GetGameInstance());
+    if (!GI)
+    {
+        return;
+    }
     // FTransform NewTransform = GetSnapGroundTransform(*VehicleIn);
     // SetActorTransform(NewTransform);
     // basicInfoComp->timeStamp = VehicleIn->timeStamp;
@@ -232,7 +245,8 @@ void AVehiclePawn::Update(const FSimActorInput& _Input, FSimActorOutput& _Output
         // if (driving_ui && bActiveDrivingUI)
         // {
         //     float KPH =
-        //         FMath::Abs(mannedControlComponent->GetMannedPawn()->GetVehicleMovement()->GetForwardSpeed()) * 0.036f;
+        //         FMath::Abs(mannedControlComponent->GetMannedPawn()->GetVehicleMovement()->GetForwardSpeed()) *
+        //         0.036f;
         //     int32 KPH_int = FMath::FloorToInt(KPH);
 
         //     float RPM = mannedControlComponent->GetMannedPawn()->GetVehicleMovement()->GetEngineRotationSpeed();
@@ -270,7 +284,59 @@ void AVehiclePawn::Update(const FSimActorInput& _Input, FSimActorOutput& _Output
         VehicleOut->type = vehicleConfig.type;
         VehicleOut->typeName = vehicleConfig.typeName;
     }
-    VehicleOut->sizeLWH = GetComponentsBoundingBox().GetSize();
+    // ego
+    if (vehicleConfig.type == -1)
+    {
+        VehicleOut->sizeLWH = GI->GetCatalogDataSource()->GetDimension(vehicleConfig.Name) * 100;
+    }
+    else
+    {
+        VehicleOut->sizeLWH =
+            GI->GetCatalogDataSource()->GetDimension(ECatalogType::CT_TrafficVehicle, vehicleConfig.type) * 100;
+    }
+    if (RuntimeMeshComp && RuntimeMeshComp->GetStaticMesh())
+    {
+        FVector Min;
+        FVector Max;
+        RuntimeMeshComp->GetLocalBounds(Min, Max);
+        FVector LocalScale = RuntimeMeshComp->GetRelativeScale3D();
+        Min *= LocalScale;
+        Max *= LocalScale;
+
+        auto ss = RuntimeMeshComp->GetRelativeTransform().GetLocation();
+        UE_LOG(SimLogVehicle, Warning, TEXT("SSSS %s"), *ss.ToString());
+
+        FVector Center = (Min + Max) * 0.5;
+        FVector UESize = Max - Min;
+        VehicleOut->sizeLWH = UESize;
+        UE_LOG(SimLogVehicle, Display, TEXT("Vehicle Pawn has runtime mesh %d %s, Min %s , Max %s Center %s Size %s"),
+            vehicleConfig.type, *VehicleOut->typeName, *Min.ToString(), *Max.ToString(), *Center.ToString(),
+            *UESize.ToString());
+        UE_LOG(SimLogVehicle, Warning, TEXT("Vehicle Pawn %d %s, Pos %s , Size: %f %f %f"), vehicleConfig.type,
+            *VehicleOut->typeName, *VehicleOut->locPose.ToString(), VehicleOut->sizeLWH.X, VehicleOut->sizeLWH.Y,
+            VehicleOut->sizeLWH.Z);
+        VehicleOut->bboxCenter = Center + ss;
+    }
+    if (ContainerActor)
+    {
+        UStaticMeshComponent* StaticMeshComponent = ContainerActor->FindComponentByClass<UStaticMeshComponent>();
+        if (StaticMeshComponent)
+        {
+            FVector Min;
+            FVector Max;
+            StaticMeshComponent->GetLocalBounds(Min, Max);
+            FVector Center = (Min + Max) * 0.5;
+            FVector UESize = Max - Min;
+            UE_LOG(SimLogVehicle, Display,
+                TEXT("Vehicle Pawn has container mesh %d %s, Min %s , Max %s Center %s Size %s"), vehicleConfig.type,
+                *VehicleOut->typeName, *Min.ToString(), *Max.ToString(), *Center.ToString(), *UESize.ToString());
+            VehicleOut->bHasSubComponent = true;
+            VehicleOut->subComponentBboxCenter = Center;
+            VehicleOut->subComponentSize = UESize;
+            VehicleOut->subComponentRotation = StaticMeshComponent->GetComponentRotation();
+            VehicleOut->subComponentLocation = StaticMeshComponent->GetComponentLocation();
+        }
+    }
 }
 
 void AVehiclePawn::Destroy()
@@ -427,80 +493,80 @@ void AVehiclePawn::SetupLights()
 {
     Super::SetupLights();
 
-    {
-        FLampInfo HighBeamLamp;
-        FLampMaterialData NewLampMatData;
-        NewLampMatData.matInstance =
-            UDataFunctionLibrary::CreateMaterialDynamicInstance(meshComp, TEXT("Mat_carlight"));
-        NewLampMatData.paramName = TEXT("Lamp_HighBeam");
-        NewLampMatData.defaultScaleValue = 0.f;
-        HighBeamLamp.materialArry.Add(NewLampMatData);
-        // USpotLightComponent* Spot_L = NewObject<USpotLightComponent>(this, TEXT("Lamp_HighBeam_L"));
-        USpotLightComponent* Spot_L = lamp_HighBeam_L;
-        if (Spot_L)
-        {
-            // Spot_L->SetIntensity(100000);
-            // Spot_L->SetAttenuationRadius(2000);
-            // Spot_L->SetMobility(EComponentMobility::Type::Movable);
-            // Spot_L->SetCastShadows(false);
-            // Spot_L->SetInnerConeAngle(50);
-            // Spot_L->SetOuterConeAngle(80);
-            // Spot_L->SetSourceRadius(300);
-            // Spot_L->SetVisibility(false);
+    // {
+    //     FLampInfo HighBeamLamp;
+    //     FLampMaterialData NewLampMatData;
+    //     NewLampMatData.matInstance =
+    //         UDataFunctionLibrary::CreateMaterialDynamicInstance(meshComp, TEXT("Mat_carlight"));
+    //     NewLampMatData.paramName = TEXT("Lamp_HighBeam");
+    //     NewLampMatData.defaultScaleValue = 0.f;
+    //     HighBeamLamp.materialArry.Add(NewLampMatData);
+    //     // USpotLightComponent* Spot_L = NewObject<USpotLightComponent>(this, TEXT("Lamp_HighBeam_L"));
+    //     USpotLightComponent* Spot_L = lamp_HighBeam_L;
+    //     if (Spot_L)
+    //     {
+    //         // Spot_L->SetIntensity(100000);
+    //         // Spot_L->SetAttenuationRadius(2000);
+    //         // Spot_L->SetMobility(EComponentMobility::Type::Movable);
+    //         // Spot_L->SetCastShadows(false);
+    //         // Spot_L->SetInnerConeAngle(50);
+    //         // Spot_L->SetOuterConeAngle(80);
+    //         // Spot_L->SetSourceRadius(300);
+    //         // Spot_L->SetVisibility(false);
 
-            // Spot_L->AttachToComponent(meshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-            // TEXT("Lamp_HighBeam_L")); Spot_L->RegisterComponent();
-            HighBeamLamp.lightArry.Add(Spot_L);
-        }
-        // USpotLightComponent* Spot_R = NewObject<USpotLightComponent>(this, TEXT("Lamp_HighBeam_R"));
-        USpotLightComponent* Spot_R = lamp_HighBeam_R;
-        if (Spot_R)
-        {
-            // Spot_R->SetIntensity(100000);
-            // Spot_R->SetAttenuationRadius(2000);
-            // Spot_R->SetMobility(EComponentMobility::Type::Movable);
-            // Spot_R->SetCastShadows(false);
-            // Spot_R->SetInnerConeAngle(50);
-            // Spot_R->SetOuterConeAngle(80);
-            // Spot_R->SetSourceRadius(300);
-            // Spot_R->SetVisibility(false);
+    //         // Spot_L->AttachToComponent(meshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+    //         // TEXT("Lamp_HighBeam_L")); Spot_L->RegisterComponent();
+    //         HighBeamLamp.lightArry.Add(Spot_L);
+    //     }
+    //     // USpotLightComponent* Spot_R = NewObject<USpotLightComponent>(this, TEXT("Lamp_HighBeam_R"));
+    //     USpotLightComponent* Spot_R = lamp_HighBeam_R;
+    //     if (Spot_R)
+    //     {
+    //         // Spot_R->SetIntensity(100000);
+    //         // Spot_R->SetAttenuationRadius(2000);
+    //         // Spot_R->SetMobility(EComponentMobility::Type::Movable);
+    //         // Spot_R->SetCastShadows(false);
+    //         // Spot_R->SetInnerConeAngle(50);
+    //         // Spot_R->SetOuterConeAngle(80);
+    //         // Spot_R->SetSourceRadius(300);
+    //         // Spot_R->SetVisibility(false);
 
-            // Spot_R->AttachToComponent(meshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-            // TEXT("Lamp_HighBeam_R")); Spot_R->RegisterComponent();
-            HighBeamLamp.lightArry.Add(Spot_R);
-        }
-        lightMasterComp->CreateLamp(TEXT("Lamp_HighBeam"), HighBeamLamp);
-    }
+    //         // Spot_R->AttachToComponent(meshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+    //         // TEXT("Lamp_HighBeam_R")); Spot_R->RegisterComponent();
+    //         HighBeamLamp.lightArry.Add(Spot_R);
+    //     }
+    //     lightMasterComp->CreateLamp(TEXT("Lamp_HighBeam"), HighBeamLamp);
+    // }
 
-    {
-        FLampInfo StopLamp;
-        FLampMaterialData& NewLampMatData = StopLamp.materialArry.AddDefaulted_GetRef();
-        NewLampMatData.matInstance =
-            UDataFunctionLibrary::CreateMaterialDynamicInstance(meshComp, TEXT("Mat_carlight"));
-        NewLampMatData.paramName = TEXT("Lamp_Stop");
-        NewLampMatData.defaultScaleValue = 0.f;
-        lightMasterComp->CreateLamp(TEXT("Lamp_Stop"), StopLamp);
-    }
+    // {
+    //     FLampInfo StopLamp;
+    //     FLampMaterialData& NewLampMatData = StopLamp.materialArry.AddDefaulted_GetRef();
+    //     NewLampMatData.matInstance =
+    //         UDataFunctionLibrary::CreateMaterialDynamicInstance(meshComp, TEXT("Mat_carlight"));
+    //     NewLampMatData.paramName = TEXT("Lamp_Stop");
+    //     NewLampMatData.defaultScaleValue = 0.f;
+    //     lightMasterComp->CreateLamp(TEXT("Lamp_Stop"), StopLamp);
+    // }
 
-    {
-        FLampInfo NewLamp;
-        FLampMaterialData& NewLampMatData = NewLamp.materialArry.AddDefaulted_GetRef();
-        NewLampMatData.matInstance =
-            UDataFunctionLibrary::CreateMaterialDynamicInstance(meshComp, TEXT("Mat_carlight"));
-        NewLampMatData.paramName = TEXT("Lamp_Backup");
-        NewLampMatData.defaultScaleValue = 0.f;
-        lightMasterComp->CreateLamp(TEXT("Lamp_Backup"), NewLamp);
-    }
+    // {
+    //     FLampInfo NewLamp;
+    //     FLampMaterialData& NewLampMatData = NewLamp.materialArry.AddDefaulted_GetRef();
+    //     NewLampMatData.matInstance =
+    //         UDataFunctionLibrary::CreateMaterialDynamicInstance(meshComp, TEXT("Mat_carlight"));
+    //     NewLampMatData.paramName = TEXT("Lamp_Backup");
+    //     NewLampMatData.defaultScaleValue = 0.f;
+    //     lightMasterComp->CreateLamp(TEXT("Lamp_Backup"), NewLamp);
+    // }
 
-    {
-        FLampInfo NewLamp;
-        FLampMaterialData& NewLampMatData = NewLamp.materialArry.AddDefaulted_GetRef();
-        NewLampMatData.matInstance =
-            UDataFunctionLibrary::CreateMaterialDynamicInstance(meshComp, TEXT("Mat_carlight"));
-        NewLampMatData.paramName = TEXT("Lamp_Clearance");
-        NewLampMatData.defaultScaleValue = 0.f;
-        lightMasterComp->CreateLamp(TEXT("Lamp_Clearance"), NewLamp);
-    }
+    // {
+    //     FLampInfo NewLamp;
+    //     FLampMaterialData& NewLampMatData = NewLamp.materialArry.AddDefaulted_GetRef();
+    //     NewLampMatData.matInstance =
+    //         UDataFunctionLibrary::CreateMaterialDynamicInstance(meshComp, TEXT("Mat_carlight"));
+    //     NewLampMatData.paramName = TEXT("Lamp_Clearance");
+    //     NewLampMatData.defaultScaleValue = 0.f;
+    //     lightMasterComp->CreateLamp(TEXT("Lamp_Clearance"), NewLamp);
+    // }
 }
 
 float AVehiclePawn::GetMeshHead()
@@ -564,11 +630,13 @@ float AVehiclePawn::GetMeshEnd()
 //             }
 //             if (Elem == FName(TEXT("Lamp_LeftTurningSignalLamp")))
 //             {
-//                 lightMasterComp->AddLight(meshComp, Elem.ToString(), 1, TEXT("LeftTurningSignalLamp"), NULL, false);
+//                 lightMasterComp->AddLight(meshComp, Elem.ToString(), 1, TEXT("LeftTurningSignalLamp"), NULL,
+//                 false);
 //             }
 //             if (Elem == FName(TEXT("Lamp_RightTurningSignalLamp")))
 //             {
-//                 lightMasterComp->AddLight(meshComp, Elem.ToString(), 1, TEXT("RightTurningSignalLamp"), NULL, false);
+//                 lightMasterComp->AddLight(meshComp, Elem.ToString(), 1, TEXT("RightTurningSignalLamp"), NULL,
+//                 false);
 //             }
 //             if (Elem == FName(TEXT("Lamp_BackupLamp")))
 //             {

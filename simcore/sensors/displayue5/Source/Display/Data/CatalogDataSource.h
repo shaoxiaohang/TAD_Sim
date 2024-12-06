@@ -29,6 +29,9 @@ struct FCommonCatalogData
     FVector CenterOffset;
 
     UPROPERTY()
+    FVector Dimension;
+
+    UPROPERTY()
     int32 ModelID;
 
     UPROPERTY()
@@ -84,9 +87,13 @@ class DISPLAY_API UCatalogDataSource : public UObject
 public:
     FVector GetOffset(const FString& TypeName);    // for ego catalog
 
+    FVector GetDimension(const FString& TypeName);    // for ego catalog
+
     FTruckCatalogData GetTruckOffset(const FString& TypeName);    // for ego truck catalog
 
     FVector GetOffset(ECatalogType CatalogType, int32 Type);
+
+    FVector GetDimension(ECatalogType CatalogType, int32 Type);
 
     FString GetModelPathByType(ECatalogType CatalogType, const int32 Type);
 

@@ -419,7 +419,7 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
             double z = Elem.z();
             hadmapue4::HadmapManager::Get()->LonLatToLocal(x, y, z, TrafficInput.location);
 
-            UE_LOG(LogSimSystem, Display, TEXT("Update traffic vehicle %s %f %f %f"), 
+            UE_LOG(LogSimSystem, Display, TEXT("Update traffic vehicle %d %s %f %f %f"), TrafficInput.type,
             *TrafficInput.typeName,  TrafficInput.location.X,TrafficInput.location.Y,TrafficInput.location.Z );
 
             // Rotation
@@ -829,7 +829,14 @@ void ADisplayGameModeBase::ConvertData_LocalToSim(const FLocalData& _LocalData, 
                 {
                     const auto& out = UpdateInPtr->transportManager.vehicleManagerOut.trafficOutArry[i];
                     double Px, Py, Pz = 0.0;
+
                     hadmapue4::HadmapManager::Get()->LocalToLonLat(out.locPose, Px, Py, Pz);
+
+
+                    UE_LOG(LogSimSystem, Display, TEXT("Update Vehicle %s %s %6f %6f %6f"),*out.typeName, *out.locPose.ToString(),
+                     Px, Py, Pz);
+
+
                     auto* object = SimUpdateInPtr->trafficPose.add_cars();
                     object->set_id(out.id);
                     object->set_timestamp(out.timeStamp0);

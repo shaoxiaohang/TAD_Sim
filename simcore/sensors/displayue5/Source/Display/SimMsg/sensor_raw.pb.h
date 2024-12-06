@@ -1360,6 +1360,9 @@ class DisplayPose_Object :
     kLengthFieldNumber = 4,
     kWidthFieldNumber = 5,
     kHeightFieldNumber = 6,
+    kCenterXFieldNumber = 9,
+    kCenterYFieldNumber = 10,
+    kCenterZFieldNumber = 11,
     kRawTypeFieldNumber = 8,
   };
   // string type = 7;
@@ -1406,6 +1409,21 @@ class DisplayPose_Object :
   double height() const;
   void set_height(double value);
 
+  // double center_x = 9;
+  void clear_center_x();
+  double center_x() const;
+  void set_center_x(double value);
+
+  // double center_y = 10;
+  void clear_center_y();
+  double center_y() const;
+  void set_center_y(double value);
+
+  // double center_z = 11;
+  void clear_center_z();
+  double center_z() const;
+  void set_center_z(double value);
+
   // int32 raw_type = 8;
   void clear_raw_type();
   ::PROTOBUF_NAMESPACE_ID::int32 raw_type() const;
@@ -1423,6 +1441,9 @@ class DisplayPose_Object :
   double length_;
   double width_;
   double height_;
+  double center_x_;
+  double center_y_;
+  double center_z_;
   ::PROTOBUF_NAMESPACE_ID::int32 raw_type_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_sensor_5fraw_2eproto;
@@ -2570,6 +2591,48 @@ inline void DisplayPose_Object::set_raw_type(::PROTOBUF_NAMESPACE_ID::int32 valu
   
   raw_type_ = value;
   // @@protoc_insertion_point(field_set:sim_msg.DisplayPose.Object.raw_type)
+}
+
+// double center_x = 9;
+inline void DisplayPose_Object::clear_center_x() {
+  center_x_ = 0;
+}
+inline double DisplayPose_Object::center_x() const {
+  // @@protoc_insertion_point(field_get:sim_msg.DisplayPose.Object.center_x)
+  return center_x_;
+}
+inline void DisplayPose_Object::set_center_x(double value) {
+  
+  center_x_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.DisplayPose.Object.center_x)
+}
+
+// double center_y = 10;
+inline void DisplayPose_Object::clear_center_y() {
+  center_y_ = 0;
+}
+inline double DisplayPose_Object::center_y() const {
+  // @@protoc_insertion_point(field_get:sim_msg.DisplayPose.Object.center_y)
+  return center_y_;
+}
+inline void DisplayPose_Object::set_center_y(double value) {
+  
+  center_y_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.DisplayPose.Object.center_y)
+}
+
+// double center_z = 11;
+inline void DisplayPose_Object::clear_center_z() {
+  center_z_ = 0;
+}
+inline double DisplayPose_Object::center_z() const {
+  // @@protoc_insertion_point(field_get:sim_msg.DisplayPose.Object.center_z)
+  return center_z_;
+}
+inline void DisplayPose_Object::set_center_z(double value) {
+  
+  center_z_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.DisplayPose.Object.center_z)
 }
 
 // -------------------------------------------------------------------

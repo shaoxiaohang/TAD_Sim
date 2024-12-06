@@ -310,8 +310,8 @@ function uploadZip (file: File) {
     uploadModelErrorMessage.value = '仅支持 .zip 文件格式'
     return false
   }
-  if (file.size > 1024 * 1024 * 5) {
-    uploadModelErrorMessage.value = '文件大小不能超过 5MB'
+  if (file.size > 1024 * 1024 * 6) {
+    uploadModelErrorMessage.value = '文件大小不能超过 6MB'
     return false
   }
   uploadModelZip((file as ElectronFile).path)

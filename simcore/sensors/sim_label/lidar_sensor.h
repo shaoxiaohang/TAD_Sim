@@ -16,6 +16,8 @@ class LidarSensor : public FovFilterSensor {
   virtual bool Init();
   bool world2pixel(const Eigen::Vector3d &wp, Eigen::Vector2d &uv) const;
 
+  void SetVerAngles(const std::vector<double>& angles);
+
  private:
   double fps = 10;
   int rayNum = 128;

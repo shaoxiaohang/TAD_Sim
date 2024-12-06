@@ -29,6 +29,13 @@ function build_sim_label() {
   popd > /dev/null
 }
 
+function build_message() {
+  pushd $TADSIM_ROOT/common > /dev/null
+  build_project "message" "generate_cpp.sh"
+  cp $TADSIM_ROOT/common/message/build/*  $TADSIM_DISPLAY_DIR/Source/Display/SimMsg
+  popd > /dev/null
+}
+
 function build_map_server() {
   pushd $TADSIM_ROOT/simcore > /dev/null
   build_project map_server build.sh
@@ -47,6 +54,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     framework)
       build_framwork
+      shift
+      ;;
+    message)
+      build_message
       shift
       ;;
     map_server)

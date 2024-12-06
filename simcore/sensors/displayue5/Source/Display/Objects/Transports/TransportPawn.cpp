@@ -39,7 +39,7 @@ ATransportPawn::ATransportPawn()
     meshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     meshComp->SetCollisionProfileName(FName(TEXT("SimVehicle")));
 
-    lightMasterComp = CreateDefaultSubobject<ULightMasterComp>(FName(TEXT("LightMaster")));
+    //lightMasterComp = CreateDefaultSubobject<ULightMasterComp>(FName(TEXT("LightMaster")));
 
     cameraMasterComp = CreateDefaultSubobject<UCameraMasterComponent>(FName(TEXT("CameraMaster")));
 
