@@ -162,11 +162,11 @@ bool UDisplayGameInstance::Tick(float DeltaSeconds)
 
 void UDisplayGameInstance::OutputData()
 {
-    if (currentSimInData)
-    {
-        UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.OutputData = %s %f"), *currentSimInData->name,
-            currentSimInData->timeStamp);
-    }
+    // if (currentSimInData)
+    // {
+    //     UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.OutputData = %s %f"), *currentSimInData->name,
+    //         currentSimInData->timeStamp);
+    // }
     if (!currentSimInData || currentSimInData->bIsConsumed > 0)
     {
         return;
@@ -234,19 +234,19 @@ void UDisplayGameInstance::ReceiveSimData()
         }
 
         currentSimInData = simInDataArry.Top();
-        UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.ReceiveSimData = %s %f"),
-         *currentSimInData->name, currentSimInData->timeStamp);
+        // UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.ReceiveSimData = %s %f"),
+        //  *currentSimInData->name, currentSimInData->timeStamp);
         currentSimInData->bIsConsumed = 0;
     }
 }
 
 void UDisplayGameInstance::SendSimData()
 {
-    if(currentSimInData)
-    {
-        UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.SendSimData = %s %f"),
-            *currentSimInData->name, currentSimInData->timeStamp);
-    }
+    // if(currentSimInData)
+    // {
+    //     UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.SendSimData = %s %f"),
+    //         *currentSimInData->name, currentSimInData->timeStamp);
+    // }
     if (!currentSimInData || currentSimInData->bIsConsumed > 0)
     {
         return;
@@ -292,11 +292,11 @@ void UDisplayGameInstance::SendSimData()
 
 void UDisplayGameInstance::SyncSimData()
 {
-    if(currentSimInData)
-    {
-        UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.SyncSimData = %s %f"),
-            *currentSimInData->name, currentSimInData->timeStamp);
-    }
+    // if(currentSimInData)
+    // {
+    //     UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.SyncSimData = %s %f"),
+    //         *currentSimInData->name, currentSimInData->timeStamp);
+    // }
     if (!currentSimInData || currentSimInData->bIsConsumed > 0)
     {
         return;

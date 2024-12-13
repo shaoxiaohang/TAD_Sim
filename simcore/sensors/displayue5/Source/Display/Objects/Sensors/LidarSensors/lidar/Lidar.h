@@ -80,7 +80,13 @@ public:
 
     virtual bool Init() = 0;
 
+    virtual FVector2f getAzimuthRange() = 0;
+
+    virtual float getHorizontalResolution() const = 0;    // 水平分辨率 °
+
     virtual std::pair<float, float> getYawPitchAngle(uint32_t pos, uint32_t r) const = 0;
+
+    virtual float getHorizonOffset(uint32_t channel) const = 0;
 
     struct lidar_point
     {
@@ -109,7 +115,7 @@ public:
     };
 
 protected:
-    virtual float getHorizontalResolution() const = 0;    // 水平分辨率 °
+
 
     int _id{0};
 };

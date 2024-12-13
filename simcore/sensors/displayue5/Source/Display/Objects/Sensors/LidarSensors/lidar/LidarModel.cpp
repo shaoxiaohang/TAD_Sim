@@ -83,46 +83,58 @@ bool LidarModel::cache_tag(unsigned int tag_c, unsigned int tag_t)
     return true;
 }
 
+bool LidarModel::simulator(float& x, float& y, float& z, float d)
+{
+    if (d < 0.01f)
+    {
+        return false;
+    }
+    gausswhite_noise(x);
+    gausswhite_noise(y);
+    gausswhite_noise(z);
+    return true;
+}
+
 // 模型仿真
-bool LidarModel::simulator(
-    float cosita, unsigned int tag_c, unsigned int tag_t, float& d, float& ref)
+bool LidarModel::simulator(float cosita, unsigned int tag_c, unsigned int tag_t, float& d, float& ref)
 {
     if (d < 0.01f)
     {
         return false;
     }
     // 计算反射率
-    ref = reflection(tag_c, tag_t, cosita);
+    // ref = reflection(tag_c, tag_t, cosita);
     // 计算回波强度
-    float v = cosita * ref / (d * d);
+    // float v = cosita * ref / (d * d);
     // 添加雨天噪声
-    if (f_rainfall < 1.f)
-    {
-        unsigned int tag1 = tag_c / 10000000;
-        if (tag1 >= 1 && tag1 <= 2)
-        {
-            v *= exp((f_rainfall - 1) * 1024);
-        }
-        v *= factor_rain(d);
-    }
-    // 添加雾噪声
-    if (f_fog < 1.f)
-    {
-        v *= factor_fog(d);
-    }
-    v *= extinctionCoe;
+    // if (f_rainfall < 1.f)
+    // {
+    //     unsigned int tag1 = tag_c / 10000000;
+    //     if (tag1 >= 1 && tag1 <= 2)
+    //     {
+    //         v *= exp((f_rainfall - 1) * 1024);
+    //     }
+    //     v *= factor_rain(d);
+    // }
+    // // 添加雾噪声
+    // if (f_fog < 1.f)
+    // {
+    //     v *= factor_fog(d);
+    // }
+    // v *= extinctionCoe;
     // 添加高斯噪声
     gausswhite_noise(d);
-    if (v < t_intensity)
-    {
-        d = 0;
-        return false;
-    }
+    // if (v < t_intensity)
+    // {
+    //     std::cout << "DROP INTENSITY " << v  << "  " << d << std::endl;
+    //     d = 0;
+    //     return false;
+    // }
     // 添加雪噪声
-    if (f_snowfall_prob < 1.f)
-    {
-        snow_noise(d);
-    }
+    // if (f_snowfall_prob < 1.f)
+    // {
+    //     snow_noise(d);
+    // }
     return d >= 0.01f;
 }
 

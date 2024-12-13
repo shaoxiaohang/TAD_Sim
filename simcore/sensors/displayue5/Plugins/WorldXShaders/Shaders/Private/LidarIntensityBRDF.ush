@@ -1,0 +1,53 @@
+
+
+#include "/Engine/Private/ShadingModels.ush"
+#ifndef ENABLE_NEW_HLSL_GENERATOR
+#include "/Engine/Private/MaterialTemplate.ush"
+#include "/Engine/Private/DeferredLightingCommon.ush"
+#endif
+
+float LambertBeer(float InIntensity, float Distance)
+{
+	return InIntensity * exp(-Distance * 0.004);
+}
+
+float3 simulate_brdf(FMaterialPixelParameters Parameters, float3 WorldNormal, float3 DiffuseColor, float3 SpecularColor, float Roughness, uint ShadingModel, float4 SubsurfaceData)
+{
+	float3 N = WorldNormal;
+	float3 V = Parameters.CameraVector;
+	float3 L = V;
+	// float3 L = normalize(float3(1, 1, 1));
+	float NoL =  saturate( dot(N, L) );
+	float PixelDistance = length(Parameters.WorldPosition_CamRelative) / 100.0;
+
+	float Falloff = LambertBeer(1, PixelDistance);
+	
+	float2 UV = GetDefaultSceneTextureUV(Parameters, 0);
+	FGBufferData GBuffer = GetGBufferData(UV, false);
+
+	GBuffer.WorldNormal = WorldNormal;
+	GBuffer.DiffuseColor = DiffuseColor;
+	GBuffer.SpecularColor = SpecularColor;
+	GBuffer.Roughness = Roughness;
+	GBuffer.ShadingModelID = ShadingModel;
+	// GBuffer.CustomData = SubsurfaceData;
+	GBuffer.CustomData = IsSubsurfaceModel(ShadingModel) ? float4(EncodeSubsurfaceColor(SubsurfaceData.xyz), SubsurfaceData.a) : SubsurfaceData;
+	// FDirectLighting Lighting = LidarIntensityBxDF(GBuffer, N, V, L, Falloff, NoL);
+
+	FAreaLight AreaLight;
+	AreaLight.SphereSinAlpha = 0;
+	AreaLight.SphereSinAlphaSoft = 0;
+	AreaLight.LineCosSubtended = 1;
+	AreaLight.FalloffColor = 1;
+	AreaLight.Rect = (FRect)0;
+	AreaLight.IsRectAndDiffuseMicroReflWeight = 0;
+	AreaLight.Texture = InitRectTexture();
+	
+	FShadowTerms Shadow;
+	Shadow.HairTransmittance = (FHairTransmittanceData)0;
+	Shadow.SurfaceShadow = 0;
+	Shadow.TransmissionShadow = 0;
+	Shadow.TransmissionThickness = 0;
+	FDirectLighting Lighting = IntegrateBxDF(GBuffer, N, V, L, Falloff, NoL, AreaLight, Shadow );
+
+	return Lighting.Transmission + Lighting.Diffuse + Lighting.Specular;

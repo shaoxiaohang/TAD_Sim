@@ -1,0 +1,53 @@
+#include "/Engine/Public/Platform.ush"
+
+Texture2D<float4> InTexture;
+float2 Dimensions; // (width, height)
+float4 Params0; // (sin, cos, virtaul_plane, 0)
+float4 Params1; // (channel, h_fov, delta_angle, 0)
+RWStructuredBuffer<float> OutputBuffer;
+RWStructuredBuffer<int> OutputBufferCounter;
+
+[numthreads(THREADGROUPSIZE_X, THREADGROUPSIZE_Y, THREADGROUPSIZE_Z)]
+void MainComputeShader(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        --> current group index (dispatched by c++)
+                       uint3 DTid : SV_DispatchThreadID, //atm: 0...256 in rows & columns (XY)   --> "global" thread id
+                       uint3 GTid : SV_GroupThreadID, //atm: 0...256, -,- in columns (X)      --> current threadId in group / "local" threadId
+                       uint GI : SV_GroupIndex)            //atm: 0...256 in columns (X)           --> "flattened" index of a thread within a group)
+{
+    if (DTid.x >= Dimensions.x||
+        DTid.y >= Dimensions.y)
+        return;
+
+	float halfWidth = Dimensions.x * 0.5;
+	float halfHeight = Dimensions.y * 0.5;
+
+    int row = DTid.y;
+    int column = DTid.x;
+    float4 color = InTexture[DTid.xy] * float4(255,255, 255, 1);
+    float intensity = color.w;
+
+    // 还原深度值
+    float normalized = (color.x + color.y * 256 + color.z * 256 * 256) / (256 * 256 * 256 - 1);
+    float depth_in_meters = 1000 * normalized;
+    if (depth_in_meters < 250)
+    {
+        float virtual_plane = Params0.z;
+        float3 dir = float3(virtual_plane,  column - halfWidth, halfHeight - row);
+        
+        float3 dir_lidar_cs = float3(dir.x, -dir.y, dir.z);
+
+        float3 position = dir_lidar_cs * depth_in_meters / virtual_plane;
+        float theta_sin = Params0.x;
+        float theta_cos = Params0.y;
+        float3 position_rotate = float3(position.x * theta_cos + position.y * theta_sin,
+                                       -position.x * theta_sin + position.y * theta_cos,
+                                        position.z);
+
+        int current_count;
+        InterlockedAdd(OutputBufferCounter[0], 1, current_count);
+        OutputBuffer[current_count * 5 + 0] = position_rotate.x;
+        OutputBuffer[current_count * 5 + 1] = position_rotate.y;
+        OutputBuffer[current_count * 5 + 2] = position_rotate.z;
+        OutputBuffer[current_count * 5 + 3] = intensity;
+        OutputBuffer[current_count * 5 + 4] = asfloat(DTid.y);
+    }
+}

@@ -10,10 +10,30 @@ public class Display : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine",
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "RenderCore", "CoreUObject", "RHI",
 		 "InputCore", "EnhancedInput","ProceduralMeshComponent","CinematicCamera","Networking", "Sockets", "AutoRoad","RuntimeMeshLoader"});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "UMG"  });
+			PrivateIncludePaths.AddRange(
+				new string[]
+				{
+					System.IO.Path.Combine(GetModuleDirectory("Renderer"), "Private"),
+				}
+			);
+
+		PrivateDependencyModuleNames.AddRange(
+			new string[]
+			{
+				"CoreUObject",
+				"Engine",
+				"Json",
+				"JsonUtilities",
+				"Slate",
+				"SlateCore",
+				"WorldXShaders",
+				"Renderer",
+				"UMG" 
+			}
+			);
 
     //Plugin module
     PublicDependencyModuleNames.AddRange(new string[]

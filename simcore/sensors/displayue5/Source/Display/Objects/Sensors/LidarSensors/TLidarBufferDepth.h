@@ -3,26 +3,45 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CudaLidarModel.h"
 #include "LidarSensorDef.h"
+#include "Networking.h"
 #include "Objects/Sensors/SensorActor.h"
+#include "RenderGraphResources.h"
 #include "lidar/Lidar.h"
 #include "lidar/LidarModel.h"
-#include "Networking.h"
+
 #include <map>
 #include <vector>
-#include "CudaLidarModel.h"
-// #include "TLidarBufferDepth.generated.h"
 
-class ADepthLidarBuffer;
+class USceneCaptureComponent2D;
+class FDepthMapBasedLidarSceneViewExtension;
+class UMaterialInstanceDynamic;
+class UTextureRenderTarget2D;
+class FRHIGPUBufferReadback;
+
+struct LidarScan
+{
+    int scan_offset;
+    float scan_azimuth;
+    unsigned int scan_sequence;
+};
+
+struct LidarDetection
+{
+    float x;
+    float y;
+    float z;
+    int channel;
+    float intensity;
+};
 
 struct DepthLidarBuffer : public LidarBuffer
 {
-    struct ImgBuffer
-    {
-        TArray<FColor> cpuImg;
-        uint8_t* gpuImg = 0;
-    };
-    TArray<ImgBuffer> imgBuffer;
+    int detection_count;
+    int scan_count;
+    std::vector<LidarDetection> detections;
+    std::vector<LidarScan> scans;
 };
 
 class ALidarBufferDepth : public LidarBufferFun
@@ -39,24 +58,135 @@ public:
     virtual bool GetPoints(const LidarBuffer* rawbuf, const FTLidarMeasurement& measure,
         lidar::TraditionalLidar::lidar_ptset& lidarBuffer);
 
-    virtual void setRotationTranslation(const FTransform& mat);
+    void PrepareParallelRays(std::shared_ptr<lidar::TraditionalLidar> _LidarSensor);
 
-    TArray<ADepthLidarBuffer*>& GetDepthCameraActors();
+    void CreateSenceCaptureComponents();
+
+    void CreateTextureRenderTargets();
+
+    void SetupComponents();
+
+    void SetupBuffers();
+
+    struct FImageSpaceLaserRay
+    {
+        FVector3f direction;
+        int row;
+        int column;
+        int scan_id;
+        int laser_id;
+        float azimuth;
+    };
+
+    struct RenderTargetSRVInfo
+    {
+        FString debug_name;
+        UTextureRenderTarget2D* render_target;
+        TRefCountPtr<IPooledRenderTarget> pooled_target;
+    };
 
 private:
-    TArray<ADepthLidarBuffer*> depthCameraActors;
-    int nImage{8};
-    float Hfov = 60;
-    float offsetX0;
-    float offsetX1;
-    std::map<int, std::pair<uint32, uint32>> stencilMap;
-    TArray<uint8> depthCamIdx;
-    TArray<uint32> camuvIdx;
+    enum ELidarPassType
+    {
+        BasePass = 0x01,
+        PostPass = 0x02,
+        All = 0x03
+    };
 
-    CudaLidarModel cudalidar;
-    TArray<uint8_t*> imgBuffers_gpu;
+    struct FLidarPassParams
+    {
+        // base pass
+        FRDGBufferSRVRef ImageSpaceLaserRaysSRV;
+        FRDGBufferUAVRef RawLidarBufferUAV;
+        FRDGBufferUAVRef LaserNumPerScanUAV;
+        FRDGBufferUAVRef DetectionCountUAV;
 
-    bool LoadStencilMap(const FString& dir);
-    void getData(
-        const TArray<FColor>& BitMap, float w, float h, float x, float y, float& distance, float& norangle, int& tag);
+        // post pass
+        FRDGBufferSRVRef ScanAzimuthSRV;
+        FRDGBufferUAVRef ScanBufferUAV;
+        FRDGBufferUAVRef ScanOffsetUAV;
+        FRDGBufferUAVRef ReorderedBufferUAV;
+    };
+
+    FLidarPassParams CreateLidarPassParams(FRDGBuilder& GraphBuilder, ELidarPassType ParamsType);
+
+    void AddLidarBasePass(FRDGBuilder& GraphBuilder, const int& CameraIndex, const FRDGTextureSRVRef& RenderTargetSRV,
+        const FLidarPassParams& PassParams);
+
+    void AddLidarPostPass(FRDGBuilder& GraphBuilder, const FLidarPassParams& PassParams);
+
+    void DisableShowFlags(FEngineShowFlags& ShowFlags);
+
+    void EnableShowFlags(FEngineShowFlags& ShowFlags);
+
+    void FetchReadbackBuffer(TSharedPtr<DepthLidarBuffer> buffer);
+
+    bool ReadLidarData_RenderThreadSVE(TSharedPtr<DepthLidarBuffer> buffer);
+
+    bool ReadLidarData_RenderThreadSingleCaptureSVE(TSharedPtr<DepthLidarBuffer> buffer);
+
+private:
+    FVector2f AzimuthRange;
+
+    int ScanCount = 0;
+    unsigned int ScanSequenceCount;
+
+    int MaxPointNum = 0;
+
+    int CameraCount = 24;
+
+    int SceneCaptureCount;
+
+    bool bUseSingleCapture = true;
+    bool bUseEnableFlags = true;
+
+    FVector2f FovRangeVerticalPerCamera = FVector2f(-25, 25);
+
+    float FovHorizonPerCamera;
+
+    float HorizonSampleCount;
+
+    float DegreeHorizonPerPixel = 0.01;
+
+    float DegreeVerticalPerPixel = 0.02;
+
+    int ImageWidthPerCamera;
+
+    int ImageHeightPerCamera;
+
+    // calc ray direction
+    double FocalLengthX;
+    double FocalLengthY;
+
+    unsigned int Channels = 0;
+
+    float Range = 0;
+
+    TArray<float> ScanAzimuth;
+
+    TArray<FVector3f> LaserRays;
+    TArray<FImageSpaceLaserRay> ImageSpaceLaserRays;
+
+    TArray<USceneCaptureComponent2D*> SceneCaptures;
+    TArray<UMaterialInstanceDynamic*> MaterialInstanceDynamics;
+
+    TSharedPtr<FDepthMapBasedLidarSceneViewExtension> SceneViewExtension;
+
+    friend class FDepthMapBasedLidarSceneViewExtension;
+
+    TArray<RenderTargetSRVInfo> RenderTargets;
+
+    // read back
+    TSharedPtr<FRHIGPUBufferReadback> LidarReadbackDetectionCount;
+    TSharedPtr<FRHIGPUBufferReadback> LidarReadbackDetection;
+    TSharedPtr<FRHIGPUBufferReadback> LidarReadbackScan;
+
+    TRefCountPtr<FRDGPooledBuffer> RawLidarBufferRDGPooledBuffer;
+    TRefCountPtr<FRDGPooledBuffer> LaserNumPerScanRDGPooledBuffer;
+    TRefCountPtr<FRDGPooledBuffer> DetectionCountRDGPooledBuffer;
+    TRefCountPtr<FRDGPooledBuffer> ScanBufferRDGPooledBuffer;
+    TRefCountPtr<FRDGPooledBuffer> ScanOffsetRDGPooledBuffer;
+    TRefCountPtr<FRDGPooledBuffer> ReorderedBufferRDGPooledBuffer;
+    TRefCountPtr<FRDGPooledBuffer> ScanAzimuthRDGPooledBuffer;
+    TRefCountPtr<FRDGPooledBuffer> ImageSpaceLaserRaysRDGPooledBuffer;
 };

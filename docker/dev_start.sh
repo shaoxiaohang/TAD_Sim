@@ -11,7 +11,7 @@ DOCKER_HOME="/home/$USER"
 OUTPUT_HOME=$HOME
 
 # Main docker image
-DESKTOP_TAG=$(get_desktop_tag)
+DESKTOP_TAG=$(get_remote_tag)
 MAIN_IMAGE="$REGISTRY/$DESKTOP_TAG"
 UE4_ROOT="$OUTPUT_HOME/workspace/ue4"
 UE5_ROOT="$OUTPUT_HOME/workspace/ue5"

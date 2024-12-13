@@ -1,0 +1,151 @@
+#include "/Engine/Public/Platform.ush"
+
+struct Point3
+{
+	float x;
+	float y;
+	float z;
+};
+
+struct FLidarDetection
+{
+	float x;
+	float y;
+	float z;
+	int channel;
+	float intensity;
+};
+
+struct FImageSpaceLaserRay
+{
+	float3 direction;
+	int row;
+	int column;
+	int scan_id;
+	int laser_id;
+	float azimuth;
+};
+
+struct FLidarScan
+{
+	int scan_offset;
+	float scan_azimuth;
+	unsigned int scan_sequence;
+};
+
+Texture2D<float4> InTexture;
+StructuredBuffer<FImageSpaceLaserRay> ImageSpaceLaserRays;
+int ChannelCount;
+int HorizonCount;
+int CameraIndex;
+float CosAzimuth;
+float SinAzimuth;
+float Range;
+RWStructuredBuffer<FLidarDetection> RawHitBuffer;
+RWStructuredBuffer<int> LaserNumPerScan;
+
+float DecodeDepthFromRGB(float3 color)
+{
+    float normalized = (color.x + color.y * 256 + color.z * 256 * 256) / (256 * 256 * 256 - 1);
+    return 1000 * normalized;
+}
+
+float3 RotateVector(float3 in_direction, float cos_theta, float sin_theta)
+{
+	return float3(in_direction.x * cos_theta + in_direction.y * sin_theta,
+		         -in_direction.x * sin_theta + in_direction.y * cos_theta,
+		          in_direction.z);
+}
+
+[numthreads(THREADGROUPSIZE_X, THREADGROUPSIZE_Y, THREADGROUPSIZE_Z)]
+void RawHitMain(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        --> current group index (dispatched by c++)
+                       uint3 DTid : SV_DispatchThreadID, //atm: 0...256 in rows & columns (XY)   --> "global" thread id
+                       uint3 GTid : SV_GroupThreadID, //atm: 0...256, -,- in columns (X)      --> current threadId in group / "local" threadId
+                       uint GI : SV_GroupIndex)            //atm: 0...256 in columns (X)           --> "flattened" index of a thread within a group)
+{
+    if (DTid.x >= HorizonCount || DTid.y >=ChannelCount)
+        return;
+	
+	int index = CameraIndex * HorizonCount * ChannelCount + DTid.y + DTid.x * ChannelCount;
+	FImageSpaceLaserRay laser_ray = ImageSpaceLaserRays[index];
+	
+	float4 color = InTexture[float2(laser_ray.row, laser_ray.column)]  * float4(255,255, 255, 1);
+	float intensity = color.w;
+
+	float depth_in_meters = DecodeDepthFromRGB(color.xyz);
+
+	
+	if (depth_in_meters > Range)
+		return;
+
+	float3 position = depth_in_meters * laser_ray.direction;
+	float3 position_global = RotateVector(position, CosAzimuth, SinAzimuth);
+
+	int laser_index_per_scan;
+	InterlockedAdd(LaserNumPerScan[laser_ray.scan_id], 1, laser_index_per_scan);
+	int current_index = laser_ray.laser_id + laser_ray.scan_id * ChannelCount;
+	RawHitBuffer[current_index].x = position_global.x;
+	RawHitBuffer[current_index].y = position_global.y;
+	RawHitBuffer[current_index].z = position_global.z;
+	RawHitBuffer[current_index].channel = laser_ray.laser_id;
+	RawHitBuffer[current_index].intensity = intensity * 255;
+}
+
+int ScanCount;
+int ScanSequenceOffset;
+RWStructuredBuffer<int> DetectionCount;
+StructuredBuffer<float> ScanAzimuth;
+RWStructuredBuffer<int> ScanOffsetUAV;
+RWStructuredBuffer<FLidarScan> ScanBufferUAV;
+
+[numthreads(THREADGROUPSIZE_X, THREADGROUPSIZE_Y, THREADGROUPSIZE_Z)]
+void ScanMain(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        --> current group index (dispatched by c++)
+                       uint3 DTid : SV_DispatchThreadID, //atm: 0...256 in rows & columns (XY)   --> "global" thread id
+                       uint3 GTid : SV_GroupThreadID, //atm: 0...256, -,- in columns (X)      --> current threadId in group / "local" threadId
+                       uint GI : SV_GroupIndex)            //atm: 0...256 in columns (X)           --> "flattened" index of a thread within a group)
+{
+	const int scan_id = DTid.x;
+    if (scan_id >= ScanCount)
+        return;
+	
+	// DeviceMemoryBarrier();
+	// DeviceMemoryBarrierWithGroupSync();
+
+	// once per scan
+	ScanOffsetUAV[scan_id] = 0;
+	for (int i = 0; i <= scan_id; i++)
+	{
+		ScanOffsetUAV[scan_id] += LaserNumPerScan[i];
+	}
+	ScanOffsetUAV[scan_id] -= 1;
+	
+	// DeviceMemoryBarrierWithGroupSync();
+
+	if (scan_id == ScanCount - 1)
+	{
+		DetectionCount[0] = ScanOffsetUAV[ScanCount - 1] + 1;
+	}
+	ScanBufferUAV[scan_id].scan_azimuth = ScanAzimuth[scan_id];
+	ScanBufferUAV[scan_id].scan_offset = ScanOffsetUAV[scan_id];
+	ScanBufferUAV[scan_id].scan_sequence = scan_id + ScanSequenceOffset;
+}
+
+
+RWStructuredBuffer<FLidarDetection> ReorderedLidarBuffer;
+[numthreads(THREADGROUPSIZE_X, THREADGROUPSIZE_Y, THREADGROUPSIZE_Z)]
+void ReorderMain(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        --> current group index (dispatched by c++)
+					   uint3 DTid : SV_DispatchThreadID, //atm: 0...256 in rows & columns (XY)   --> "global" thread id
+					   uint3 GTid : SV_GroupThreadID, //atm: 0...256, -,- in columns (X)      --> current threadId in group / "local" threadId
+					   uint GI : SV_GroupIndex)            //atm: 0...256 in columns (X)           --> "flattened" index of a thread within a group)
+{
+	const uint scan_id = DTid.x;
+	const uint laser_index = DTid.y;
+	if (scan_id >= ScanCount ||
+		laser_index >= LaserNumPerScan[scan_id] ||
+		LaserNumPerScan[scan_id] <= 0)
+		return;
+	
+	const uint index = scan_id * ChannelCount + laser_index;
+	const int reordered_index = ScanOffsetUAV[scan_id] - LaserNumPerScan[scan_id] + 1 + laser_index;
+	ReorderedLidarBuffer[reordered_index] = RawHitBuffer[index];
+}

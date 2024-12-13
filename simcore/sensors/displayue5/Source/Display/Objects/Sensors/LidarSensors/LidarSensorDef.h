@@ -82,6 +82,7 @@ enum LidarBufferMethod
     BUFMETHOD_RAYCAST = 0,
     BUFMETHOD_DEPTH = 1,
     BUFMETHOD_RAYTRACING = 2,
+    BUFMETHOD_DEPTH_NEW = 3
 };
 
 class LidarBufferFun

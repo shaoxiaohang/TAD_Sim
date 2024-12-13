@@ -34,6 +34,10 @@ function get_desktop_tag() {
   cat "$SATURNV_ROOT_DIR/docker/desktop.tag"
 }
 
+function get_remote_tag() {
+  cat "$SATURNV_ROOT_DIR/docker/remote_runtime.tag"
+}
+
 function get_display_tag() {
   cat "$SATURNV_ROOT_DIR/docker/display.tag"
 }

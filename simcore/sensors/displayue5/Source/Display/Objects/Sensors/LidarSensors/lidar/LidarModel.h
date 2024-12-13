@@ -27,6 +27,9 @@ public:
     bool simulator(
         float cosita, unsigned int tag_c, unsigned int tag_t, float& d, float& reflection);
 
+    bool simulator(
+        float &x , float &y, float &z, float d);
+
     void set_intensity(float i);
     float get_intensity() const
     {

@@ -1,0 +1,55 @@
+
+#include "/Engine/Public/Platform.ush"
+#include "/Engine/Private/GammaCorrectionCommon.ush"
+
+int Width;
+int Height;
+Texture2D<half4> InTexture;
+RWStructuredBuffer<uint> OutRawTextureUint;
+
+[numthreads(THREADGROUPSIZE_X, THREADGROUPSIZE_Y, THREADGROUPSIZE_Z)]
+void CopyRGBAMain(uint3 Gid : SV_GroupID,						//atm: -, 0...256, - in rows (Y)        --> current group index (dispatched by c++)
+					   uint3 DTid : SV_DispatchThreadID,	//atm: 0...256 in rows & columns (XY)   --> "global" thread id
+					   uint3 GTid : SV_GroupThreadID,		//atm: 0...256, -,- in columns (X)      --> current threadId in group / "local" threadId
+					   uint GI : SV_GroupIndex)				//atm: 0...256 in columns (X)           --> "flattened" index of a thread within a group)
+{
+	if (DTid.x > Width || DTid.y > Height)
+		return;
+
+	int index = Width * DTid.y + DTid.x;
+
+	float4 color = InTexture[uint2(DTid.x, DTid.y)];
+	color.xyz = LinearToSrgb(color.xyz);
+	uint4 color_int = clamp(color * 255.f + 0.5, 0, 255);
+	OutRawTextureUint[index] = color_int.b | (color_int.g << 8) | (color_int.r << 16) | (255 << 24);
+	// OutRawTextureUint[index] = color_int.b + color_int.g * 256  + color_int.r * 256 * 256 + color_int.a * 256 * 256 * 256;
+}
+
+// byte_index start from 0
+uint WriteByte(uint rawValue, uint byte_index, uint value)
+{
+	return (rawValue & !(255 <<  (byte_index * 8))) | (value << (byte_index * 8));
+}
+
+RWStructuredBuffer<uint> OutRawTextureByte;
+// RWByteAddressBuffer OutRawTextureByte;
+[numthreads(THREADGROUPSIZE_X, THREADGROUPSIZE_Y, THREADGROUPSIZE_Z)]
+void CopyRGBMain(uint3 Gid : SV_GroupID,						//atm: -, 0...256, - in rows (Y)        --> current group index (dispatched by c++)
+					   uint3 DTid : SV_DispatchThreadID,	//atm: 0...256 in rows & columns (XY)   --> "global" thread id
+					   uint3 GTid : SV_GroupThreadID,		//atm: 0...256, -,- in columns (X)      --> current threadId in group / "local" threadId
+					   uint GI : SV_GroupIndex)				//atm: 0...256 in columns (X)           --> "flattened" index of a thread within a group)
+{
+	if (DTid.x > Width || DTid.y > Height)
+		return;
+	
+	int index = Width * DTid.y	+ DTid.x;
+	
+	float4 color = InTexture[uint2(DTid.x, DTid.y)];
+	color.xyz = LinearToSrgb(color.xyz);
+	uint3 color_int = clamp(color * 255.f + 0.5, 0, 255);
+	int byte_index = floor(index * 3 / 4);
+	int byte_sub_index = index * 3 % 4;
+
+	// OutRawTextureByte[byte_index] = WriteByte(OutRawTextureByte[byte_index], byte_sub_index, 255);
+	// OutRawTextureByte.Store(index * 3 + 1, color_int.y);
+}

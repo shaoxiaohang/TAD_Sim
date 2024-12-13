@@ -1,0 +1,14 @@
+#include "/Engine/Public/Platform.ush"
+
+Texture2D<float4> InTexture;
+SamplerState TextureSampler;
+
+void FullscreenTexturePS(
+	float4 SvPosition : SV_POSITION,
+	out float4 OutColor : SV_Target0
+	)
+{
+	float2 UV = SvPosition.xy;
+	OutColor = InTexture.Sample(TextureSampler, UV);
+	OutColor = float4(1, 0, 0, 1);
+}

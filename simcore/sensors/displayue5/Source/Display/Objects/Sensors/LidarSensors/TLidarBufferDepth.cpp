@@ -1,16 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-/**
- * @file TLidarBufferDepth.cpp
- * @brief This file contains the implementation of TLidarBufferDepth.
- * 深度方式获取lidar的射线数据
- * @author <kekesong>
- * @date 2024-03-10
- * @copyright Copyright (c) 2024 TENCENT Inc. All Rights Reserved.
- */
-
 #include "TLidarBufferDepth.h"
 
+#include "Components/SceneCaptureComponent2D.h"
 #include "DepthCamera.h"
+#include "DepthLidarSVE.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/Engine.h"
 #include "Engine/TextureRenderTarget2D.h"
@@ -18,8 +10,13 @@
 #include "Framework/DisplayGameInstance.h"
 #include "Framework/SaveDataThread.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "RHIGPUReadback.h"
+#include "RenderGraphEvent.h"
 #include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
 #include "Runtime/ImageWrapper/Public/IImageWrapperModule.h"
+#include "Utils/FRDGBuilderHelper.h"
+#include "Utils/ProjectionUtil.h"
+#include "WorldXShaders/Private/DepthBasedLidarCSInstance.h"
 #include "lidar/LidarModel.h"
 
 #include <chrono>
@@ -27,581 +24,824 @@
 #include <sstream>
 #include <thread>
 
-#define ALONEFOV 140.f
-
-// #define DEP_ROTATE
 bool ALidarBufferDepth::Init(const FLidarConfig& _config, std::shared_ptr<lidar::TraditionalLidar> _LidarSensor,
     AActor* _actor, class LidarModel* lmodel)
 {
     LidarBufferFun::Init(_config, _LidarSensor, _actor, lmodel);
-    // load stencil map
-    LoadStencilMap(config.cfgDir);
 
-    UE_LOG(LogTemp, Log, TEXT("TLidarBufferDepth config dir = %s"), *config.cfgDir);
-
-    // 一圈需要几个深度相机：周深=四周深度
     FString DepthImageN;
     if (GConfig->GetString(TEXT("Sensor"), TEXT("LidarDN"), DepthImageN, GGameIni))
     {
         UE_LOG(LogTemp, Log, TEXT("SensorManger: DepthImageN is: %s. "), *DepthImageN);
-        nImage = FMath::Min(100, FCString::Atoi(*DepthImageN));
+        CameraCount = FMath::Min(100, FCString::Atoi(*DepthImageN));
     }
-    Hfov = 360.f / nImage;
-    // 计算当前lidar的水平fov，用于判断周深的开启
-    offsetX0 = offsetX1 = 0;
-    float minV = 90, maxV = -90;
+
+    FString single_capture_str;
+    GConfig->GetString(TEXT("Sensor"), TEXT("LidarSingleCapture"), single_capture_str, GGameIni);
+    if (single_capture_str == TEXT("false"))
+    {
+        bUseSingleCapture = false;
+    }
+
+    FString degree_h_pixel;
+    if (GConfig->GetString(TEXT("Sensor"), TEXT("DegreeHorizonPerPixel"), degree_h_pixel, GGameIni))
+    {
+        DegreeHorizonPerPixel = FMath::Min(0.1, FCString::Atof(*degree_h_pixel));
+        UE_LOG(LogTemp, Log, TEXT("ALidarBufferDepth: DegreeHorizonPerPixel is: %f. "), DegreeHorizonPerPixel);
+    }
+
+    FString degree_v_pixel;
+    if (GConfig->GetString(TEXT("Sensor"), TEXT("DegreeVerticalPerPixel"), degree_v_pixel, GGameIni))
+    {
+        DegreeVerticalPerPixel = FMath::Min(0.1, FCString::Atof(*degree_v_pixel));
+        UE_LOG(LogTemp, Log, TEXT("ALidarBufferDepth: DegreeVerticalPerPixel is: %f. "), DegreeVerticalPerPixel);
+    }
+
+    SceneCaptureCount = bUseSingleCapture ? 1 : CameraCount;
+
+    AzimuthRange = _LidarSensor->getAzimuthRange();
+    ScanCount = _LidarSensor->getHorizontalScanCount();
+    MaxPointNum = ScanCount * _LidarSensor->getRaysNum() * _LidarSensor->getReturnNum();
+    Channels = _LidarSensor->getRaysNum();
+    Range = _LidarSensor->getRange();
+
+    FovRangeVerticalPerCamera.X = MAX_flt;
+    FovRangeVerticalPerCamera.Y = -MAX_flt;
     for (uint32 i = 0; i < _LidarSensor->getHorizontalScanCount(); i++)
     {
         for (uint32 j = 0; j < _LidarSensor->getRaysNum(); j++)
         {
             auto yawpitch = _LidarSensor->getYawPitchAngle(i, j);
-            minV = std::min(minV, yawpitch.second);
-            maxV = std::max(maxV, yawpitch.second);
-            offsetX0 = std::min(offsetX0, yawpitch.first - _LidarSensor->getHorizontalScanAngle(i));
-            offsetX1 = std::max(offsetX1, yawpitch.first - _LidarSensor->getHorizontalScanAngle(i));
+            FovRangeVerticalPerCamera.X = std::min(FovRangeVerticalPerCamera.X, yawpitch.second);
+            FovRangeVerticalPerCamera.Y = std::max(FovRangeVerticalPerCamera.Y, yawpitch.second);
         }
     }
-    // 计算俯仰角，用于周深的放置
-    float baseV0 = (minV + maxV) * 0.5;
-    float vfov = (maxV - minV) * 0.5;
+    FovRangeVerticalPerCamera.X -= 1;
+    FovRangeVerticalPerCamera.Y += 1;
 
-    float Vfov = vfov * 2.f;
+    FovHorizonPerCamera = 360. / CameraCount;
+    HorizonSampleCount = ScanCount / CameraCount;
+    ImageWidthPerCamera = 360. / DegreeHorizonPerPixel / CameraCount;
+    ImageHeightPerCamera = (FovRangeVerticalPerCamera.Y - FovRangeVerticalPerCamera.X) / DegreeVerticalPerPixel;
 
-    float hfov = FMath::RadiansToDegrees(FMath::Atan(
-                     FMath::Tan(FMath::DegreesToRadians(Hfov * 0.5f)) / FMath::Cos(FMath::DegreesToRadians(baseV0)))) *
-                 2.1f;
-    vfov = FMath::RadiansToDegrees(FMath::Atan(
-               FMath::Tan(FMath::DegreesToRadians(Vfov * 0.5f)) / FMath::Cos(FMath::DegreesToRadians(hfov * 0.5f)))) *
-           2.1f;
+    UE_LOG(LogTemp, Log,
+        TEXT("CameraCount: %d FovHorizonPerCamera: %f FovRangeVerticalPerCamera.Bottom: %f "
+             "FovRangeVerticalPerCamera.Top: %f HorizonSampleCount: %f ImageWidthPerCamera: %d ImageHeightPerCamera: "
+             "%d  MaxPointNum %d AzimuthRange %f %f    "),
+        SceneCaptureCount, FovHorizonPerCamera, FovRangeVerticalPerCamera.X, FovRangeVerticalPerCamera.Y,
+        HorizonSampleCount, ImageWidthPerCamera, ImageHeightPerCamera, MaxPointNum, AzimuthRange.X, AzimuthRange.Y);
 
-    float ref_scale = _LidarSensor->getRaysNum();
-    ref_scale /= 40;
-    if (ref_scale < 1.f)
-        ref_scale = 1.f;
+    LaserRays.SetNum(MaxPointNum);
+    ImageSpaceLaserRays.SetNum(MaxPointNum);
+    ScanAzimuth.SetNum(ScanCount);
+    ScanSequenceCount = 0;
 
-    float ares =
-        FMath::Max(0.1f, FMath::Abs(_LidarSensor->getHorizontalScanAngle(1) - _LidarSensor->getHorizontalScanAngle(0)));
-    float la = FMath::Tan(FMath::DegreesToRadians(ares));
-    float lw = FMath::Tan(FMath::DegreesToRadians(hfov * 0.5f));
+    PrepareParallelRays(_LidarSensor);
 
-    float w = lw * 2.f / la;
-    w = std::max(w, hfov / ares);
+    CreateSenceCaptureComponents();
 
-    // 生成周深相机配置
-    CameraSensorViewConfiguration camCfg;
-    camCfg.position = FVector(0);
-    camCfg.rotator = FRotator(baseV0, 0, 0);
-    camCfg.hfov = hfov;
-    camCfg.vfov = vfov;
-    camCfg.w = w * ref_scale;
-    camCfg.h = FMath::Tan(FMath::DegreesToRadians(vfov * 0.5f)) / FMath::Tan(FMath::DegreesToRadians(0.1f)) * ref_scale;
+    CreateTextureRenderTargets();
 
-    float cx = camCfg.w * 0.5f;
-    float cy = camCfg.h * 0.5f;
-    float fx = cx / FMath::Tan(FMath::DegreesToRadians(hfov * 0.5f));
-    float fy = cy / FMath::Tan(FMath::DegreesToRadians(vfov * 0.5f));
+    SetupComponents();
 
-    UE_LOG(LogTemp, Log, TEXT("Lidar depth image w=%d, h=%d, vfov=%f, hfov=%f, basev=%f"), camCfg.w, camCfg.h, vfov,
-        hfov, baseV0);
+    SetupBuffers();
 
-    uint32_t rn = lidarSensor->getRaysNum();
-    uint32_t rtn = lidarSensor->getReturnNum();
-    uint32_t hw = _LidarSensor->getHorizontalScanCount();
-    depthCamIdx.SetNum(rn * hw * rtn);
-    memset(depthCamIdx.GetData(), 255, depthCamIdx.Num());
-    camuvIdx.SetNum(rn * hw * rtn);
-    memset(camuvIdx.GetData(), 0, camuvIdx.Num());
-    // 计算激光线与周深相机的坐标映射：每个光线的相机编号，和uv坐标位置
-    depthCameraActors.SetNumZeroed(nImage);
-    for (uint32_t i = 0; i < hw; ++i)
-    {
-        for (uint32_t c = 0; c < rn; ++c)
-        {
-            auto yawpitch = lidarSensor->getYawPitchAngle(i, c);
-            float ha = yawpitch.first + 360.f;
-            int pici = FMath::FloorToInt(ha / Hfov);
-            pici = pici % nImage;
-            ha = FMath::DegreesToRadians(ha);
-            float va = FMath::DegreesToRadians(yawpitch.second);
-            FVector p = FVector(FMath::Cos(va) * FMath::Cos(ha), FMath::Cos(va) * FMath::Sin(ha), FMath::Sin(va));
-            FVector p1 = FRotator(0, -pici * Hfov - Hfov * 0.5, 0).RotateVector(p);
-            p = FRotator(-baseV0, 0, 0).RotateVector(p1);
-            if (p.X < 0.0001)
-            {
-                UE_LOG(LogTemp, Log, TEXT("Lidar depth init warnning, please send to developer."));
-                continue;
-            }
-            p.Y /= p.X;
-            p.Z /= p.X;
-            float u = fx * p.Y + cx;
-            float v = -fy * p.Z + cy;
-            int x0 = FMath::FloorToInt(u);
-            int y0 = FMath::FloorToInt(v);
-            if (y0 < 0 || y0 >= camCfg.h || x0 < 0 || x0 >= camCfg.w)
-            {
-                UE_LOG(LogTemp, Log, TEXT("Lidar depth init warnning, please send to developer."));
-                continue;
-            }
-            camuvIdx[i * rn * rtn + c] = y0 * camCfg.w + x0;
-            depthCamIdx[i * rn * rtn + c] = pici;
-
-            if (!depthCameraActors[pici])
-            {
-                ADepthLidarBuffer* sensor = actor->GetWorld()->SpawnActor<ADepthLidarBuffer>();
-                depthCameraActors[pici] = sensor;
-                sensor->SetOwner(actor);
-                sensor->AttachToActor(actor, FAttachmentTransformRules::KeepRelativeTransform);
-                camCfg.rotator.Yaw = pici * Hfov + Hfov * 0.5f;
-
-                depthCameraActors[pici]->SetCamera(camCfg);
-            }
-        }
-        for (uint32 t = 1; t < rtn; ++t)
-        {
-            memcpy(&camuvIdx[i * rn * rtn + rn * t], &camuvIdx[i * rn * rtn], sizeof(uint32) * rn);
-            memcpy(&depthCamIdx[i * rn * rtn + rn * t], &depthCamIdx[i * rn * rtn], sizeof(uint8) * rn);
-        }
-    }
-
-    UE_LOG(LogTemp, Log, TEXT("DisplayGamma=%f"), GEngine->DisplayGamma);
-
-    TArray<float> ref;
-    TArray<uint32> tag;
-    for (int i = 0; i < 1024; i++)
-    {
-        float fmin = 10, fmax = 10, fd = 0.1;
-        uint32 c = 0, t = 0;
-        if (stencilMap.find(i) != stencilMap.end())
-        {
-            c = stencilMap.at(i).first;
-            t = stencilMap.at(i).second;
-            if (!lidarMd->get_refection_param(c, t, fmin, fmax, fd))
-            {
-                /// todo
-                UE_LOG(LogTemp, Log, TEXT("Lidar depth init warnning, %d, %d found faild."), c, t);
-            }
-        }
-        ref.Add(fmin);
-        ref.Add(fmax);
-        ref.Add(fd);
-        tag.Add(c);
-        tag.Add(t);
-    }
-    // 使用cuda
-    cudalidar.set_refmap(ref);
-    cudalidar.set_tagmap(tag);
-    cudalidar.set_camidx(depthCamIdx);
-    cudalidar.set_camuv(camuvIdx);
-    TArray<float> yp;
-    for (uint32 i = 0; i < hw; i++)
-    {
-        for (uint32 t = 0; t < rtn; ++t)
-        {
-            for (uint32 j = 0; j < rn; j++)
-            {
-                auto yawpitch = _LidarSensor->getYawPitchAngle(i, j);
-                yp.Add(FMath::DegreesToRadians(yawpitch.first));
-                yp.Add(FMath::DegreesToRadians(yawpitch.second));
-            }
-        }
-    }
-    cudalidar.set_yawpitch(yp);
-    cudalidar.set_rn_hn(rn * rtn, hw);
-    check(depthCamIdx.Num() == camuvIdx.Num());
-    check(depthCamIdx.Num() * 2 == yp.Num());
-    imgBuffers_gpu.SetNumZeroed(nImage);
+    UE_LOG(LogTemp, Log, TEXT("DepthMapBasedLidar Initialize Done. ScanCount: %d Channel: %d MaxPointNum: %d"),
+        ScanCount, Channels, MaxPointNum);
 
     return true;
-}
-
-TArray<class ADepthLidarBuffer*>& ALidarBufferDepth::GetDepthCameraActors()
-{
-    return depthCameraActors;
 }
 
 TSharedPtr<LidarBuffer> ALidarBufferDepth::GetTBuffer(const FTLidarMeasurement& measure)
 {
-    // 设置天气
-    if (lidarMd)
-    {
-        cudalidar.set_intensity(lidarMd->get_intensity());
-        cudalidar.set_rain(lidarMd->get_rain());
-        cudalidar.set_snow(FMath::Max(lidarMd->get_snow(), lidarMd->get_rain() * 0.1f));
-        cudalidar.set_fog(30000);
-        UE_LOG(LogTemp, Log,
-            TEXT("lidarMd->get_intensity()=%f lidarMd->get_rain()=%f lidarMd->get_snow()=%f lidarMd->get_fog()=%f"),
-            lidarMd->get_intensity(), lidarMd->get_rain(), lidarMd->get_snow(), lidarMd->get_fog());
-    }
-    // 获取深度数据
     TSharedPtr<DepthLidarBuffer> buffer = MakeShared<DepthLidarBuffer>();
-    buffer->imgBuffer.SetNum(nImage);
-#ifdef DEP_ROTATE
 
-    int picn = std::min(FMath::CeilToInt((measure.HorizontalPointsToScan + offsetX1 - offsetX0) / Hfov), nImage);
-    for (int i = 0; i < picn; i++)
+    if (bUseSingleCapture)
     {
-        if (!depthCameraActors[ii]->GetCaptureImage(imgBuffer[ii].gpuImg))
-        {
-            depthCameraActors[ii]->GetCaptureImage(imgBuffer[ii].cpuImg);
-        }
+        ReadLidarData_RenderThreadSingleCaptureSVE(buffer);
     }
-    for (int i = 0; i < nImage; i++)
+    else
     {
-        FRotator rot(0);
-        rot.Yaw = FMath::Fmod(lidarSensor->getHorizontalScanAngle(measure.HorizontalPos + measure.HorizontalToScan) +
-                                  offsetX0 + i * Hfov + Hfov * 0.5f + 360.f,
-            360.f);
-        depthCameraActors[i]->SetActorRelativeRotation(rot);
+        ReadLidarData_RenderThreadSVE(buffer);
     }
-#else
-    // 按照当前旋转角度，覆盖那些周深，按需获取
-    int i0 = FMath::FloorToInt((lidarSensor->getHorizontalScanAngle(measure.HorizontalPos) + offsetX0 + 360.f) / Hfov);
-    int i1 = FMath::FloorToInt(
-        (lidarSensor->getHorizontalScanAngle(measure.HorizontalPos + measure.HorizontalToScan) + offsetX1 + 360.f) /
-        Hfov);
-    bool hascpu = false;
-    for (int i = i0; i <= i1; i++)
-    {
-        int ii = i % nImage;
-        if (buffer->imgBuffer[ii].cpuImg.Num() > 0 || buffer->imgBuffer[ii].gpuImg)
-            continue;
-        if (depthCameraActors[ii])
-        {
-            if (!depthCameraActors[ii]->GetCaptureImage(buffer->imgBuffer[ii].gpuImg))
-            {
-                depthCameraActors[ii]->GetCaptureImage(buffer->imgBuffer[ii].cpuImg);
-                hascpu = true;
-            }
-        }
-        // // test
-        // IImageWrapperModule& ImageWrapperModule =
-        //     FModuleManager::LoadModuleChecked<IImageWrapperModule>("ImageWrapper");
-        // TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
-        // UGameInstance* GI = actor->GetWorld()->GetGameInstance();
-        // if (GI)
-        // {
-        //     UDisplayGameInstance* DGI = Cast<UDisplayGameInstance>(GI);
-
-        //     FString savePath = TEXT("/home/aaa/workspace/hsim/log/");
-        //     if (buffer->imgBuffer[ii].cpuImg.Num() && ImageWrapper->SetRaw(buffer->imgBuffer[ii].cpuImg.GetData(),
-        //     buffer->imgBuffer[ii].cpuImg.Num() * sizeof(FColor),
-        //                                 depthCameraActors[ii]->renderTarget2D->SizeX,
-        //                                 depthCameraActors[ii]->renderTarget2D->SizeY, ERGBFormat::BGRA, 8))
-        //     {
-        //         if (FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(*savePath))
-        //         {
-        //             static int aaa = 0;
-        //             FString SaveDir = savePath + FString::FromInt(aaa++) + TEXT(".") + FString::FromInt(ii) +
-        //                               TEXT(".") +
-        //                               TEXT("png");    // FString(GETENUMSTRING("EImageFormat",
-        //                               imageFormat)).ToLower();
-        //             UE_LOG(LogTemp, Warning, TEXT("CameraSensorComponent INFO: SaveDir is  %s"), *SaveDir);
-
-        //             DGI->GetSaveDataHandle()->SaveJPG(ImageWrapper->GetCompressed(80), SaveDir);
-        //         }
-        //     }
-        // }
-    }
-    // cuda失败，使用ue自带函数获取
-    if (hascpu)
-    {
-        for (int i = 0; i < nImage; i++)
-        {
-            if (buffer->imgBuffer[i].gpuImg)
-            {
-                if (depthCameraActors[i])
-                {
-                    depthCameraActors[i]->GetCaptureImage(buffer->imgBuffer[i].cpuImg);
-                }
-            }
-        }
-    }
-#endif    // DEP_ROTATE
 
     return buffer;
 }
 
-bool ALidarBufferDepth::LoadStencilMap(const FString& dir)
+bool ALidarBufferDepth::ReadLidarData_RenderThreadSVE(TSharedPtr<DepthLidarBuffer> buffer)
 {
-    // 导入材质tag定义
-    TArray<FString> txt;
-    if (!FFileHelper::LoadFileToStringArray(txt, *(dir + TEXT("/stencil.dat"))))
+    for (int i = 0; i < SceneCaptures.Num(); i++)
     {
-        UE_LOG(LogTemp, Log, TEXT("Cannot load stencil.dat"));
-        return false;
+        SceneCaptures[i]->CaptureScene();
     }
-    for (auto tt : txt)
-    {
-        TArray<int64> bufs;
-        FString LeftStr;
-        FString RightStr;
-        while (tt.Split(" ", &LeftStr, &RightStr))
-        {
-            if (!LeftStr.IsEmpty())
-                bufs.Add(FCString::Atoi64(*LeftStr));
-            tt = RightStr;
-        }
-        bufs.Add(FCString::Atoi64(*tt));
-        int s = bufs[0];
-        int c = bufs[1];
-        int t = bufs[2];
-        stencilMap[s] = std::make_pair(c, t);
-    }
+
+    ENQUEUE_RENDER_COMMAND(FComputeLidar_RenderThread)
+    ([&](FRHICommandListImmediate& InRHICmdList) mutable {
+        TRACE_CPUPROFILER_EVENT_SCOPE_STR(__FUNCTION__);
+        check(IsInRenderingThread());
+
+        InRHICmdList.BlockUntilGPUIdle();
+
+        FetchReadbackBuffer(buffer);
+
+        ScanSequenceCount += ScanCount;
+    });
+
+    FlushRenderingCommands();
+
     return true;
 }
 
-void ALidarBufferDepth::getData(
-    const TArray<FColor>& BitMap, float w, float h, float _x, float _y, float& distance, float& norangle, int& tag)
+bool ALidarBufferDepth::ReadLidarData_RenderThreadSingleCaptureSVE(TSharedPtr<DepthLidarBuffer> buffer)
 {
-    // 获取当前深度值
-    distance = -1;
-    norangle = 0;
-    tag = 0;
-
-    float x = FMath::Min(w - 1.0001f, FMath::Max(0.0001f, _x));
-    float y = FMath::Min(h - 1.0001f, FMath::Max(0.0001f, _y));
-    // 线性插值
-#ifdef LINEARINTER
-
-    int x0 = FMath::FloorToInt(x);
-    int y0 = FMath::FloorToInt(y);
-    int x1 = FMath::CeilToInt(x);
-    int y1 = FMath::CeilToInt(y);
-
-    const auto& color00 = BitMap[y0 * w + x0];
-    const auto& color01 = BitMap[y1 * w + x0];
-    const auto& color10 = BitMap[y0 * w + x1];
-    const auto& color11 = BitMap[y1 * w + x1];
-
-    float sd = 0;
-    float sni = 0;
-    float sp = 0;
-    std::map<int, int> st;
-
-    float d = ((float) color00.R * 256.f + (float) color00.G) * 0.005f;
-    float ni = (float) color00.B * 0.00390625f;
-    int t = color00.A;
-    if (d > 1e-6f && d < 327.f)
+    SceneViewExtension->ResetParams();
+    // push lidar graph
+    for (int i = 0; i < CameraCount; i++)
     {
-        float p = (x1 - x) * (y1 - y);
-        sp += p;
-        sd += d * p;
-        sni += ni * p;
-        st[t]++;
-    }
-    d = ((float) color01.R * 256.f + (float) color01.G) * 0.005f;
-    ni = (float) color01.B * 0.00390625f;
-    int t = color01.A;
-    if (d > 1e-6f && d < 327.f)
-    {
-        float p = (x1 - x) * (y - y0);
-        sp += p;
-        sd += d * p;
-        sni += ni * p;
-        st[t]++;
-    }
-    d = ((float) color10.R * 256.f + (float) color10.G) * 0.005f;
-    ni = (float) color10.B * 0.00390625f;
-    int t = color10.A;
-    if (d > 1e-6f && d < 327.f)
-    {
-        float p = (x - x0) * (y1 - y);
-        sp += p;
-        sd += d * p;
-        sni += ni * p;
-        st[t]++;
-    }
-    d = ((float) color11.R * 256.f + (float) color11.G) * 0.005f;
-    ni = (float) color11.B * 0.00390625f;
-    int t = color11.A;
-    if (d > 1e-6f && d < 327.f)
-    {
-        float p = (x - x0) * (y - y0);
-        sp += p;
-        sd += d * p;
-        sni += ni * p;
-        st[t]++;
-    }
-    if (sp > 0)
-    {
-        distance = sd / sp;
-        norangle = sni / sp;
-        tag = std::max_element(st.begin(), st.end(), [](const auto& a, const auto& b) {
-            return a.second < b.second;
-        })->first;
+        SceneCaptures[0]->SetRelativeRotation(FQuat(FRotator(0, FovHorizonPerCamera * i, 0)));
+        SceneCaptures[0]->CaptureScene();
     }
 
-#else
-    // 最近邻
-    int x0 = FMath::RoundToInt(x);
-    int y0 = FMath::RoundToInt(y);
-    const auto& color00 = BitMap[y0 * w + x0];
-    float d = ((float) color00.R * 256.f + (float) color00.G) * 0.005f;
-    if (d > 1e-6f && d < 327.f)
-    {
-        distance = d;
-        norangle = (float) color00.B * 0.00390625f;
-        tag = color00.A;
-    }
+    ENQUEUE_RENDER_COMMAND(Lidar_Post)
+    ([&](FRHICommandListImmediate& InRHICmdList) mutable {
+        TRACE_CPUPROFILER_EVENT_SCOPE_STR(__FUNCTION__);
+        check(IsInRenderingThread());
 
-#endif    // 0
+        InRHICmdList.BlockUntilGPUIdle();
+
+        FetchReadbackBuffer(buffer);
+
+        ScanSequenceCount += ScanCount;
+    });
+    FlushRenderingCommands();
+
+    return true;
 }
 
-// 获取激光点云
+void ALidarBufferDepth::FetchReadbackBuffer(TSharedPtr<DepthLidarBuffer> buffer)
+{
+    check(IsInRenderingThread());
+
+    if (LidarReadbackDetectionCount->IsReady() && LidarReadbackDetection->IsReady() &&
+        // #if WITH_EDITORONLY_DATA
+        //         (!bDebugLidar || DebugLidarReadbackRawLidar->IsReady()) &&
+        //         (!bDebugLidar || DebugLidarReadbackLaserNumPerScan->IsReady()) &&
+        //         (!bDebugLidar || DebugLidarReadbackScanOffset->IsReady()) &&
+        // #endif
+        LidarReadbackScan->IsReady())
+    {
+        int DetectionCount = -1;
+        void* DetectionCountPtr = LidarReadbackDetectionCount->Lock(sizeof(int));
+        FMemory::Memcpy(&DetectionCount, DetectionCountPtr, sizeof(int));
+        LidarReadbackDetectionCount->Unlock();
+        buffer->detection_count = DetectionCount;
+
+        // #if WITH_EDITORONLY_DATA
+        //         if (DetectionCount > 0 && bDebugLidar)
+        //         {
+        //             DebugDetectionCount = DetectionCount;
+        //             UE_LOG(LogWorldX, Warning, TEXT("DebugDetectionCount: %d"), DebugDetectionCount);
+
+        //             FMemory::Memcpy(DebugRawLidar.data(),
+        //                 DebugLidarReadbackRawLidar->Lock(MaxPointNum * sizeof(LidarDetection)),
+        //                 MaxPointNum * sizeof(LidarDetection));
+        //             DebugLidarReadbackRawLidar->Unlock();
+
+        //             FMemory::Memcpy(DebugLaserNumPerScan.GetData(),
+        //                 DebugLidarReadbackLaserNumPerScan->Lock(ScanCount * sizeof(int)), ScanCount * sizeof(int));
+        //             DebugLidarReadbackLaserNumPerScan->Unlock();
+
+        //             FMemory::Memcpy(DebugScanOffset.GetData(), DebugLidarReadbackScanOffset->Lock(ScanCount *
+        //             sizeof(int)),
+        //                 ScanCount * sizeof(int));
+        //             DebugLidarReadbackScanOffset->Unlock();
+        //         }
+        // #endif
+        buffer->detections.resize(MaxPointNum);
+        buffer->scans.resize(ScanCount);
+        if (DetectionCount > 0)
+        {
+            void* DetectionBuffer = LidarReadbackDetection->Lock(MaxPointNum * sizeof(LidarDetection));
+            FMemory::Memcpy(buffer->detections.data(), DetectionBuffer, MaxPointNum * sizeof(LidarDetection));
+            LidarReadbackDetection->Unlock();
+        }
+
+        void* ScanBuffer = LidarReadbackScan->Lock(ScanCount * sizeof(LidarScan));
+        buffer->scan_count = ScanCount;
+        FMemory::Memcpy(buffer->scans.data(), ScanBuffer, ScanCount * sizeof(LidarScan));
+        LidarReadbackScan->Unlock();
+    }
+}
+
 bool ALidarBufferDepth::GetPoints(
     const LidarBuffer* rawbuf, const FTLidarMeasurement& measure, lidar::TraditionalLidar::lidar_ptset& lidarBuffer)
 {
-    const DepthLidarBuffer* curBuffer = StaticCast<const DepthLidarBuffer*>(rawbuf);
-
+    const DepthLidarBuffer* buffer = StaticCast<const DepthLidarBuffer*>(rawbuf);
     uint32_t rn = lidarSensor->getRaysNum();
     uint32_t rtn = lidarSensor->getReturnNum();
-    uint32 hw = lidarSensor->getHorizontalScanCount();
     lidarBuffer.channels.resize(measure.HorizontalToScan);
-    lidarBuffer.points.resize(hw * rn * rtn);
-    uint32 i0 = measure.HorizontalPos;
+    lidarBuffer.points.resize(measure.HorizontalToScan * rn * rtn);
+
+    const auto& detections = buffer->detections;
+    // for (int i = 0; i < 128; ++i)
+    // {
+    //     const auto& detection = detections[i];
+    //     UE_LOG(
+    //         LogTemp, Warning, TEXT("Detection %d: %f %f %f"), detection.channel, detection.x, detection.y,
+    //         detection.z);
+    // }
+
     double umpsec = 1000.0 * 1000. / (lidarSensor->getRotationFrequency() * lidarSensor->getHorizontalScanCount());
     auto utime = measure.TimeStamp0 * 1000;
-
-    // 获取深度数据
-    bool has_cpu = false;
-    bool cuda_img_changed = false;
-    for (int i = 0; i < nImage; i++)
+    for (uint32 i = 0; i < measure.HorizontalToScan; i++)
     {
-        if (curBuffer->imgBuffer[i].gpuImg)
+        auto& dd = lidarBuffer.channels.at(i);
+        dd.hor_pos = (measure.HorizontalPos + i) % lidarSensor->getHorizontalScanCount();
+        dd.utime = utime + umpsec * i;
+        dd.pn = rn * rtn;
+        dd.points = &lidarBuffer.points[i * rn * rtn];
+        for (uint32 j = 0; j < rn; ++j)
         {
-            if (imgBuffers_gpu[i] != curBuffer->imgBuffer[i].gpuImg)
-            {
-                cuda_img_changed = true;
-            }
-            imgBuffers_gpu[i] = curBuffer->imgBuffer[i].gpuImg;
-        }
-        if (curBuffer->imgBuffer[i].cpuImg.Num() > 0)
-        {
-            has_cpu = true;
-        }
-    }
-    if (!has_cpu)
-    {
-        // 优先使用cuda计算
-        if (cuda_img_changed)
-        {
-            cudalidar.set_img(imgBuffers_gpu);
-        }
-        if (!cudalidar.simulation((i0 % hw) * rn * rtn, hw * rn * rtn, lidarBuffer.points.data()))
-        {
-            lidarBuffer.points.clear();
-            UE_LOG(LogTemp, Warning, TEXT("lidar sim faild"));
-            return false;
-        }
-        else
-        {
-            for (uint32 i = 0; i < measure.HorizontalToScan; ++i)
-            {
-                uint32 ii = (i + i0) % hw;
-                auto& dd = lidarBuffer.channels.at(i);
-                dd.hor_pos = (i0 + i) % hw;
-                dd.utime = utime + umpsec * i;
-                dd.pn = rn * rtn;
-                dd.points = &lidarBuffer.points[i * rn * rtn];
-            }
-        }
-    }
-    else
-    {
-        // cpu计算
-        uint32 ltt = 16;
-        // 处理线程
-        auto worker = [&](uint32 bg, uint32 ed) {
-            for (uint32 i = bg; i < ed; ++i)
-            {
-                if (i >= measure.HorizontalToScan)
-                {
-                    break;
-                }
-                uint32 ii = (i + i0) % hw;
-                auto& dd = lidarBuffer.channels.at(i);
-                dd.hor_pos = ii;
-                dd.utime = utime + umpsec * i;
-                dd.pn = rn * rtn;
-                dd.points = &lidarBuffer.points[i * rn * rtn];
-                for (uint32 c = 0; c < rn; c++)
-                {
-                    uint32 ic = ii * rn * rtn + c;
-                    int pici = depthCamIdx[ic];
-                    if (curBuffer->imgBuffer[pici].cpuImg.Num() == 0)
-                    {
-                        continue;
-                    }
-                    auto xy = camuvIdx[ic];
-                    const auto& color00 = curBuffer->imgBuffer[pici].cpuImg[xy];
-                    float distance = ((float) color00.R * 256.f + (float) color00.G) * 0.005f;
-                    // 计算距离
-                    if (distance > 1e-6f && distance < 327.f)
-                    {
-                        auto& pt = dd.points[c];
-                        pt.distance = distance;
-                        pt.norinter = (float) color00.B * 0.00390625f;
-                        int tag = color00.A;
-                        // if (tag != 0)
-                        // {
-                        //     UE_LOG(LogTemp, Log, TEXT("tag: %d"), tag);
-                        // }
-                        auto tag_c = tag;
-                        if (stencilMap.find(tag_c) == stencilMap.end())
-                            tag_c = 0;
-                        auto tag_t = stencilMap[tag_c].second;
-                        tag_c = stencilMap[tag_c].first;
-                        pt.tag_c = tag;
-                        pt.tag_t = tag_t;
+            const auto& p = buffer->detections[i * rn + j];
+            auto& pt = dd.points[j];
+            FVector point(p.x, p.y, p.z);
+            pt.distance = point.Size();
+            // pt.tag_c = p.tag_c;
+            // pt.tag_t = p.tag_t;
+            // pt.norinter = abs(FVector::DotProduct(p.p - p.p0, p.nor));
+            // LIDAR 模型
+            // if (lidarMd)
+            //     lidarMd->simulator(pt.norinter, p.tag_c, p.tag_t, pt.distance, pt.instensity);
 
-                        // LIDAR 模型
-                        if (lidarMd)
-                            lidarMd->simulator(pt.norinter, tag_c, tag_t, pt.distance, pt.instensity);
-                        if (pt.distance > 0.01f && pt.distance < 327.f)
-                        {
-                            auto yawpitch = lidarSensor->getYawPitchAngle(dd.hor_pos, c);
-                            FRotator LaserRot(
-                                yawpitch.second, yawpitch.first, 0);    // float InPitch, float InYaw, float InRoll
-                            // 计算3d坐标
-                            auto pv = rtMatrix.TransformPosition(
-                                pt.distance * UKismetMathLibrary::GetForwardVector(LaserRot));
-                            pt.x = pv.X;
-                            pt.y = pv.Y;
-                            pt.z = pv.Z;
-                        }
-                    }
-                }
-
-                for (uint32 t = 1; t < rtn; ++t)
-                {
-                    memcpy(&dd.points[rn * t], dd.points, sizeof(lidar::TraditionalLidar::lidar_point) * rn);
-                }
-            }
-        };
-
-        // 多线程处理
-        std::vector<std::thread> thrs;
-        {
-            for (uint32 i = 0; i < (uint32) ltt; i++)
+            if (pt.distance > 0.01 && pt.distance < 327.f)
             {
-                thrs.push_back(
-                    std::thread(worker, measure.HorizontalToScan * i / ltt, measure.HorizontalToScan * (i + 1) / ltt));
-                // thrs.push_back(std::move(t1));
+                // auto yawpitch = lidarSensor->getYawPitchAngle(dd.hor_pos, j);
+                // FRotator LaserRot(yawpitch.second, yawpitch.first, 0);    // float InPitch, float InYaw, float InRoll
+                // // 计算3d坐标
+                // auto pv = rtMatrix.TransformPosition(pt.distance * UKismetMathLibrary::GetForwardVector(LaserRot));
+                // pt.x = pv.X;
+                // pt.y = pv.Y;
+                // pt.z = pv.Z;
+                pt.x = p.x;
+                pt.y = p.y;
+                pt.z = p.z;
+                if(lidarMd)
+                    lidarMd->simulator(pt.x, pt.y, pt.z, pt.distance);
             }
-        }
-        for (std::thread& th : thrs)
-        {
-            // If thread Object is Joinable then Join that thread.
-            if (th.joinable())
-                th.join();
         }
     }
 
     return true;
 }
 
-void ALidarBufferDepth::setRotationTranslation(const FTransform& mat)
+void ALidarBufferDepth::PrepareParallelRays(std::shared_ptr<lidar::TraditionalLidar> _LidarSensor)
 {
-    cudalidar.set_rtmat(mat);
-    LidarBufferFun::setRotationTranslation(mat);
+    float v_fov_top_tan = FMath::Tan(FMath::DegreesToRadians(FovRangeVerticalPerCamera.Y));
+    float v_fov_bottom_tan = FMath::Abs(FMath::Tan(FMath::DegreesToRadians(FovRangeVerticalPerCamera.X)));
+    float v_fov_offset = v_fov_top_tan / (v_fov_top_tan + v_fov_bottom_tan);
+
+    float CenterWidth = ImageWidthPerCamera * 0.5;
+    float CenterHeight = ImageHeightPerCamera * v_fov_offset;
+
+    // units in pixel
+    FocalLengthX = CenterWidth / FMath::Tan(FMath::DegreesToRadians(FovHorizonPerCamera) * 0.5);
+    FocalLengthY = CenterHeight / FMath::Tan(FMath::DegreesToRadians(FovRangeVerticalPerCamera.Y));
+    UE_LOG(LogTemp, Log, TEXT("FocalLengthX: %f FocalLengthY: %f"), FocalLengthX, FocalLengthY);
+
+    TArray<std::atomic<int>> RayNumPerCamera;
+    RayNumPerCamera.SetNum(CameraCount);
+    FMemory::Memset(RayNumPerCamera.GetData(), 0, RayNumPerCamera.GetTypeSize() * RayNumPerCamera.Num());
+    FMemory::Memset(ScanAzimuth.GetData(), 0, ScanAzimuth.GetTypeSize() * ScanAzimuth.Num());
+
+    for (int index = 0; index < MaxPointNum; ++index)
+    {
+        uint32 ScanID = index / Channels;
+        uint32 LaserID = index % Channels;
+        auto yawpitch = _LidarSensor->getYawPitchAngle(ScanID, LaserID);
+        float vertical_angle = yawpitch.second;
+        float azimuth = AzimuthRange.X + ScanID * _LidarSensor->getHorizontalResolution();
+        float horizontal_angle = azimuth + _LidarSensor->getHorizonOffset(LaserID);
+        horizontal_angle = FMath::Fmod(horizontal_angle + 360.0f, 360.0f);
+        int CameraID = horizontal_angle / FovHorizonPerCamera;
+
+        // if (LaserID == 0)
+        // {
+        //     UE_LOG(LogTemp, Log, TEXT("vertical_angle: %f azimuth: %f CameraID: %d"), vertical_angle,
+        //     horizontal_angle,
+        //         CameraID);
+        // }
+
+        float camera_horizontal_angle_offset = -CameraID * FovHorizonPerCamera - FovHorizonPerCamera * 0.5;
+        FVector3f LaserRay =
+            FVector3f(FMath::Cos(FMath::DegreesToRadians(vertical_angle)) *
+                          FMath::Cos(FMath::DegreesToRadians(horizontal_angle + camera_horizontal_angle_offset)),
+                FMath::Cos(FMath::DegreesToRadians(vertical_angle)) *
+                    FMath::Sin(FMath::DegreesToRadians(horizontal_angle + camera_horizontal_angle_offset)),
+                FMath::Sin(FMath::DegreesToRadians(vertical_angle)));
+        LaserRays[index] = LaserRay;
+
+        FVector3f CameraToPixelDirection = FVector3f(1, LaserRay.Y / LaserRay.X, LaserRay.Z / LaserRay.X);
+        int row = CenterWidth + LaserRay.Y / LaserRay.X * FocalLengthX;
+        int column = CenterHeight - LaserRay.Z / LaserRay.X * FocalLengthY;
+
+        if (row < 0 || row >= ImageWidthPerCamera || column < 0 || column >= ImageHeightPerCamera)
+        {
+            UE_LOG(LogTemp, Error,
+                TEXT("index: %d row: %d column: %d ImageWidthPerCamera: %d ImageHeightPerCamera: %d CenterWidth: "
+                     "%f CenterHeight: %f vertical_angle: %f"),
+                index, row, column, ImageWidthPerCamera, ImageHeightPerCamera, CenterWidth, CenterHeight,
+                vertical_angle);
+        }
+
+        int ImageSpaceIndex = RayNumPerCamera[CameraID].fetch_add(1);
+        int GlobalImageSpaceIndex = ImageSpaceIndex + CameraID * HorizonSampleCount * Channels;
+        ImageSpaceLaserRays[GlobalImageSpaceIndex].scan_id = ScanID;
+        ImageSpaceLaserRays[GlobalImageSpaceIndex].laser_id = LaserID;
+        ImageSpaceLaserRays[GlobalImageSpaceIndex].azimuth = azimuth;
+        ImageSpaceLaserRays[GlobalImageSpaceIndex].row = FMath::Clamp(row, 0, ImageWidthPerCamera - 1);
+        ImageSpaceLaserRays[GlobalImageSpaceIndex].column = FMath::Clamp(column, 0, ImageHeightPerCamera - 1);
+        ImageSpaceLaserRays[GlobalImageSpaceIndex].direction = CameraToPixelDirection;
+
+        if (LaserID == 0)
+        {
+            ScanAzimuth[ScanID] = azimuth;
+        }
+        // });
+    }
+
+    // for (int i = 0; i < ImageSpaceLaserRays.Num(); i++)
+    // {
+    //     if (ImageSpaceLaserRays[i].direction.Length() < 0.0001)
+    //     {
+    //         UE_LOG(LogTemp, Error, TEXT(" Error index: %d"), i);
+    //     }
+    // }
+
+    // auto actorPos = actor->GetTransform().GetLocation();
+    // UE_LOG(LogTemp, Log, TEXT("ActorPos: %f %f %f"), actorPos.X, actorPos.Y, actorPos.Z);
+
+    // visualize
+    // for (int i = 0; i < ImageSpaceLaserRays.Num(); i++)
+    // {
+    //     FVector WorldPos = FVector(
+    //         ImageSpaceLaserRays[i].direction.X, ImageSpaceLaserRays[i].direction.Y,
+    //         ImageSpaceLaserRays[i].direction.Z);
+
+    //     // UE_LOG(LogTemp, Log, TEXT("RayPos: %f %f %f"), WorldPos.X, WorldPos.Y, WorldPos.Z);
+
+    //     // auto ss = actor->GetTransform().GetLocation() +
+    //     //         actor->GetTransform().TransformVector(WorldPos).GetUnsafeNormal() * 500;
+
+    //     // UE_LOG(LogTemp, Log, TEXT("WorldPos: %f %f %f"), ss.X, ss.Y, ss.Z);
+
+    //     DrawDebugPoint(actor->GetWorld(),
+    //         actor->GetTransform().GetLocation() +
+    //             actor->GetTransform().TransformVector(WorldPos).GetUnsafeNormal() * 500,
+    //         2, FColor::Red, true);
+    //     // DrawDebugLine(actor->GetWorld(),
+    //     // 	actor->GetTransform().GetLocation() + actor->GetTransform().TransformVector(WorldPos).GetUnsafeNormal()
+    //     // * 400, 	actor->GetTransform().GetLocation() +
+    //     // actor->GetTransform().TransformVector(WorldPos).GetUnsafeNormal() * 500, 	FColor::Red, 	true);
+    // }
+
+    // TArray<int> RayStartOffsetPerCamera;
+    // RayStartOffsetPerCamera.SetNum(RayNumPerCamera.Num());
+    // int TempSum = 0;
+    // for (int i = 0; i < RayNumPerCamera.Num(); i++)
+    // {
+    //     RayStartOffsetPerCamera[i] = TempSum;
+    //     TempSum += RayNumPerCamera[i];
+    //     UE_LOG(LogTemp, Log, TEXT("CameraIndex: %d StartOffset: %d LaserCount: %d"), i, RayStartOffsetPerCamera[i],
+    //         RayNumPerCamera[i].load());
+    // }
+}
+
+void ALidarBufferDepth::CreateSenceCaptureComponents()
+{
+    FMatrix projectionMatrix =
+        util::CalcProjectionMatrix(FovHorizonPerCamera, FovRangeVerticalPerCamera, GNearClippingPlane);
+
+    for (int i = 0; i < SceneCaptureCount; i++)
+    {
+        auto CaptureComponent2D =
+            NewObject<USceneCaptureComponent2D>(actor, FName(*FString::Printf(TEXT("SceneCaptureComponent2D_%d"), i)));
+
+        CaptureComponent2D->SetMobility(EComponentMobility::Movable);
+        CaptureComponent2D->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_RenderScenePrimitives;
+        // CaptureComponent2D->bEnableClipPlane = false;
+        // CaptureComponent2D->ClipPlaneBase = FVector(10000, 0, 0);
+        // CaptureComponent2D->ClipPlaneNormal = FVector(1, 0, 0);
+        CaptureComponent2D->bCaptureOnMovement = false;
+        CaptureComponent2D->bCaptureEveryFrame = false;
+        CaptureComponent2D->bAlwaysPersistRenderingState = true;
+        // CaptureComponent2D->MaxViewDistanceOverride = 25000;
+        // CaptureComponent2D->FOVAngle = FovHorizonPerCamera;
+
+        CaptureComponent2D->bUseCustomProjectionMatrix = true;
+        CaptureComponent2D->CustomProjectionMatrix = projectionMatrix;
+
+        CaptureComponent2D->SetRelativeRotation(FQuat(FRotator(0, FovHorizonPerCamera * i, 0)));
+        CaptureComponent2D->SetRelativeLocation(FVector(0, 0, 0));
+        CaptureComponent2D->AttachToComponent(
+            actor->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+        CaptureComponent2D->CreationMethod = EComponentCreationMethod::Instance;
+        CaptureComponent2D->RegisterComponent();
+        SceneCaptures.Add(CaptureComponent2D);
+    }
+
+    // add scene view extension
+    SceneViewExtension = MakeShared<FDepthMapBasedLidarSceneViewExtension>(this, bUseSingleCapture);
+    SceneCaptures[SceneCaptures.Num() - 1]->SceneViewExtensions.Add(SceneViewExtension);
+}
+
+void ALidarBufferDepth::CreateTextureRenderTargets()
+{
+    for (int i = 0; i < SceneCaptureCount; i++)
+    {
+        RenderTargetSRVInfo renderTargetInfo;
+        renderTargetInfo.debug_name = FString(TEXT("SBL_RT_")) + FString::FromInt(i);
+
+        auto renderTarget = NewObject<UTextureRenderTarget2D>(actor, FName(*renderTargetInfo.debug_name));
+
+        renderTarget->InitCustomFormat(ImageWidthPerCamera, ImageHeightPerCamera, PF_R8G8B8A8, true);
+
+        renderTarget->CompressionSettings = TextureCompressionSettings::TC_Default;
+        renderTarget->SRGB = false;
+        renderTarget->bAutoGenerateMips = false;
+        renderTarget->bGPUSharedFlag = true;
+        renderTarget->AddressX = TextureAddress::TA_Clamp;
+        renderTarget->AddressY = TextureAddress::TA_Clamp;
+        // renderTarget->RenderTargetFormat = ETextureRenderTargetFormat::RTF_RGBA8;
+
+        renderTarget->UpdateResourceImmediate(true);
+
+        if (renderTarget != nullptr)
+        {
+            // UE_LOG(LogTemp, Warning, TEXT("rendertarget create done"));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("rendertarget failed"));
+        }
+
+        renderTargetInfo.render_target = renderTarget;
+        RenderTargets.Add(renderTargetInfo);
+    }
+}
+
+void ALidarBufferDepth::SetupComponents()
+{
+    auto material = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), nullptr,
+        TEXT("/Script/Engine.Material'/WorldXShaders/Sensor/DepthBasedLidar/DepthMapEncode.DepthMapEncode'")));
+    for (int i = 0; i < SceneCaptureCount; i++)
+    {
+        SceneCaptures[i]->Deactivate();
+        SceneCaptures[i]->TextureTarget = RenderTargets[i].render_target;
+        SceneCaptures[i]->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+
+        auto materialInstance = UMaterialInstanceDynamic::Create(material, actor);
+        MaterialInstanceDynamics.Add(materialInstance);
+        SceneCaptures[i]->PostProcessSettings.AddBlendable(materialInstance, 1);
+
+        if (bUseEnableFlags)
+        {
+            EnableShowFlags(SceneCaptures[i]->ShowFlags);
+        }
+        else
+        {
+            DisableShowFlags(SceneCaptures[i]->ShowFlags);
+        }
+        SceneCaptures[i]->Activate();
+    }
+}
+
+void ALidarBufferDepth::SetupBuffers()
+{
+    ENQUEUE_RENDER_COMMAND(FGetUAV_RenderThread)
+    ([&](FRHICommandListImmediate& RHICommandList) {
+        RawLidarBufferRDGPooledBuffer =
+            AllocatePooledBuffer(FRDGBufferDesc::CreateByteAddressDesc(MaxPointNum * sizeof(LidarDetection)),
+                TEXT("DepthMapBasedLidar.Output.DetectionBuffer"));
+        LaserNumPerScanRDGPooledBuffer =
+            AllocatePooledBuffer(FRDGBufferDesc::CreateByteAddressDesc(ScanCount * sizeof(int)),
+                TEXT("DepthMapBasedLidar.Output.LaserNumPerScan"));
+        DetectionCountRDGPooledBuffer = AllocatePooledBuffer(
+            FRDGBufferDesc::CreateByteAddressDesc(sizeof(int)), TEXT("DepthMapBasedLidar.Output.DetectionCount"));
+
+        ScanBufferRDGPooledBuffer =
+            AllocatePooledBuffer(FRDGBufferDesc::CreateByteAddressDesc(ScanCount * sizeof(LidarScan)),
+                TEXT("DepthMapBasedLidar.Output.ScanBuffer"));
+        ScanOffsetRDGPooledBuffer = AllocatePooledBuffer(FRDGBufferDesc::CreateByteAddressDesc(ScanCount * sizeof(int)),
+            TEXT("DepthMapBasedLidar.Output.ScanOffset"));
+
+        ReorderedBufferRDGPooledBuffer =
+            AllocatePooledBuffer(FRDGBufferDesc::CreateByteAddressDesc(MaxPointNum * sizeof(LidarDetection)),
+                TEXT("DepthMapBasedLidar.Output.OutputBuffer"));
+
+        ScanAzimuthRDGPooledBuffer =
+            AllocatePooledBuffer(FRDGBufferDesc::CreateByteAddressDesc(ScanCount * sizeof(float)),
+                TEXT("DepthMapBasedLidar.Output.ScanAzimuth"));
+        void* ScanAzimuthTempBuffer = RHICommandList.LockBuffer(
+            ScanAzimuthRDGPooledBuffer->GetRHI(), 0, ScanCount * sizeof(float), RLM_WriteOnly);
+        FMemory::Memcpy(ScanAzimuthTempBuffer, ScanAzimuth.GetData(), ScanCount * sizeof(float));
+        RHICommandList.UnlockBuffer(ScanAzimuthRDGPooledBuffer->GetRHI());
+
+        const int ImageSpaceLaserRaysByteSize = ImageSpaceLaserRays.Num() * ImageSpaceLaserRays.GetTypeSize();
+        ImageSpaceLaserRaysRDGPooledBuffer =
+            AllocatePooledBuffer(FRDGBufferDesc::CreateByteAddressDesc(ImageSpaceLaserRaysByteSize),
+                TEXT("DepthMapBasedLidar.ImageSpaceLaserRays"));
+        void* DataTempBuffer = RHICommandList.LockBuffer(
+            ImageSpaceLaserRaysRDGPooledBuffer->GetRHI(), 0, ImageSpaceLaserRaysByteSize, RLM_WriteOnly);
+        FMemory::Memcpy(DataTempBuffer, ImageSpaceLaserRays.GetData(), ImageSpaceLaserRaysByteSize);
+        RHICommandList.UnlockBuffer(ImageSpaceLaserRaysRDGPooledBuffer->GetRHI());
+        for (size_t i = 0; i < SceneCaptureCount; i++)
+        {
+            auto& renderTargetInfo = RenderTargets[i];
+            FRHITexture* RHITexture =
+                renderTargetInfo.render_target->GetRenderTargetResource()->GetRenderTargetTexture().GetReference();
+            renderTargetInfo.pooled_target = CreateRenderTarget(RHITexture, *renderTargetInfo.debug_name);
+        }
+        LidarReadbackDetectionCount = MakeShared<FRHIGPUBufferReadback>(TEXT("Lidar.Readback.DetectionCount"));
+        LidarReadbackDetection = MakeShared<FRHIGPUBufferReadback>(TEXT("Lidar.Readback.Detection"));
+        LidarReadbackScan = MakeShared<FRHIGPUBufferReadback>(TEXT("Lidar.Readback.Scan"));
+    });
+
+    FlushRenderingCommands();
+}
+
+void ALidarBufferDepth::AddLidarBasePass(FRDGBuilder& GraphBuilder, const int& CameraIndex,
+    const FRDGTextureSRVRef& RenderTargetSRV, const FLidarPassParams& PassParams)
+{
+    double angle_in_rad = -FMath::DegreesToRadians(FovHorizonPerCamera);
+    float sin_h_fov = FMath::Sin(angle_in_rad * CameraIndex);
+    float cos_h_fov = FMath::Cos(angle_in_rad * CameraIndex);
+
+    FDepthBasedLidarCSInstance::FRawHitParameters Parameters;
+    Parameters.ChannelCount = Channels;
+    Parameters.HorizonCount = HorizonSampleCount;
+    Parameters.CameraIndex = CameraIndex;
+    Parameters.CosAzimuth = cos_h_fov;
+    Parameters.SinAzimuth = sin_h_fov;
+    Parameters.Range = Range;
+    Parameters.RawHitBuffer = PassParams.RawLidarBufferUAV;
+    Parameters.LaserNumPerScan = PassParams.LaserNumPerScanUAV;
+    Parameters.InTexture = RenderTargetSRV;
+    Parameters.ImageSpaceLaserRays = PassParams.ImageSpaceLaserRaysSRV;
+    FDepthBasedLidarCSInstance::Get()->GraphBuilderDispatchLidar(GraphBuilder, Parameters);
+}
+
+void ALidarBufferDepth::AddLidarPostPass(FRDGBuilder& GraphBuilder, const FLidarPassParams& PassParams)
+{
+    // scan
+    {
+        FDepthBasedLidarCSInstance::FScanParameters Parameters;
+        Parameters.ScanCount = ScanCount;
+        Parameters.ScanSequenceOffset = ScanSequenceCount;
+        Parameters.DetectionCount = PassParams.DetectionCountUAV;
+        Parameters.ScanOffsetUAV = PassParams.ScanOffsetUAV;
+        Parameters.ScanAzimuth = PassParams.ScanAzimuthSRV;
+        Parameters.LaserNumPerScan = PassParams.LaserNumPerScanUAV;
+        Parameters.ScanBuffer = PassParams.ScanBufferUAV;
+        FDepthBasedLidarCSInstance::Get()->GraphBuilderDispatchLidar(GraphBuilder, Parameters);
+    }
+
+    // reorder
+    {
+        FDepthBasedLidarCSInstance::FReorderParameters Parameters;
+        Parameters.ScanCount = ScanCount;
+        Parameters.ChannelCount = Channels;
+        Parameters.LaserNumPerScan = PassParams.LaserNumPerScanUAV;
+        Parameters.ScanOffsetUAV = PassParams.ScanOffsetUAV;
+        Parameters.RawHitBuffer = PassParams.RawLidarBufferUAV;
+        Parameters.ReorderedLidarBuffer = PassParams.ReorderedBufferUAV;
+
+        FDepthBasedLidarCSInstance::Get()->GraphBuilderDispatchLidar(GraphBuilder, Parameters);
+    }
+
+    AddEnqueueCopyPass(
+        GraphBuilder, LidarReadbackDetectionCount.Get(), PassParams.DetectionCountUAV->GetParent(), sizeof(int));
+
+    // AddEnqueueCopyPass(GraphBuilder, LidarReadbackDetection.Get(), PassParams.ReorderedBufferUAV->GetParent(),
+    //     MaxPointNum * sizeof(LidarDetection));
+
+    AddEnqueueCopyPass(GraphBuilder, LidarReadbackDetection.Get(), PassParams.RawLidarBufferUAV->GetParent(),
+        MaxPointNum * sizeof(LidarDetection));
+
+    AddEnqueueCopyPass(
+        GraphBuilder, LidarReadbackScan.Get(), PassParams.ScanBufferUAV->GetParent(), ScanCount * sizeof(LidarScan));
+}
+
+ALidarBufferDepth::FLidarPassParams ALidarBufferDepth::CreateLidarPassParams(
+    FRDGBuilder& GraphBuilder, ALidarBufferDepth::ELidarPassType ParamsType)
+{
+    FLidarPassParams PassParams;
+
+    if (ParamsType & ELidarPassType::BasePass)
+    {
+        // laser rays
+        PassParams.ImageSpaceLaserRaysSRV =
+            FRDGBuilderHelper::RegisterSRVBuffer(GraphBuilder, ImageSpaceLaserRaysRDGPooledBuffer);
+    }
+
+    if ((ParamsType & ELidarPassType::BasePass) || (ParamsType & ELidarPassType::PostPass))
+    {
+        // detection buffer
+        PassParams.RawLidarBufferUAV =
+            FRDGBuilderHelper::RegisterUAVBuffer(GraphBuilder, RawLidarBufferRDGPooledBuffer);
+
+        // laser counter per scan
+        PassParams.LaserNumPerScanUAV =
+            FRDGBuilderHelper::RegisterUAVBuffer(GraphBuilder, LaserNumPerScanRDGPooledBuffer);
+
+        // detection count
+        PassParams.DetectionCountUAV =
+            FRDGBuilderHelper::RegisterUAVBuffer(GraphBuilder, DetectionCountRDGPooledBuffer);
+    }
+
+    if (ParamsType & ELidarPassType::PostPass)
+    {
+        // scan azimuth
+        PassParams.ScanAzimuthSRV = FRDGBuilderHelper::RegisterSRVBuffer(GraphBuilder, ScanAzimuthRDGPooledBuffer);
+
+        // scan buffer
+        PassParams.ScanBufferUAV = FRDGBuilderHelper::RegisterUAVBuffer(GraphBuilder, ScanBufferRDGPooledBuffer);
+
+        // scan offset
+        PassParams.ScanOffsetUAV = FRDGBuilderHelper::RegisterUAVBuffer(GraphBuilder, ScanOffsetRDGPooledBuffer);
+
+        // output buffer
+        PassParams.ReorderedBufferUAV =
+            FRDGBuilderHelper::RegisterUAVBuffer(GraphBuilder, ReorderedBufferRDGPooledBuffer);
+    }
+
+    return MoveTemp(PassParams);
+}
+
+void ALidarBufferDepth::DisableShowFlags(FEngineShowFlags& ShowFlags)
+{
+    ShowFlags.SetAmbientOcclusion(false);
+    ShowFlags.SetAntiAliasing(false);
+    ShowFlags.SetVolumetricFog(false);
+    // ShowFlags.SetAtmosphericFog(false);
+    // ShowFlags.SetAudioRadius(false);
+    // ShowFlags.SetBillboardSprites(false);
+    ShowFlags.SetBloom(false);
+    // ShowFlags.SetBounds(false);
+    // ShowFlags.SetBrushes(false);
+    // ShowFlags.SetBSP(false);
+    // ShowFlags.SetBSPSplit(false);
+    // ShowFlags.SetBSPTriangles(false);
+    // ShowFlags.SetBuilderBrush(false);
+    // ShowFlags.SetCameraAspectRatioBars(false);
+    // ShowFlags.SetCameraFrustums(false);
+    ShowFlags.SetCameraImperfections(false);
+    ShowFlags.SetCameraInterpolation(false);
+    // ShowFlags.SetCameraSafeFrames(false);
+    // ShowFlags.SetCollision(false);
+    // ShowFlags.SetCollisionPawn(false);
+    // ShowFlags.SetCollisionVisibility(false);
+    ShowFlags.SetColorGrading(false);
+    // ShowFlags.SetCompositeEditorPrimitives(false);
+    // ShowFlags.SetConstraints(false);
+    // ShowFlags.SetCover(false);
+    // ShowFlags.SetDebugAI(false);
+    // ShowFlags.SetDecals(false);
+    ShowFlags.SetDeferredLighting(false);
+    ShowFlags.SetDepthOfField(false);
+    ShowFlags.SetDiffuse(false);
+    ShowFlags.SetDirectionalLights(false);
+    ShowFlags.SetDirectLighting(false);
+    // ShowFlags.SetDistanceCulledPrimitives(false);
+    // ShowFlags.SetDistanceFieldAO(false);
+    // ShowFlags.SetDistanceFieldGI(false);
+    ShowFlags.SetDynamicShadows(false);
+    // ShowFlags.SetEditor(false);
+    ShowFlags.SetEyeAdaptation(false);
+    ShowFlags.SetFog(false);
+    // ShowFlags.SetGame(false);
+    // ShowFlags.SetGameplayDebug(false);
+    // ShowFlags.SetGBufferHints(false);
+    ShowFlags.SetGlobalIllumination(false);
+    ShowFlags.SetGrain(false);
+    // ShowFlags.SetGrid(false);
+    // ShowFlags.SetHighResScreenshotMask(false);
+    // ShowFlags.SetHitProxies(false);
+    ShowFlags.SetHLODColoration(false);
+    ShowFlags.SetHMDDistortion(false);
+    // ShowFlags.SetIndirectLightingCache(false);
+    // ShowFlags.SetInstancedFoliage(false);
+    // ShowFlags.SetInstancedGrass(false);
+    // ShowFlags.SetInstancedStaticMeshes(false);
+    // ShowFlags.SetLandscape(false);
+    // ShowFlags.SetLargeVertices(false);
+    ShowFlags.SetLensFlares(false);
+    ShowFlags.SetLightComplexity(false);
+    ShowFlags.SetLightFunctions(false);
+    ShowFlags.SetLightInfluences(false);
+    ShowFlags.SetLighting(false);
+    ShowFlags.SetLightMapDensity(false);
+    ShowFlags.SetLightRadius(false);
+    ShowFlags.SetLightShafts(false);
+    // ShowFlags.SetLOD(false);
+    ShowFlags.SetLODColoration(false);
+    // ShowFlags.SetMaterials(false);
+    // ShowFlags.SetMaterialTextureScaleAccuracy(false);
+    // ShowFlags.SetMeshEdges(false);
+    // ShowFlags.SetMeshUVDensityAccuracy(false);
+    // ShowFlags.SetModeWidgets(false);
+    ShowFlags.SetMotionBlur(false);
+    // ShowFlags.SetNavigation(false);
+    ShowFlags.SetOnScreenDebug(false);
+    // ShowFlags.SetOutputMaterialTextureScales(false);
+    // ShowFlags.SetOverrideDiffuseAndSpecular(false);
+    // ShowFlags.SetPaper2DSprites(false);
+    ShowFlags.SetParticles(false);
+    // ShowFlags.SetPivot(false);
+    ShowFlags.SetPointLights(false);
+    // ShowFlags.SetPostProcessing(false);
+    // ShowFlags.SetPostProcessMaterial(false);
+    // ShowFlags.SetPrecomputedVisibility(false);
+    // ShowFlags.SetPrecomputedVisibilityCells(false);
+    // ShowFlags.SetPreviewShadowsIndicator(false);
+    // ShowFlags.SetPrimitiveDistanceAccuracy(false);
+    // ShowFlags.SetQuadOverdraw(false);
+    // ShowFlags.SetReflectionEnvironment(false);
+    // ShowFlags.SetReflectionOverride(false);
+    ShowFlags.SetRefraction(false);
+    // ShowFlags.SetRendering(false);
+    ShowFlags.SetSceneColorFringe(false);
+    // ShowFlags.SetScreenPercentage(false);
+    ShowFlags.SetScreenSpaceAO(false);
+    ShowFlags.SetScreenSpaceReflections(false);
+    // ShowFlags.SetSelection(false);
+    // ShowFlags.SetSelectionOutline(false);
+    // ShowFlags.SetSeparateTranslucency(false);
+    // ShowFlags.SetShaderComplexity(false);
+    // ShowFlags.SetShaderComplexityWithQuadOverdraw(false);
+    // ShowFlags.SetShadowFrustums(false);
+    // ShowFlags.SetSkeletalMeshes(false);
+    // ShowFlags.SetSkinCache(false);
+    ShowFlags.SetSkyLighting(false);
+    // ShowFlags.SetSnap(false);
+    // ShowFlags.SetSpecular(false);
+    // ShowFlags.SetSplines(false);
+    ShowFlags.SetSpotLights(false);
+    // ShowFlags.SetStaticMeshes(false);
+    ShowFlags.SetStationaryLightOverlap(false);
+    // ShowFlags.SetStereoRendering(false);
+    // ShowFlags.SetStreamingBounds(false);
+    ShowFlags.SetSubsurfaceScattering(false);
+    // ShowFlags.SetTemporalAA(false);
+    // ShowFlags.SetTessellation(false);
+    // ShowFlags.SetTestImage(false);
+    // ShowFlags.SetTextRender(false);
+    // ShowFlags.SetTexturedLightProfiles(false);
+    ShowFlags.SetTonemapper(false);
+    // ShowFlags.SetTranslucency(false);
+    // ShowFlags.SetVectorFields(false);
+    // ShowFlags.SetVertexColors(false);
+    // ShowFlags.SetVignette(false);
+    // ShowFlags.SetVisLog(false);
+    // ShowFlags.SetVisualizeAdaptiveDOF(false);
+    // ShowFlags.SetVisualizeBloom(false);
+    ShowFlags.SetVisualizeBuffer(false);
+    ShowFlags.SetVisualizeDistanceFieldAO(false);
+    ShowFlags.SetVisualizeDOF(false);
+    ShowFlags.SetVisualizeHDR(false);
+    ShowFlags.SetVisualizeLightCulling(false);
+    // ShowFlags.SetVisualizeLPV(false);
+    ShowFlags.SetVisualizeMeshDistanceFields(false);
+    ShowFlags.SetVisualizeMotionBlur(false);
+    ShowFlags.SetVisualizeOutOfBoundsPixels(false);
+    ShowFlags.SetVisualizeSenses(false);
+    ShowFlags.SetVisualizeShadingModels(false);
+    ShowFlags.SetVisualizeSSR(false);
+    ShowFlags.SetVisualizeSSS(false);
+    // ShowFlags.SetVolumeLightingSamples(false);
+    // ShowFlags.SetVolumes(false);
+    // ShowFlags.SetWidgetComponents(false);
+    // ShowFlags.SetWireframe(false);
+}
+
+void ALidarBufferDepth::EnableShowFlags(FEngineShowFlags& ShowFlags)
+{
+    ShowFlags = FEngineShowFlags(ESFIM_All0);
+    ShowFlags.SetRendering(true);
+    ShowFlags.SetMaterials(true);
+    // ShowFlags.SetBones(true);
+    ShowFlags.SetSkeletalMeshes(true);
+    ShowFlags.SetStaticMeshes(true);
+    ShowFlags.SetInstancedStaticMeshes(true);
+    ShowFlags.SetInstancedFoliage(true);
+    ShowFlags.SetInstancedGrass(true);
+    // ShowFlags.SetParticles(true);
+    // ShowFlags.SetNiagara(true);
+    ShowFlags.SetLandscape(true);
+    ShowFlags.SetBrushes(true);
+    ShowFlags.SetPostProcessMaterial(true);
+    ShowFlags.SetPostProcessing(true);
+    ShowFlags.SetNaniteMeshes(true);
+    ShowFlags.SetNaniteStreamingGeometry(true);
+    ShowFlags.SetTonemapper(false);
+    ShowFlags.SetEyeAdaptation(false);
 }

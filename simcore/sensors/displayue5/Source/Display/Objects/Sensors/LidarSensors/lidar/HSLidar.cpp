@@ -69,6 +69,11 @@ float HSLidar::getLaserHeight() const
     return 0.0555f;
 }
 
+float HSLidar::getHorizonOffset(uint32_t channel) const
+{
+    return _horizontal_angles.at(channel);
+}
+
 bool HSLidar::setAngleFromString(const FString& str)
 {
     if (str.IsEmpty())
@@ -383,7 +388,7 @@ HSLidar128::~HSLidar128()
 
 float HSLidar128::getRotationFrequency() const
 {
-    return _horizontal_resolution * 50.f;
+    return _horizontal_resolution * 100.f;
 }
 
 lidar::ReturnMode HSLidar128::getReturnMode() const
@@ -396,7 +401,7 @@ lidar::ReturnMode HSLidar128::getReturnMode() const
 
 void HSLidar128::setRotationFrequency(float rf)
 {
-    _horizontal_resolution = 0.02f * rf;    // 0.2/10
+    _horizontal_resolution = 0.01f * rf;    // 0.2/10
     _pt_data->set_frequency(rf);
 }
 

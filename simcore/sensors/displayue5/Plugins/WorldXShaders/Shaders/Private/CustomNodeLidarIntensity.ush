@@ -1,0 +1,25 @@
+
+float calcIntensity(FMaterialPixelParameters Parameters, float3 diffuse, float3 roughness)
+{
+    float distance = length(Parameters.WorldPosition_CamRelative);
+    float atmosp_atten_rate = 0.004;
+    float3 normal_vec = Parameters.CameraVector;
+    float cos_inc_angle = dot(normal_vec, Parameters.WorldNormal);
+    float incident_angle = acos(cos_inc_angle);
+    float alpha = incident_angle;
+    float beta = incident_angle;
+
+    float albedo = diffuse.x * 0.3 + 0.6 * diffuse.y + 0.1 * diffuse.z;
+    float sigma = roughness.x;
+    float sigma_2 = sigma * sigma;
+    float A = 1.0 - 0.5 * sigma_2 / (sigma_2 + 0.33);
+    float B = 0.45 * sigma_2 / (sigma_2 + 0.09);
+
+    float reflectance = albedo *
+        (A + B * sin(alpha / 1.1) * tan(beta / 1.1)) *
+        cos(incident_angle / 1.1);
+
+    float intensity =
+            exp(-atmosp_atten_rate * distance / 100) * reflectance;
+    return intensity;
+    //return (diffuse.x + diffuse.y + diffuse.z) / 3;

@@ -593,17 +593,17 @@ ISimActorInterface* ATLidarSensor::Install(const FSensorConfig& _Config)
     if (DepthLidar && SimActor)
     {
         AActor* Ego = Cast<AActor>(SimActor);
-        if (Ego)
-        {
-            auto& DepthCameras = DepthLidar->GetDepthCameraActors();
-            for (auto& DepthCamera : DepthCameras)
-            {
-                if (DepthCamera)
-                {
-                    DepthCamera->IngoreActor(Ego);
-                }
-            }
-        }
+        //if (Ego)
+       // {
+        //     auto& DepthCameras = DepthLidar->GetDepthCameraActors();
+        //     for (auto& DepthCamera : DepthCameras)
+        //     {
+        //         if (DepthCamera)
+        //         {
+        //             DepthCamera->IngoreActor(Ego);
+        //         }
+        //     }
+        // }
     }
     return SimActor;
 }

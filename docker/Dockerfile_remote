@@ -1,15 +1,16 @@
-FROM nvcr.io/nvidia/driver:535.86.10-ubuntu20.04
+FROM hub.hobot.cc/imagesys/4dlabel:tadsim-desktop-ubuntu20.04
 
-# RUN add-apt-repository ppa:graphics-drivers/ppa
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
+    libegl1 libxext6
 
-# RUN apt update
+COPY vulkan/10_nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
+COPY vulkan/nvidia_icd.json /usr/share/vulkan/icd.d/nvidia_icd.json
 
-# RUN apt-get install -y --no-install-recommends kmod
+COPY vulkan/nvidia-driver-535/* /usr/lib/x86_64-linux-gnu/
 
-# COPY NVIDIA-Linux-x86_64-535.98.run NVIDIA-Linux-x86_64-535.98.run
-
-# RUN chmod +x NVIDIA-Linux-x86_64-535.98.run
-
-# RUN rmmod nvidia_uvm
-
-# RUN sh NVIDIA-Linux-x86_64-535.98.run --silent
+RUN ln -s /usr/lib/x86_64-linux-gnu/libEGL_nvidia.so.535.98 /usr/lib/x86_64-linux-gnu/libEGL_nvidia.so.0
+RUN ln -s /usr/lib/x86_64-linux-gnu/libGLESv1_CM_nvidia.so.535.98 /usr/lib/x86_64-linux-gnu/libGLESv1_CM_nvidia.so.1
+RUN ln -s /usr/lib/x86_64-linux-gnu/libGLESv2_nvidia.so.535.98 /usr/lib/x86_64-linux-gnu/libGLESv2_nvidia.so.2
+RUN ln -s /usr/lib/x86_64-linux-gnu/libGLX_nvidia.so.535.98 /usr/lib/x86_64-linux-gnu/libGLX_nvidia.so.0

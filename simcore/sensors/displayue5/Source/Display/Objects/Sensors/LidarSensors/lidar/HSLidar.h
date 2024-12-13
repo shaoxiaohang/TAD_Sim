@@ -70,6 +70,8 @@ public:
         return _error;
     }
 
+     virtual float getHorizonOffset(uint32_t channel) const;
+
 protected:
     int _id{0};
     std::vector<float> _horizontal_angles;
@@ -167,6 +169,11 @@ public:
     virtual bool Init();
     virtual uint32_t package(const lidar_ptset& datas);
 
+    virtual FVector2f getAzimuthRange()
+    {
+        return FVector2f(0, 360.0f);
+    }
+
 protected:
     uint32_t udp_seq = 0;
     std::shared_ptr<point_data128> _pt_data;
@@ -245,6 +252,11 @@ public:
 
     virtual bool loadInterReference(const std::string& dir);
     virtual bool Init();
+
+    virtual FVector2f getAzimuthRange()
+    {
+        return FVector2f(0, 180.0f);
+    }
 
 protected:
     int framefix = 0;
