@@ -47,7 +47,10 @@ void FDepthMapBasedLidarSceneViewExtension::SingleCaptureLidar(
     FRDGBuilder& GraphBuilder, FSceneViewFamily& InViewFamily)
 {
     ALidarBufferDepth::ELidarPassType LidarPassType = ALidarBufferDepth::ELidarPassType::BasePass;
-    if (CameraIndex == DepthMapLidar->CameraCount - 1)
+
+    auto LastCameraIndex = DepthMapLidar->CameraCount - 1;
+
+    if (CameraIndex == LastCameraIndex)
     {
         LidarPassType = ALidarBufferDepth::ELidarPassType::All;
     }
@@ -60,18 +63,31 @@ void FDepthMapBasedLidarSceneViewExtension::SingleCaptureLidar(
         // clear counter
         AddClearUAVPass(GraphBuilder, PassParams.LaserNumPerScanUAV, 0);
         AddClearUAVPass(GraphBuilder, PassParams.DetectionCountUAV, 0);
+        AddClearUAVPass(GraphBuilder, PassParams.RawLidarBufferUAV, 0);
     }
 
     // rendet target
-    auto RenderTargetInfoItem = DepthMapLidar->RenderTargets[0];
-    FRDGTextureSRVDesc SRVDesc(GraphBuilder.RegisterExternalTexture(RenderTargetInfoItem.pooled_target));
-    DepthMapLidar->AddLidarBasePass(GraphBuilder, CameraIndex, GraphBuilder.CreateSRV(SRVDesc), PassParams);
-
+    if (DepthMapLidar->OutputExtraInfo())
+    {
+        auto RenderTargetInfoItem = DepthMapLidar->RenderTargets[0];
+        auto RenderTargetInfoItemExtra = DepthMapLidar->ExtraRenderTargets[0];
+        FRDGTextureSRVDesc SRVDesc(GraphBuilder.RegisterExternalTexture(RenderTargetInfoItem.pooled_target));
+        FRDGTextureSRVDesc SRVDescExtra(GraphBuilder.RegisterExternalTexture(RenderTargetInfoItemExtra.pooled_target));
+        DepthMapLidar->AddLidarBasePassExtra(GraphBuilder, CameraIndex, GraphBuilder.CreateSRV(SRVDesc),
+            GraphBuilder.CreateSRV(SRVDescExtra), PassParams);
+    }
+    else
+    {
+        auto RenderTargetInfoItem = DepthMapLidar->RenderTargets[0];
+        FRDGTextureSRVDesc SRVDesc(GraphBuilder.RegisterExternalTexture(RenderTargetInfoItem.pooled_target));
+        DepthMapLidar->AddLidarBasePass(GraphBuilder, CameraIndex, GraphBuilder.CreateSRV(SRVDesc), PassParams);
+    }
     // last capture
-    if (CameraIndex == DepthMapLidar->CameraCount - 1)
+    if (CameraIndex == LastCameraIndex)
     {
         DepthMapLidar->AddLidarPostPass(GraphBuilder, PassParams);
     }
+
 
     CameraIndex++;
 }
@@ -84,6 +100,8 @@ void FDepthMapBasedLidarSceneViewExtension::MultipleCaptureLidar(
     // clear counter
     AddClearUAVPass(GraphBuilder, PassParams.LaserNumPerScanUAV, 0);
     AddClearUAVPass(GraphBuilder, PassParams.DetectionCountUAV, 0);
+    AddClearUAVPass(GraphBuilder, PassParams.RawLidarBufferUAV, 0);
+
 
     for (int i = 0; i < DepthMapLidar->CameraCount; i++)
     {

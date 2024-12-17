@@ -22,6 +22,7 @@ public:
 		FRDGBufferUAVRef RawHitBuffer;
 		FRDGBufferUAVRef LaserNumPerScan;
 		FRDGTextureSRVRef InTexture;
+		FRDGTextureSRVRef InTextureExtra;
 		FRDGBufferSRVRef ImageSpaceLaserRays;
 	};
 

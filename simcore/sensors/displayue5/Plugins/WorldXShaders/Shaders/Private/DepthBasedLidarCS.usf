@@ -12,7 +12,8 @@ struct FLidarDetection
 	float x;
 	float y;
 	float z;
-	int channel;
+	int label;
+	float norinter;
 	float intensity;
 };
 
@@ -34,6 +35,7 @@ struct FLidarScan
 };
 
 Texture2D<float4> InTexture;
+Texture2D<float4> InTextureExtra;
 StructuredBuffer<FImageSpaceLaserRay> ImageSpaceLaserRays;
 int ChannelCount;
 int HorizonCount;
@@ -48,6 +50,11 @@ float DecodeDepthFromRGB(float3 color)
 {
     float normalized = (color.x + color.y * 256 + color.z * 256 * 256) / (256 * 256 * 256 - 1);
     return 1000 * normalized;
+}
+
+float DecodeDepthFromRGBNew(float3 color)
+{
+    return (color.x * 256 + color.y) * 0.005;
 }
 
 float3 RotateVector(float3 in_direction, float cos_theta, float sin_theta)
@@ -70,6 +77,7 @@ void RawHitMain(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        
 	FImageSpaceLaserRay laser_ray = ImageSpaceLaserRays[index];
 	
 	float4 color = InTexture[float2(laser_ray.row, laser_ray.column)]  * float4(255,255, 255, 1);
+	float4 color_extra = InTextureExtra[float2(laser_ray.row, laser_ray.column)]  * float4(255,255, 255, 1);
 	float intensity = color.w;
 
 	float depth_in_meters = DecodeDepthFromRGB(color.xyz);
@@ -80,6 +88,7 @@ void RawHitMain(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        
 
 	float3 position = depth_in_meters * laser_ray.direction;
 	float3 position_global = RotateVector(position, CosAzimuth, SinAzimuth);
+	const float2 PixelPos = float2(laser_ray.row, laser_ray.column);
 
 	int laser_index_per_scan;
 	InterlockedAdd(LaserNumPerScan[laser_ray.scan_id], 1, laser_index_per_scan);
@@ -87,7 +96,8 @@ void RawHitMain(uint3 Gid : SV_GroupID, //atm: -, 0...256, - in rows (Y)        
 	RawHitBuffer[current_index].x = position_global.x;
 	RawHitBuffer[current_index].y = position_global.y;
 	RawHitBuffer[current_index].z = position_global.z;
-	RawHitBuffer[current_index].channel = laser_ray.laser_id;
+	RawHitBuffer[current_index].label = color_extra.z;
+	RawHitBuffer[current_index].norinter = color_extra.x * 0.00390625;
 	RawHitBuffer[current_index].intensity = intensity * 255;
 }
 

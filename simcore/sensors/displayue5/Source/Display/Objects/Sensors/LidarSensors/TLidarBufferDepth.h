@@ -32,7 +32,8 @@ struct LidarDetection
     float x;
     float y;
     float z;
-    int channel;
+    int label;
+    float norinter;
     float intensity;
 };
 
@@ -85,6 +86,11 @@ public:
         TRefCountPtr<IPooledRenderTarget> pooled_target;
     };
 
+    bool OutputExtraInfo() const
+    {
+        return bOutputExtraInfo;
+    }
+
 private:
     enum ELidarPassType
     {
@@ -113,6 +119,10 @@ private:
     void AddLidarBasePass(FRDGBuilder& GraphBuilder, const int& CameraIndex, const FRDGTextureSRVRef& RenderTargetSRV,
         const FLidarPassParams& PassParams);
 
+    void AddLidarBasePassExtra(FRDGBuilder& GraphBuilder, const int& CameraIndex,
+        const FRDGTextureSRVRef& RenderTargetSRV, const FRDGTextureSRVRef& RenderTargetSRVExtra,
+        const FLidarPassParams& PassParams);
+
     void AddLidarPostPass(FRDGBuilder& GraphBuilder, const FLidarPassParams& PassParams);
 
     void DisableShowFlags(FEngineShowFlags& ShowFlags);
@@ -124,6 +134,10 @@ private:
     bool ReadLidarData_RenderThreadSVE(TSharedPtr<DepthLidarBuffer> buffer);
 
     bool ReadLidarData_RenderThreadSingleCaptureSVE(TSharedPtr<DepthLidarBuffer> buffer);
+
+    RenderTargetSRVInfo CreateRenderTargetInfo(const FString& DebugName);
+
+    USceneCaptureComponent2D* CreateSceneCaptureComponent(const FString& DebugName, float Yaw);
 
 private:
     FVector2f AzimuthRange;
@@ -169,12 +183,17 @@ private:
 
     TArray<USceneCaptureComponent2D*> SceneCaptures;
     TArray<UMaterialInstanceDynamic*> MaterialInstanceDynamics;
+    bool bOutputExtraInfo = false;
+
+    TArray<USceneCaptureComponent2D*> ExtraSceneCaptures;
+    TArray<UMaterialInstanceDynamic*> ExtraMaterialInstanceDynamics;
 
     TSharedPtr<FDepthMapBasedLidarSceneViewExtension> SceneViewExtension;
 
     friend class FDepthMapBasedLidarSceneViewExtension;
 
     TArray<RenderTargetSRVInfo> RenderTargets;
+    TArray<RenderTargetSRVInfo> ExtraRenderTargets;
 
     // read back
     TSharedPtr<FRHIGPUBufferReadback> LidarReadbackDetectionCount;

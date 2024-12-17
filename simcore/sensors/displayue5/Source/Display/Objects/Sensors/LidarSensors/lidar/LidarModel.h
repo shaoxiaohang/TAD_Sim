@@ -12,8 +12,7 @@ public:
     LidarModelBase() = default;
     virtual ~LidarModelBase() = default;
 
-    virtual bool simulator(
-        float cosita, unsigned int tag_c, unsigned int tag_t, float& d, float& reflection) = 0;
+    virtual bool simulator(float cosita, unsigned int tag_c, unsigned int tag_t, float& d, float& reflection) = 0;
 };
 
 class LidarModel : public LidarModelBase
@@ -24,11 +23,9 @@ public:
 
     bool cache_tag(unsigned int tag_c, unsigned int tag_t);
 
-    bool simulator(
-        float cosita, unsigned int tag_c, unsigned int tag_t, float& d, float& reflection);
+    bool simulator(float cosita, unsigned int tag_c, unsigned int tag_t, float& d, float& reflection);
 
-    bool simulator(
-        float &x , float &y, float &z, float d);
+    bool simulator(float& x, float& y, float& z, float& d, float cosita, float ref);
 
     void set_intensity(float i);
     float get_intensity() const
@@ -71,8 +68,7 @@ public:
 
     bool load_refdata(const std::string& fname);
 
-    bool get_refection_param(
-        unsigned int tag_c, unsigned int tag_t, float& refmin, float& refmax, float& refdelta);
+    bool get_refection_param(unsigned int tag_c, unsigned int tag_t, float& refmin, float& refmax, float& refdelta);
 
     void update_brownion_pos();
 

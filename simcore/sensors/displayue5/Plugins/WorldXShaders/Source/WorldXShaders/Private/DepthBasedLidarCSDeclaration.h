@@ -60,6 +60,7 @@ public:
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<float>, RawHitBuffer)
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<int>, LaserNumPerScan)
 		SHADER_PARAMETER_RDG_TEXTURE_SRV(Texture2D<FVector4f>, InTexture)
+		SHADER_PARAMETER_RDG_TEXTURE_SRV(Texture2D<FVector4f>, InTextureExtra)
 		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<float>, ImageSpaceLaserRays)
 	END_SHADER_PARAMETER_STRUCT()
     

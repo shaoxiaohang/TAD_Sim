@@ -13,6 +13,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "SimMsg/sensor_raw.pb.h"
 #include "TLidarBufferDepth.h"
+#include "TLidarBufferDepthOld.h"
 #include "TLidarBufferRaycast.h"
 #include "DepthCamera.h"
 #include "lidar/HSLidar.h"
@@ -248,6 +249,11 @@ bool ATLidarSensor::Init(const FSensorConfig& _Config)
         {
             UE_LOG(LogTemp, Log, TEXT("Lidar method is Depth"));
             lidarBuffer = std::make_shared<ALidarBufferDepth>();
+        }
+        else if (method == TEXT("depth_old"))
+        {
+            UE_LOG(LogTemp, Log, TEXT("Lidar method is Depth Old"));
+            lidarBuffer = std::make_shared<ALidarBufferDepthOld>();
         }
 #if PLATFORM_WINDOWS
         // 光追方法

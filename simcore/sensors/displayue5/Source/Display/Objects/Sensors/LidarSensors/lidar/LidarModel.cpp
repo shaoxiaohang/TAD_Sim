@@ -83,7 +83,7 @@ bool LidarModel::cache_tag(unsigned int tag_c, unsigned int tag_t)
     return true;
 }
 
-bool LidarModel::simulator(float& x, float& y, float& z, float d)
+bool LidarModel::simulator(float& x, float& y, float& z, float& d, float cosita, float ref)
 {
     if (d < 0.01f)
     {
@@ -92,6 +92,15 @@ bool LidarModel::simulator(float& x, float& y, float& z, float d)
     gausswhite_noise(x);
     gausswhite_noise(y);
     gausswhite_noise(z);
+    // float v = cosita * ref / (d * d);
+    // v *= extinctionCoe;
+    // if (v < t_intensity)
+    // {
+    //     UE_LOG(LogTemp, Log, TEXT("DROP INTENSITY %f %f %f %f"), d , cosita, ref, v);
+    //     d = 0;
+    //     return false;
+    // }
+    // return d >= 0.01f;
     return true;
 }
 

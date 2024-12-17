@@ -43,6 +43,13 @@ bool ALidarBufferDepth::Init(const FLidarConfig& _config, std::shared_ptr<lidar:
         bUseSingleCapture = false;
     }
 
+    FString extra_info_str;
+    GConfig->GetString(TEXT("Sensor"), TEXT("LidarExtraInfo"), extra_info_str, GGameIni);
+    if (extra_info_str == TEXT("true"))
+    {
+        bOutputExtraInfo = true;
+    }
+
     FString degree_h_pixel;
     if (GConfig->GetString(TEXT("Sensor"), TEXT("DegreeHorizonPerPixel"), degree_h_pixel, GGameIni))
     {
@@ -158,6 +165,11 @@ bool ALidarBufferDepth::ReadLidarData_RenderThreadSingleCaptureSVE(TSharedPtr<De
     // push lidar graph
     for (int i = 0; i < CameraCount; i++)
     {
+        if (bOutputExtraInfo)
+        {
+            ExtraSceneCaptures[0]->SetRelativeRotation(FQuat(FRotator(0, FovHorizonPerCamera * i, 0)));
+            ExtraSceneCaptures[0]->CaptureScene();
+        }
         SceneCaptures[0]->SetRelativeRotation(FQuat(FRotator(0, FovHorizonPerCamera * i, 0)));
         SceneCaptures[0]->CaptureScene();
     }
@@ -265,28 +277,19 @@ bool ALidarBufferDepth::GetPoints(
             const auto& p = buffer->detections[i * rn + j];
             auto& pt = dd.points[j];
             FVector point(p.x, p.y, p.z);
-            pt.distance = point.Size();
-            // pt.tag_c = p.tag_c;
-            // pt.tag_t = p.tag_t;
-            // pt.norinter = abs(FVector::DotProduct(p.p - p.p0, p.nor));
-            // LIDAR 模型
-            // if (lidarMd)
-            //     lidarMd->simulator(pt.norinter, p.tag_c, p.tag_t, pt.distance, pt.instensity);
-
-            if (pt.distance > 0.01 && pt.distance < 327.f)
+            float distance = point.Size();
+            if (distance > 1e-6f && distance < 327.f)
             {
-                // auto yawpitch = lidarSensor->getYawPitchAngle(dd.hor_pos, j);
-                // FRotator LaserRot(yawpitch.second, yawpitch.first, 0);    // float InPitch, float InYaw, float InRoll
-                // // 计算3d坐标
-                // auto pv = rtMatrix.TransformPosition(pt.distance * UKismetMathLibrary::GetForwardVector(LaserRot));
-                // pt.x = pv.X;
-                // pt.y = pv.Y;
-                // pt.z = pv.Z;
+                pt.distance = distance;
+                pt.tag_c = p.label;
+                pt.norinter = p.norinter;
+                pt.instensity = p.intensity;
                 pt.x = p.x;
                 pt.y = p.y;
                 pt.z = p.z;
-                if(lidarMd)
-                    lidarMd->simulator(pt.x, pt.y, pt.z, pt.distance);
+                // LIDAR 模型
+                if (lidarMd)
+                    lidarMd->simulator(pt.x, pt.y, pt.z, pt.distance, pt.norinter, pt.instensity);
             }
         }
     }
@@ -418,75 +421,102 @@ void ALidarBufferDepth::PrepareParallelRays(std::shared_ptr<lidar::TraditionalLi
 
 void ALidarBufferDepth::CreateSenceCaptureComponents()
 {
-    FMatrix projectionMatrix =
-        util::CalcProjectionMatrix(FovHorizonPerCamera, FovRangeVerticalPerCamera, GNearClippingPlane);
-
     for (int i = 0; i < SceneCaptureCount; i++)
     {
-        auto CaptureComponent2D =
-            NewObject<USceneCaptureComponent2D>(actor, FName(*FString::Printf(TEXT("SceneCaptureComponent2D_%d"), i)));
-
-        CaptureComponent2D->SetMobility(EComponentMobility::Movable);
-        CaptureComponent2D->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_RenderScenePrimitives;
-        // CaptureComponent2D->bEnableClipPlane = false;
-        // CaptureComponent2D->ClipPlaneBase = FVector(10000, 0, 0);
-        // CaptureComponent2D->ClipPlaneNormal = FVector(1, 0, 0);
-        CaptureComponent2D->bCaptureOnMovement = false;
-        CaptureComponent2D->bCaptureEveryFrame = false;
-        CaptureComponent2D->bAlwaysPersistRenderingState = true;
-        // CaptureComponent2D->MaxViewDistanceOverride = 25000;
-        // CaptureComponent2D->FOVAngle = FovHorizonPerCamera;
-
-        CaptureComponent2D->bUseCustomProjectionMatrix = true;
-        CaptureComponent2D->CustomProjectionMatrix = projectionMatrix;
-
-        CaptureComponent2D->SetRelativeRotation(FQuat(FRotator(0, FovHorizonPerCamera * i, 0)));
-        CaptureComponent2D->SetRelativeLocation(FVector(0, 0, 0));
-        CaptureComponent2D->AttachToComponent(
-            actor->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-        CaptureComponent2D->CreationMethod = EComponentCreationMethod::Instance;
-        CaptureComponent2D->RegisterComponent();
+        auto DebugName = FString::Printf(TEXT("SceneCaptureComponent2D_%d"), i);
+        auto CaptureComponent2D = CreateSceneCaptureComponent(DebugName, FovHorizonPerCamera * i);
         SceneCaptures.Add(CaptureComponent2D);
+        if (bOutputExtraInfo)
+        {
+            auto ExtraDebugName = FString::Printf(TEXT("SceneCaptureComponent2D_EXTRA_%d"), i);
+            auto ExtraCaptureComponent2D = CreateSceneCaptureComponent(ExtraDebugName, FovHorizonPerCamera * i);
+            ExtraSceneCaptures.Add(ExtraCaptureComponent2D);
+        }
     }
-
     // add scene view extension
     SceneViewExtension = MakeShared<FDepthMapBasedLidarSceneViewExtension>(this, bUseSingleCapture);
     SceneCaptures[SceneCaptures.Num() - 1]->SceneViewExtensions.Add(SceneViewExtension);
+    // if (bOutputExtraInfo)
+    // {
+    //     ExtraSceneCaptures[ExtraSceneCaptures.Num() - 1]->SceneViewExtensions.Add(SceneViewExtension);
+    // }
 }
 
 void ALidarBufferDepth::CreateTextureRenderTargets()
 {
     for (int i = 0; i < SceneCaptureCount; i++)
     {
-        RenderTargetSRVInfo renderTargetInfo;
-        renderTargetInfo.debug_name = FString(TEXT("SBL_RT_")) + FString::FromInt(i);
-
-        auto renderTarget = NewObject<UTextureRenderTarget2D>(actor, FName(*renderTargetInfo.debug_name));
-
-        renderTarget->InitCustomFormat(ImageWidthPerCamera, ImageHeightPerCamera, PF_R8G8B8A8, true);
-
-        renderTarget->CompressionSettings = TextureCompressionSettings::TC_Default;
-        renderTarget->SRGB = false;
-        renderTarget->bAutoGenerateMips = false;
-        renderTarget->bGPUSharedFlag = true;
-        renderTarget->AddressX = TextureAddress::TA_Clamp;
-        renderTarget->AddressY = TextureAddress::TA_Clamp;
-        // renderTarget->RenderTargetFormat = ETextureRenderTargetFormat::RTF_RGBA8;
-
-        renderTarget->UpdateResourceImmediate(true);
-
-        if (renderTarget != nullptr)
-        {
-            // UE_LOG(LogTemp, Warning, TEXT("rendertarget create done"));
-        }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("rendertarget failed"));
-        }
-
-        renderTargetInfo.render_target = renderTarget;
+        auto Name = FString(TEXT("SBL_RT_")) + FString::FromInt(i);
+        auto renderTargetInfo = CreateRenderTargetInfo(Name);
         RenderTargets.Add(renderTargetInfo);
+        if (bOutputExtraInfo)
+        {
+            auto ExtraName = FString(TEXT("SBL_RT_EXTRA_")) + FString::FromInt(i);
+            auto extraRenderTargetInfo = CreateRenderTargetInfo(ExtraName);
+            ExtraRenderTargets.Add(extraRenderTargetInfo);
+        }
     }
+}
+
+ALidarBufferDepth::RenderTargetSRVInfo ALidarBufferDepth::CreateRenderTargetInfo(const FString& DebugName)
+{
+    RenderTargetSRVInfo renderTargetInfo;
+    renderTargetInfo.debug_name = DebugName;
+
+    auto renderTarget = NewObject<UTextureRenderTarget2D>(actor, FName(*renderTargetInfo.debug_name));
+
+    renderTarget->InitCustomFormat(ImageWidthPerCamera, ImageHeightPerCamera, PF_R8G8B8A8, true);
+
+    renderTarget->CompressionSettings = TextureCompressionSettings::TC_Default;
+    renderTarget->SRGB = false;
+    renderTarget->bAutoGenerateMips = false;
+    renderTarget->bGPUSharedFlag = true;
+    renderTarget->AddressX = TextureAddress::TA_Clamp;
+    renderTarget->AddressY = TextureAddress::TA_Clamp;
+    // renderTarget->RenderTargetFormat = ETextureRenderTargetFormat::RTF_RGBA8;
+
+    renderTarget->UpdateResourceImmediate(true);
+
+    if (renderTarget != nullptr)
+    {
+        // UE_LOG(LogTemp, Warning, TEXT("rendertarget create done"));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("rendertarget failed"));
+    }
+
+    renderTargetInfo.render_target = renderTarget;
+    return renderTargetInfo;
+}
+
+USceneCaptureComponent2D* ALidarBufferDepth::CreateSceneCaptureComponent(const FString& DebugName, float Yaw)
+{
+    FMatrix projectionMatrix =
+        util::CalcProjectionMatrix(FovHorizonPerCamera, FovRangeVerticalPerCamera, GNearClippingPlane);
+
+    auto CaptureComponent2D = NewObject<USceneCaptureComponent2D>(actor, FName(*DebugName));
+
+    CaptureComponent2D->SetMobility(EComponentMobility::Movable);
+    CaptureComponent2D->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_RenderScenePrimitives;
+    // CaptureComponent2D->bEnableClipPlane = false;
+    // CaptureComponent2D->ClipPlaneBase = FVector(10000, 0, 0);
+    // CaptureComponent2D->ClipPlaneNormal = FVector(1, 0, 0);
+    CaptureComponent2D->bCaptureOnMovement = false;
+    CaptureComponent2D->bCaptureEveryFrame = false;
+    CaptureComponent2D->bAlwaysPersistRenderingState = true;
+    // CaptureComponent2D->MaxViewDistanceOverride = 25000;
+    // CaptureComponent2D->FOVAngle = FovHorizonPerCamera;
+
+    CaptureComponent2D->bUseCustomProjectionMatrix = true;
+    CaptureComponent2D->CustomProjectionMatrix = projectionMatrix;
+
+    CaptureComponent2D->SetRelativeRotation(FQuat(FRotator(0, Yaw, 0)));
+    CaptureComponent2D->SetRelativeLocation(FVector(0, 0, 0));
+    CaptureComponent2D->AttachToComponent(actor->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+    CaptureComponent2D->CreationMethod = EComponentCreationMethod::Instance;
+    CaptureComponent2D->RegisterComponent();
+    return CaptureComponent2D;
 }
 
 void ALidarBufferDepth::SetupComponents()
@@ -501,6 +531,11 @@ void ALidarBufferDepth::SetupComponents()
 
         auto materialInstance = UMaterialInstanceDynamic::Create(material, actor);
         MaterialInstanceDynamics.Add(materialInstance);
+
+        materialInstance->SetScalarParameterValue(FName(TEXT("hfov")), FMath::DegreesToRadians(FovHorizonPerCamera));
+        materialInstance->SetScalarParameterValue(
+            FName(TEXT("vfov")), FMath::DegreesToRadians(FovRangeVerticalPerCamera.Y - FovRangeVerticalPerCamera.X));
+
         SceneCaptures[i]->PostProcessSettings.AddBlendable(materialInstance, 1);
 
         if (bUseEnableFlags)
@@ -512,6 +547,33 @@ void ALidarBufferDepth::SetupComponents()
             DisableShowFlags(SceneCaptures[i]->ShowFlags);
         }
         SceneCaptures[i]->Activate();
+    }
+
+    if (bOutputExtraInfo)
+    {
+        auto extraMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), nullptr,
+            TEXT("/Script/Engine.Material'/WorldXShaders/Sensor/DepthBasedLidar/"
+                 "DepthMapEncodeExtra.DepthMapEncodeExtra'")));
+        for (int i = 0; i < SceneCaptureCount; i++)
+        {
+            ExtraSceneCaptures[i]->Deactivate();
+            ExtraSceneCaptures[i]->TextureTarget = ExtraRenderTargets[i].render_target;
+            ExtraSceneCaptures[i]->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+
+            auto extraMaterialInstance = UMaterialInstanceDynamic::Create(extraMaterial, actor);
+            MaterialInstanceDynamics.Add(extraMaterialInstance);
+            ExtraSceneCaptures[i]->PostProcessSettings.AddBlendable(extraMaterialInstance, 1);
+
+            if (bUseEnableFlags)
+            {
+                EnableShowFlags(ExtraSceneCaptures[i]->ShowFlags);
+            }
+            else
+            {
+                DisableShowFlags(ExtraSceneCaptures[i]->ShowFlags);
+            }
+            ExtraSceneCaptures[i]->Activate();
+        }
     }
 }
 
@@ -560,6 +622,15 @@ void ALidarBufferDepth::SetupBuffers()
             FRHITexture* RHITexture =
                 renderTargetInfo.render_target->GetRenderTargetResource()->GetRenderTargetTexture().GetReference();
             renderTargetInfo.pooled_target = CreateRenderTarget(RHITexture, *renderTargetInfo.debug_name);
+            if (bOutputExtraInfo)
+            {
+                auto& extraRenderTargetInfo = ExtraRenderTargets[i];
+                FRHITexture* RHITextureExtra = extraRenderTargetInfo.render_target->GetRenderTargetResource()
+                                                   ->GetRenderTargetTexture()
+                                                   .GetReference();
+                extraRenderTargetInfo.pooled_target =
+                    CreateRenderTarget(RHITextureExtra, *extraRenderTargetInfo.debug_name);
+            }
         }
         LidarReadbackDetectionCount = MakeShared<FRHIGPUBufferReadback>(TEXT("Lidar.Readback.DetectionCount"));
         LidarReadbackDetection = MakeShared<FRHIGPUBufferReadback>(TEXT("Lidar.Readback.Detection"));
@@ -586,6 +657,30 @@ void ALidarBufferDepth::AddLidarBasePass(FRDGBuilder& GraphBuilder, const int& C
     Parameters.RawHitBuffer = PassParams.RawLidarBufferUAV;
     Parameters.LaserNumPerScan = PassParams.LaserNumPerScanUAV;
     Parameters.InTexture = RenderTargetSRV;
+    Parameters.InTextureExtra = RenderTargetSRV;
+    Parameters.ImageSpaceLaserRays = PassParams.ImageSpaceLaserRaysSRV;
+    FDepthBasedLidarCSInstance::Get()->GraphBuilderDispatchLidar(GraphBuilder, Parameters);
+}
+
+void ALidarBufferDepth::AddLidarBasePassExtra(FRDGBuilder& GraphBuilder, const int& CameraIndex,
+    const FRDGTextureSRVRef& RenderTargetSRV, const FRDGTextureSRVRef& RenderTargetSRVExtra,
+    const FLidarPassParams& PassParams)
+{
+    double angle_in_rad = -FMath::DegreesToRadians(FovHorizonPerCamera);
+    float sin_h_fov = FMath::Sin(angle_in_rad * CameraIndex);
+    float cos_h_fov = FMath::Cos(angle_in_rad * CameraIndex);
+
+    FDepthBasedLidarCSInstance::FRawHitParameters Parameters;
+    Parameters.ChannelCount = Channels;
+    Parameters.HorizonCount = HorizonSampleCount;
+    Parameters.CameraIndex = CameraIndex;
+    Parameters.CosAzimuth = cos_h_fov;
+    Parameters.SinAzimuth = sin_h_fov;
+    Parameters.Range = Range;
+    Parameters.RawHitBuffer = PassParams.RawLidarBufferUAV;
+    Parameters.LaserNumPerScan = PassParams.LaserNumPerScanUAV;
+    Parameters.InTexture = RenderTargetSRV;
+    Parameters.InTextureExtra = RenderTargetSRVExtra;
     Parameters.ImageSpaceLaserRays = PassParams.ImageSpaceLaserRaysSRV;
     FDepthBasedLidarCSInstance::Get()->GraphBuilderDispatchLidar(GraphBuilder, Parameters);
 }

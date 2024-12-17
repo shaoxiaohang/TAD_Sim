@@ -57,6 +57,7 @@ void AVehicleManager::Init(const FManagerConfig& Config)
                 // }
                 // else
                 // {
+                NewVehicle->GetRootComponent()->SetVisibility(false,  true);
                 NewVehicle->ApplyCatalogOffset(GI->GetCatalogDataSource()->GetOffset(VehicleConfig.Name));
                 // }
             }
