@@ -2,6 +2,7 @@
 
 #include "TLidarSensor.h"
 
+#include "DepthCamera.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
@@ -15,7 +16,6 @@
 #include "TLidarBufferDepth.h"
 #include "TLidarBufferDepthOld.h"
 #include "TLidarBufferRaycast.h"
-#include "DepthCamera.h"
 #include "lidar/HSLidar.h"
 #include "lidar/LidarModel.h"
 
@@ -177,6 +177,7 @@ bool ATLidarSensor::CreateLasers()
         UE_LOG(LogTemp, Warning, TEXT("Create Lidar faild:%s"), *config.model);
         return false;
     }
+    lidarMd.set_extinctionCoe(config.ExtinctionCoe);
     lidarMd.set_extinctionCoe(config.ExtinctionCoe);
     if (config.Attenuation > 0)
     {
@@ -599,17 +600,10 @@ ISimActorInterface* ATLidarSensor::Install(const FSensorConfig& _Config)
     if (DepthLidar && SimActor)
     {
         AActor* Ego = Cast<AActor>(SimActor);
-        //if (Ego)
-       // {
-        //     auto& DepthCameras = DepthLidar->GetDepthCameraActors();
-        //     for (auto& DepthCamera : DepthCameras)
-        //     {
-        //         if (DepthCamera)
-        //         {
-        //             DepthCamera->IngoreActor(Ego);
-        //         }
-        //     }
-        // }
+        if (Ego)
+        {
+            DepthLidar->IgnoreActor(Ego);
+        }
     }
     return SimActor;
 }

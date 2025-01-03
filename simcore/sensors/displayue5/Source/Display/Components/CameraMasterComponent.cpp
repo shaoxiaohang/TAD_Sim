@@ -27,6 +27,7 @@ void UCameraMasterComponent::BeginPlay()
 void UCameraMasterComponent::SwitchCamera(FString _CameraName)
 {
     UCameraComponent** TarCameraPtr = cameraMap.Find(_CameraName);
+    UE_LOG(LogTemp, Log, TEXT("SwitchCamera: %s"), *_CameraName);
     if (TarCameraPtr && *TarCameraPtr)
     {
         // Set all camera disactive except target camera.
@@ -92,6 +93,7 @@ bool UCameraMasterComponent::RegisterCamera(FString _Name, UCameraComponent* _Ca
         return false;
     }
     cameraMap.Add(_Name, _Camera);
+    UE_LOG(LogTemp, Log, TEXT("RegisterCamera: %s"), *_Name);
     cameraNameOrderArry.Add(_Name);
     return true;
 }

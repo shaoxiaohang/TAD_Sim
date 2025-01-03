@@ -86,9 +86,11 @@ bool ALidarBufferDepth::Init(const FLidarConfig& _config, std::shared_ptr<lidar:
     FovRangeVerticalPerCamera.X -= 1;
     FovRangeVerticalPerCamera.Y += 1;
 
-    FovHorizonPerCamera = 360. / CameraCount;
+    MaxAzimuth = AzimuthRange.Y - AzimuthRange.X;
+
+    FovHorizonPerCamera = MaxAzimuth / CameraCount;
     HorizonSampleCount = ScanCount / CameraCount;
-    ImageWidthPerCamera = 360. / DegreeHorizonPerPixel / CameraCount;
+    ImageWidthPerCamera = MaxAzimuth / DegreeHorizonPerPixel / CameraCount;
     ImageHeightPerCamera = (FovRangeVerticalPerCamera.Y - FovRangeVerticalPerCamera.X) / DegreeVerticalPerPixel;
 
     UE_LOG(LogTemp, Log,
@@ -188,6 +190,24 @@ bool ALidarBufferDepth::ReadLidarData_RenderThreadSingleCaptureSVE(TSharedPtr<De
     FlushRenderingCommands();
 
     return true;
+}
+
+void ALidarBufferDepth::IgnoreActor(AActor* actor)
+{
+    if (actor)
+    {
+        for (auto& captureComponent : SceneCaptures)
+        {
+            captureComponent->HiddenActors.Add(actor);
+        }
+        if (bOutputExtraInfo)
+        {
+            for (auto& captureComponent : ExtraSceneCaptures)
+            {
+                captureComponent->HiddenActors.Add(actor);
+            }
+        }
+    }
 }
 
 void ALidarBufferDepth::FetchReadbackBuffer(TSharedPtr<DepthLidarBuffer> buffer)
@@ -324,7 +344,7 @@ void ALidarBufferDepth::PrepareParallelRays(std::shared_ptr<lidar::TraditionalLi
         float vertical_angle = yawpitch.second;
         float azimuth = AzimuthRange.X + ScanID * _LidarSensor->getHorizontalResolution();
         float horizontal_angle = azimuth + _LidarSensor->getHorizonOffset(LaserID);
-        horizontal_angle = FMath::Fmod(horizontal_angle + 360.0f, 360.0f);
+        horizontal_angle = FMath::Fmod(horizontal_angle + MaxAzimuth, MaxAzimuth);
         int CameraID = horizontal_angle / FovHorizonPerCamera;
 
         // if (LaserID == 0)

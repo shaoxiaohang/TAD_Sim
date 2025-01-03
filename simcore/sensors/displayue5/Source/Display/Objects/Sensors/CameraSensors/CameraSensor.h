@@ -1,12 +1,12 @@
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Objects/Sensors/SensorActor.h"
 #include "Camera/CameraTypes.h"
+#include "CoreMinimal.h"
 #include "Materials/Material.h"
+#include "Objects/Sensors/SensorActor.h"
 #include "Runtime/ImageWrapper/Public/IImageWrapper.h"
+#include "SharedMemoryWriter.h"
 #include "CameraSensor.generated.h"
-
 
 UENUM(BlueprintType)
 enum EParamTypeEnum
@@ -91,7 +91,6 @@ public:
     std::vector<uint8> buffer;
 };
 
-
 UCLASS(config = game)
 class DISPLAY_API ACameraSensor : public ASensorActor
 {
@@ -106,15 +105,15 @@ public:
 
     virtual ISimActorInterface* Install(const FSensorConfig& _Config);
 
-    void SetPostProcessSettings(const FCameraConfig& NewCameraSensorConfig, 
-        FPostProcessSettings& PostProcessSettings, float screen_scale = 1.0f);
-
+    void SetPostProcessSettings(const FCameraConfig& NewCameraSensorConfig, FPostProcessSettings& PostProcessSettings,
+        float screen_scale = 1.0f);
 
 protected:
+    void PostActorCreated() override;
+
     FString str_PostProcess;
 
 public:
-
     UMaterialInstanceDynamic* mid_CameraPostProcess;
 
     int id;
@@ -145,6 +144,8 @@ public:
     double lastTimeStamp = 0;
     double frequency = 10;
     bool public_msg = false;
+
+    TSharedPtr<class SharedMemoryWriter> sharedWriter;
 
     // cuda jpg
     TSharedPtr<class UTexJpeg> texJpg;

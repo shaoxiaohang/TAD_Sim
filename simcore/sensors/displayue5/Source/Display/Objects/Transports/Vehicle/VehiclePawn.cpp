@@ -118,16 +118,27 @@ void AVehiclePawn::Init(const FSimActorConfig& _Config)
             RuntimeMeshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("SOCKET_Lamp_HighBeam_L"));
         lamp_HighBeam_R->AttachToComponent(
             RuntimeMeshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("SOCKET_Lamp_HighBeam_R"));
-
-        camera_Driver->AttachToComponent(RuntimeMeshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-            TEXT("SOCKET_Camera_DriverView"));
-        camera_Roof->AttachToComponent(
-            RuntimeMeshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("SOCKET_Camera_RoofView"));
-        springArm_Free->AttachToComponent(
-            RuntimeMeshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("SOCKET_Camera_FreeView"));
-        springArm_Bird->AttachToComponent(
-            RuntimeMeshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT(""));    // žļšÎÖÐÐÄĩã
-        springArm_Bird->SetRelativeRotation(FRotator(-89.f, 0.f, 0.f));
+        // if (camera_Driver)
+        // {
+        //     camera_Driver->AttachToComponent(RuntimeMeshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+        //         TEXT("SOCKET_Camera_DriverView"));
+        // }
+        // if (camera_Roof)
+        // {
+        //     camera_Roof->AttachToComponent(RuntimeMeshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+        //         TEXT("SOCKET_Camera_RoofView"));
+        // }
+        // if (springArm_Free)
+        // {
+        //     springArm_Free->AttachToComponent(RuntimeMeshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+        //         TEXT("SOCKET_Camera_FreeView"));
+        // }
+        // if (springArm_Bird)
+        // {
+        //     springArm_Bird->AttachToComponent(
+        //         RuntimeMeshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT(""));    // žļšÎÖÐÐÄĩã
+        //     springArm_Bird->SetRelativeRotation(FRotator(-89.f, 0.f, 0.f));
+        // }
         meshComp->SetVisibility(false);
     }
     // check(basicInfoComp);

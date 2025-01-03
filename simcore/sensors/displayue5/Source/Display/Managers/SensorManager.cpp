@@ -4,6 +4,7 @@
 #include "Objects/Sensors/CameraSensors/CameraSensor.h"
 #include "Objects/Sensors/LidarSensors/TLidarSensor.h"
 #include "Objects/Sensors/SensorFactory.h"
+#include "Utils/ProtoUtil.h"
 
 DEFINE_LOG_CATEGORY_STATIC(SimLogSensorManager, Log, All);
 
@@ -64,8 +65,8 @@ void ASensorManager::Init(const FManagerConfig& Config)
     // Lidar
     for (auto& Elem : SensorConfig->lidarArry)
     {
-        ASensorActor* NewSensor = ASensorFactory::SpawnSensor<ATLidarSensor>(
-            GetWorld(), ATLidarSensor::StaticClass(), Elem);
+        ASensorActor* NewSensor =
+            ASensorFactory::SpawnSensor<ATLidarSensor>(GetWorld(), ATLidarSensor::StaticClass(), Elem);
 
         if (NewSensor)
         {
@@ -107,8 +108,8 @@ void ASensorManager::Init(const FManagerConfig& Config)
     // Camera
     for (auto& Elem : SensorConfig->cameraArry)
     {
-        ACameraSensor* CameraSensor = ASensorFactory::SpawnSensor<ACameraSensor>(
-            GetWorld(), ACameraSensor::StaticClass(), Elem);
+        ACameraSensor* CameraSensor =
+            ASensorFactory::SpawnSensor<ACameraSensor>(GetWorld(), ACameraSensor::StaticClass(), Elem);
         if (CameraSensor)
         {
             ISimActorInterface* InstalledSimActor = CameraSensor->Install(Elem);
@@ -237,10 +238,29 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
         UE_LOG(SimLogSensorManager, Log, TEXT("Find ego index %d, Id %ld"), FindEgoIndex, EgoId);
     }
 
-    UE_LOG(LogTemp, Log, TEXT("SensorManger: sensors count: %d."),
-        scene.egos(FindEgoIndex).sensor_group().sensors_size());
+    bool bUseCalibrationFile = false;
+    FString CalibrationPath;
+    GConfig->GetBool(TEXT("Sensor"), TEXT("bUseCalibrationFile"), bUseCalibrationFile, GGameIni);
+    if (bUseCalibrationFile)
+    {
+        GConfig->GetString(TEXT("Sensor"), TEXT("CalibrationPath"), CalibrationPath, GGameIni);
+    }
 
-    for (const auto& sensor : scene.egos(FindEgoIndex).sensor_group().sensors())
+    sim_msg::SensorGroup SensorGroup = scene.egos(FindEgoIndex).sensor_group();
+    if (!CalibrationPath.IsEmpty())
+    {
+        auto sensors = util::DecodeProtoFromTextFile<sim_msg::SensorGroup>(CalibrationPath);
+        if (sensors.has_value())
+        {
+            SensorGroup = *sensors;
+            UE_LOG(LogTemp, Log, TEXT("SensorManger: Use Sensor Calibration : %s"), *CalibrationPath);
+        }
+    }
+
+    UE_LOG(
+        LogTemp, Log, TEXT("SensorManger: sensors count: %d."), SensorGroup.sensors_size());
+
+    for (const auto& sensor : SensorGroup.sensors())
     {
         FSensorConfig Base;
         Base.device = ANSI_TO_TCHAR(sensor.extrinsic().device().c_str());
@@ -253,8 +273,7 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
         }
         if (Base.device != device)
         {
-            UE_LOG(LogTemp, Log, TEXT("SensorManger: config skip: deivce=%s, id=%d"), *Base.device,
-                Base.id);
+            UE_LOG(LogTemp, Log, TEXT("SensorManger: config skip: deivce=%s, id=%d"), *Base.device, Base.id);
             continue;
         }
         Base.id = sensor.extrinsic().id();
@@ -293,19 +312,16 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
             FString distortion_Parameters = TEXT("");
 
             // old
-            GetPropValue(Config, FString(TEXT("CCD_Width")), NewConfig.ccd_Width);          ////---
-            GetPropValue(Config, FString(TEXT("CCD_Height")), NewConfig.ccd_Height);        ////---
-            GetPropValue(Config, FString(TEXT("Focal_Length")), NewConfig.focal_Length);    ////---
-            GetPropValue(
-                Config, FString(TEXT("FOV_Horizontal")), NewConfig.fov_Horizontal);         ////---
-            GetPropValue(Config, FString(TEXT("FOV_Vertical")), NewConfig.fov_Vertical);    ////---
-            GetPropValue(
-                Config, FString(TEXT("Res_Horizontal")), NewConfig.res_Horizontal);         ////---
-            GetPropValue(Config, FString(TEXT("Res_Vertical")), NewConfig.res_Vertical);    ////---
+            GetPropValue(Config, FString(TEXT("CCD_Width")), NewConfig.ccd_Width);              ////---
+            GetPropValue(Config, FString(TEXT("CCD_Height")), NewConfig.ccd_Height);            ////---
+            GetPropValue(Config, FString(TEXT("Focal_Length")), NewConfig.focal_Length);        ////---
+            GetPropValue(Config, FString(TEXT("FOV_Horizontal")), NewConfig.fov_Horizontal);    ////---
+            GetPropValue(Config, FString(TEXT("FOV_Vertical")), NewConfig.fov_Vertical);        ////---
+            GetPropValue(Config, FString(TEXT("Res_Horizontal")), NewConfig.res_Horizontal);    ////---
+            GetPropValue(Config, FString(TEXT("Res_Vertical")), NewConfig.res_Vertical);        ////---
             GetPropValue(Config, FString(TEXT("IntrinsicParamType")), NewConfig.paraType);
-            GetPropValue(Config, FString(TEXT("Intrinsic_Matrix")), Intrinsic_Matrix);    ////---
-            GetPropValue(
-                Config, FString(TEXT("Distortion_Parameters")), distortion_Parameters);    /////----
+            GetPropValue(Config, FString(TEXT("Intrinsic_Matrix")), Intrinsic_Matrix);              ////---
+            GetPropValue(Config, FString(TEXT("Distortion_Parameters")), distortion_Parameters);    /////----
             GetPropValue(Config, FString(TEXT("Blur_Intensity")), NewConfig.blur_Intensity);
             GetPropValue(Config, FString(TEXT("MotionBlur_Amount")), NewConfig.motionBlur_Amount);
             GetPropValue(Config, FString(TEXT("Noise_Intensity")), NewConfig.noise_Intensity);
@@ -348,8 +364,7 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
 
             if (!Intrinsic_Matrix.IsEmpty())
             {
-                Intrinsic_Matrix =
-                    Intrinsic_Matrix.Replace(*FString(" "), *FString(""));    // Remove space
+                Intrinsic_Matrix = Intrinsic_Matrix.Replace(*FString(" "), *FString(""));    // Remove space
                 FString LeftStr;
                 FString RightStr;
                 while (Intrinsic_Matrix.Split(",", &LeftStr, &RightStr))
@@ -361,8 +376,7 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
             }
             if (!distortion_Parameters.IsEmpty())
             {
-                distortion_Parameters =
-                    distortion_Parameters.Replace(*FString(" "), *FString(""));    // Remove space
+                distortion_Parameters = distortion_Parameters.Replace(*FString(" "), *FString(""));    // Remove space
                 FString LeftStr;
                 FString RightStr;
                 while (distortion_Parameters.Split(",", &LeftStr, &RightStr))
@@ -392,8 +406,7 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
             GetPropValue(Config, FString(TEXT("Model")), NewConfig.model);
             GetPropValue(Config, FString(TEXT("uChannels")), NewConfig.channels);
             GetPropValue(Config, FString(TEXT("uRange")), NewConfig.range);
-            GetPropValue(
-                Config, FString(TEXT("uHorizontalResolution")), NewConfig.horizontalResolution);
+            GetPropValue(Config, FString(TEXT("uHorizontalResolution")), NewConfig.horizontalResolution);
             GetPropValue(Config, FString(TEXT("uUpperFov")), NewConfig.upperFovLimit);
             GetPropValue(Config, FString(TEXT("uLowerFov")), NewConfig.lowerFovLimit);
             GetPropValue(Config, FString(TEXT("DrawPoint")), NewConfig.bDrawPoint);
@@ -422,8 +435,8 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
             FString savestring;
             GConfig->GetString(TEXT("Sensor"), TEXT("LidarSaved"), savestring, GGameIni);
             if (!BaseSavePath.IsEmpty() && savestring == TEXT("true"))
-                NewConfig.savePath = BaseSavePath + TEXT("LidarhData/") + TEXT("Lidar_") +
-                                     FString::FromInt(NewConfig.id) + TEXT("/");
+                NewConfig.savePath =
+                    BaseSavePath + TEXT("LidarhData/") + TEXT("Lidar_") + FString::FromInt(NewConfig.id) + TEXT("/");
             SensormanagerConfig.lidarArry.Add(NewConfig);
         }
     }
@@ -431,8 +444,7 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
     return SensormanagerConfig;
 }
 
-void ASensorManager::CoordinateTransform_RightHandToLeftHand(
-    FVector& _Location, FRotator& _Rotation)
+void ASensorManager::CoordinateTransform_RightHandToLeftHand(FVector& _Location, FRotator& _Rotation)
 {
     _Location.Y = _Location.Y * (-1.f);
     _Rotation.Pitch = _Rotation.Pitch * (-1.f);

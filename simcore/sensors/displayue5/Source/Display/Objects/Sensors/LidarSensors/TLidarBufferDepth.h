@@ -69,6 +69,8 @@ public:
 
     void SetupBuffers();
 
+    void IgnoreActor(AActor* actor);
+
     struct FImageSpaceLaserRay
     {
         FVector3f direction;
@@ -141,6 +143,8 @@ private:
 
 private:
     FVector2f AzimuthRange;
+
+    float MaxAzimuth = 0.0f;
 
     int ScanCount = 0;
     unsigned int ScanSequenceCount;

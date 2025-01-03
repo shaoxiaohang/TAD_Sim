@@ -401,7 +401,7 @@ lidar::ReturnMode HSLidar128::getReturnMode() const
 
 void HSLidar128::setRotationFrequency(float rf)
 {
-    _horizontal_resolution = 0.01f * rf;    // 0.2/10
+    _horizontal_resolution = 0.02f * rf;    // 0.2/10
     _pt_data->set_frequency(rf);
 }
 

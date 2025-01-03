@@ -49,6 +49,7 @@ public:
     bool init(const std::string& key, const int microsecond = 0);
     bool reset();
     bool write(const std::vector<uint8_t>& buffer, const int64_t timestamp);
+    bool write(const TArray64<uint8_t>& buffer, const int64_t timestamp);
     bool remove();
 
 private:

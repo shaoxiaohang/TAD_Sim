@@ -1,25 +1,26 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TransportPawn.h"
-#include "Display/Components/BasicInfoComp.h"
+
+#include "Camera/CameraComponent.h"
+#include "Components/CameraMasterComponent.h"
+#include "Components/InputComponent.h"
+#include "Components/LightMasterComp.h"
+#include "Components/MannedControlComponent.h"
+#include "Components/RectLightComponent.h"
 #include "Components/SimMoveComponent.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Components/LightMasterComp.h"
-#include "Components/CameraMasterComponent.h"
-#include "Camera/CameraComponent.h"
-#include "Components/InputComponent.h"
-#include "GameFramework/SpringArmComponent.h"
-#include "GameFramework/PlayerController.h"
+#include "Components/SplineComponent.h"
+#include "Components/SpotLightComponent.h"
+#include "Components/TrajectoryComponent.h"
+#include "Display/Components/BasicInfoComp.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/SkeletalMeshSocket.h"
-#include "Components/SpotLightComponent.h"
-#include "Components/RectLightComponent.h"
-#include "Materials/MaterialInstanceDynamic.h"
 #include "Framework/DisplayPlayerController.h"
-#include "Components/MannedControlComponent.h"
+#include "GameFramework/PlayerController.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Components/TrajectoryComponent.h"
-#include "Components/SplineComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 // Sets default values
 ATransportPawn::ATransportPawn()
@@ -39,7 +40,7 @@ ATransportPawn::ATransportPawn()
     meshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     meshComp->SetCollisionProfileName(FName(TEXT("SimVehicle")));
 
-    //lightMasterComp = CreateDefaultSubobject<ULightMasterComp>(FName(TEXT("LightMaster")));
+    // lightMasterComp = CreateDefaultSubobject<ULightMasterComp>(FName(TEXT("LightMaster")));
 
     cameraMasterComp = CreateDefaultSubobject<UCameraMasterComponent>(FName(TEXT("CameraMaster")));
 
@@ -54,23 +55,20 @@ ATransportPawn::ATransportPawn()
     camera_BirdView = CreateDefaultSubobject<UCameraComponent>(FName(TEXT("Camera_BirdView")));
     camera_BirdView->SetupAttachment(springArm_Bird);
 
-    camera_Driver = CreateDefaultSubobject<UCameraComponent>(FName(TEXT("Camera_Driver")));
-    camera_Driver->SetupAttachment(meshComp, TEXT("DriverView"));
+    // camera_Driver = CreateDefaultSubobject<UCameraComponent>(FName(TEXT("Camera_Driver")));
+    // camera_Driver->SetupAttachment(meshComp, TEXT("DriverView"));
 
-    camera_Roof = CreateDefaultSubobject<UCameraComponent>(FName(TEXT("Camera_Roof")));
-    camera_Roof->SetupAttachment(meshComp, TEXT("RoofView"));
+    // camera_Roof = CreateDefaultSubobject<UCameraComponent>(FName(TEXT("Camera_Roof")));
+    // camera_Roof->SetupAttachment(meshComp, TEXT("RoofView"));
 
-    springArm_Free = CreateDefaultSubobject<USpringArmComponent>(FName(TEXT("SpringArm_Free")));
-    // FAttachmentTransformRules AttachRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld,
-    // EAttachmentRule::KeepWorld, false); springArm_Free->AttachToComponent(meshComp,
-    // AttachRules)/*->SetupAttachment(meshComp, TEXT("FreeView"))*/;
-    springArm_Free->SetupAttachment(meshComp, TEXT("FreeView"));
-    springArm_Free->TargetArmLength = 500;
-    springArm_Free->bDoCollisionTest = false;
-    springArm_Free->ProbeChannel = ECollisionChannel::ECC_GameTraceChannel2;
+    // springArm_Free = CreateDefaultSubobject<USpringArmComponent>(FName(TEXT("SpringArm_Free")));
+    // springArm_Free->SetupAttachment(meshComp, TEXT("FreeView"));
+    // springArm_Free->TargetArmLength = 500;
+    // springArm_Free->bDoCollisionTest = false;
+    // springArm_Free->ProbeChannel = ECollisionChannel::ECC_GameTraceChannel2;
 
-    camera_Free = CreateDefaultSubobject<UCameraComponent>(FName(TEXT("Camera_Free")));
-    camera_Free->SetupAttachment(springArm_Free);
+    // camera_Free = CreateDefaultSubobject<UCameraComponent>(FName(TEXT("Camera_Free")));
+    // camera_Free->SetupAttachment(springArm_Free);
 
     mannedControlComponent = CreateDefaultSubobject<UMannedControlComponent>(FName(TEXT("MannedControl")));
 
@@ -236,53 +234,53 @@ void ATransportPawn::BeginPlay()
 {
     Super::BeginPlay();
 
-    camera_Driver->SetConstraintAspectRatio(bConstrainAspectRatio_CameraDriver);
-    camera_Driver->SetAspectRatio(aspectRatio_CameraDriver);
-    camera_Driver->AddRelativeLocation(offset_CameraDriver);
-    camera_Driver->SetFieldOfView(fov_CameraDriver);
+    // camera_Driver->SetConstraintAspectRatio(bConstrainAspectRatio_CameraDriver);
+    // camera_Driver->SetAspectRatio(aspectRatio_CameraDriver);
+    // camera_Driver->AddRelativeLocation(offset_CameraDriver);
+    // camera_Driver->SetFieldOfView(fov_CameraDriver);
 
-    springArm_Free->TargetArmLength = spring_length;
-    springArm_Free->SetRelativeRotation(spring_rotator);
+    // springArm_Free->TargetArmLength = spring_length;
+    // springArm_Free->SetRelativeRotation(spring_rotator);
 }
 
 void ATransportPawn::BeginRotateView()
 {
-    if (camera_Free && cameraMasterComp->GetCurrentCamera() == camera_Free)
-    {
-        bActiveRotateView = true;
-    }
+    // if (camera_Free && cameraMasterComp->GetCurrentCamera() == camera_Free)
+    // {
+    //     bActiveRotateView = true;
+    // }
 }
 
 void ATransportPawn::EndRotateView()
 {
-    if (camera_Free && cameraMasterComp->GetCurrentCamera() == camera_Free)
-    {
-        bActiveRotateView = false;
-    }
+    // if (camera_Free && cameraMasterComp->GetCurrentCamera() == camera_Free)
+    // {
+    //     bActiveRotateView = false;
+    // }
 }
 
 void ATransportPawn::ZoomIn()
 {
-    if (camera_Free && cameraMasterComp->GetCurrentCamera() == camera_Free)
-    {
-        springArm_Free->TargetArmLength -= 10;
-    }
-    else if (camera_BirdView && cameraMasterComp->GetCurrentCamera() == camera_BirdView)
-    {
-        springArm_Bird->TargetArmLength -= 30;
-    }
+    // if (camera_Free && cameraMasterComp->GetCurrentCamera() == camera_Free)
+    // {
+    //     springArm_Free->TargetArmLength -= 10;
+    // }
+    // else if (camera_BirdView && cameraMasterComp->GetCurrentCamera() == camera_BirdView)
+    // {
+    //     springArm_Bird->TargetArmLength -= 30;
+    // }
 }
 
 void ATransportPawn::ZoomOut()
 {
-    if (camera_Free && cameraMasterComp->GetCurrentCamera() == camera_Free)
-    {
-        springArm_Free->TargetArmLength += 10;
-    }
-    else if (camera_BirdView && cameraMasterComp->GetCurrentCamera() == camera_BirdView)
-    {
-        springArm_Bird->TargetArmLength += 30;
-    }
+    // if (camera_Free && cameraMasterComp->GetCurrentCamera() == camera_Free)
+    // {
+    //     springArm_Free->TargetArmLength += 10;
+    // }
+    // else if (camera_BirdView && cameraMasterComp->GetCurrentCamera() == camera_BirdView)
+    // {
+    //     springArm_Bird->TargetArmLength += 30;
+    // }
 }
 
 void ATransportPawn::SetupCameras()
@@ -294,26 +292,27 @@ void ATransportPawn::SetupCameras()
         // TEXT("BirdView"));
         cameraMasterComp->RegisterCamera(TEXT("Camera_BirdView"), camera_BirdView);
     }
-    if (camera_Driver)
-    {
-        // camera_Driver->AttachToComponent(meshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-        // TEXT("DriverView"));
-        cameraMasterComp->RegisterCamera(TEXT("Camera_Driver"), camera_Driver);
-    }
-    if (camera_Roof)
-    {
-        // camera_Roof->AttachToComponent(meshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-        // TEXT("RoofView"));
-        cameraMasterComp->RegisterCamera(TEXT("Camera_Roof"), camera_Roof);
-    }
-    if (camera_Free && springArm_Free)
-    {
-        // springArm_Free->AttachToComponent(meshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-        // TEXT("FreeView")); camera_Free->AttachToComponent(springArm_Free,
-        // FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+    // if (camera_Driver)
+    // {
+    //     // camera_Driver->AttachToComponent(meshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+    //     // TEXT("DriverView"));
+    //     UE_LOG(LogTemp, Log, TEXT("add camera_Driver"));
+    //     cameraMasterComp->RegisterCamera(TEXT("Camera_Driver"), camera_Driver);
+    // }
+    // if (camera_Roof)
+    // {
+    //     // camera_Roof->AttachToComponent(meshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+    //     // TEXT("RoofView"));
+    //     cameraMasterComp->RegisterCamera(TEXT("Camera_Roof"), camera_Roof);
+    // }
+    // if (camera_Free && springArm_Free)
+    // {
+    //     // springArm_Free->AttachToComponent(meshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+    //     // TEXT("FreeView")); camera_Free->AttachToComponent(springArm_Free,
+    //     // FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
-        cameraMasterComp->RegisterCamera(TEXT("Camera_Free"), camera_Free);
-    }
+    //     cameraMasterComp->RegisterCamera(TEXT("Camera_Free"), camera_Free);
+    // }
 }
 
 void ATransportPawn::SetupLights()
@@ -326,16 +325,16 @@ void ATransportPawn::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 
     // Update camera with spring arm
-    if (bActiveRotateView)
-    {
-        FRotator SpringArmRot = springArm_Free->GetRelativeTransform().Rotator();
-        FVector2D MouseInputDelta;
-        APlayerController* PC = GetWorld()->GetFirstPlayerController();
-        PC->GetInputMouseDelta(MouseInputDelta.X, MouseInputDelta.Y);
-        SpringArmRot += FRotator(MouseInputDelta.Y, MouseInputDelta.X, 0);
-        SpringArmRot.Pitch = FMath::Clamp(SpringArmRot.Pitch, -89.f, 89.f);
-        springArm_Free->SetRelativeRotation(SpringArmRot);
-    }
+    // if (bActiveRotateView)
+    // {
+    //     FRotator SpringArmRot = springArm_Free->GetRelativeTransform().Rotator();
+    //     FVector2D MouseInputDelta;
+    //     APlayerController* PC = GetWorld()->GetFirstPlayerController();
+    //     PC->GetInputMouseDelta(MouseInputDelta.X, MouseInputDelta.Y);
+    //     SpringArmRot += FRotator(MouseInputDelta.Y, MouseInputDelta.X, 0);
+    //     SpringArmRot.Pitch = FMath::Clamp(SpringArmRot.Pitch, -89.f, 89.f);
+    //     springArm_Free->SetRelativeRotation(SpringArmRot);
+    // }
 
     // // Update lights
     // int32 Hour =
@@ -430,7 +429,7 @@ void ATransportPawn::OnConstruction(const FTransform& Transform)
     // TArray<FString> HighBeamGroup = { TEXT("Lamp_HighBeam_L") ,TEXT("Lamp_HighBeam_R") };
     // lightMasterComp->GroupLamp(TEXT("Lamp_HighBeam"), HighBeamGroup);
     ////lightMasterComp->CreateLampWithLightComponent<USpotLightComponent>(TEXT("Lamp_LowBeam_R"), TEXT("Mat_carlight"),
-    ///TEXT("Lamp_LowBeam"), TEXT("Lamp_HighBeam_R"), meshComp);
+    /// TEXT("Lamp_LowBeam"), TEXT("Lamp_HighBeam_R"), meshComp);
     // lightMasterComp->CreateLamp(TEXT("Lamp_Stop"), TEXT("Mat_carlight"), TEXT("Lamp_Stop"), meshComp);
     // lightMasterComp->CreateLamp(TEXT("Lamp_Backup"), TEXT("Mat_carlight"), TEXT("Lamp_Backup"), meshComp);
     // lightMasterComp->CreateLamp(TEXT("Lamp_Clearance"), TEXT("Mat_carlight"), TEXT("Lamp_Clearance"), meshComp);

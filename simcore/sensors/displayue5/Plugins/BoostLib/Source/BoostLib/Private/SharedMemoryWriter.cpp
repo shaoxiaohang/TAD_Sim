@@ -136,6 +136,54 @@ bool SharedMemoryWriter::write(const std::vector<uint8_t>& buffer, const int64_t
     return true;
 }
 
+bool SharedMemoryWriter::write(const TArray64<uint8_t>& buffer,  const int64_t timestamp)
+{
+    using namespace boost::interprocess;
+    //using namespace boost::posix_time;
+
+    try
+    {
+        if (!shared_segment_->ptr_)
+        // while (!shared_segment_->mtx_->timed_lock(microsec_clock::universal_time() +
+        // microseconds(max_lock_wait_microsecond_)))
+        {
+            // printf("SharedMemeory icannot get lock,remove lock\n");
+            if (!reset())
+            {
+                printf("SharedMemory write init failed\n");
+                return false;
+            }
+        }
+
+        if (shared_segment_->ptr_)
+        {
+            int sz = buffer.Num();
+            int ptr_sz = sizeof(int) + sizeof(int64_t) + sizeof(int) + sz + 1024;
+            if (shared_segment_->ptr_->size() < ptr_sz)
+            {
+                shared_segment_->ptr_->resize(ptr_sz);
+            }
+            char* buf = shared_segment_->ptr_->data();
+            memcpy(buf, &kMagicNumber_, sizeof(int));
+            buf += sizeof(int);
+            memcpy(buf, &timestamp, sizeof(int64_t));
+            buf += sizeof(int64_t);
+            memcpy(buf, &sz, sizeof(int));
+            buf += sizeof(int);
+            memcpy(buf, buffer.GetData(), sz);
+            // shared_segment_->mtx_->unlock();
+        }
+    }
+    catch (...)
+    {
+        printf("SharedMemory write failed\n");
+        // shared_segment_->mtx_->unlock();
+        return false;
+    }
+
+    return true;
+}
+
 bool SharedMemoryWriter::remove()
 {
     // if (shared_segment_)

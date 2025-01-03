@@ -85,14 +85,14 @@ protected:
     // Camera for view
     UPROPERTY(VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
     class UCameraComponent* camera_BirdView = NULL;
-    UPROPERTY(VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
-    class UCameraComponent* camera_Driver = NULL;
-    UPROPERTY(VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
-    class UCameraComponent* camera_Roof = NULL;
-    UPROPERTY(VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
-    class UCameraComponent* camera_Free = NULL;
-    UPROPERTY(VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
-    class USpringArmComponent* springArm_Free = NULL;
+    // UPROPERTY(VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
+    // class UCameraComponent* camera_Driver = NULL;
+    // UPROPERTY(VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
+    // class UCameraComponent* camera_Roof = NULL;
+    // UPROPERTY(VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
+    // class UCameraComponent* camera_Free = NULL;
+    // UPROPERTY(VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
+    // class USpringArmComponent* springArm_Free = NULL;
     UPROPERTY(VisibleDefaultsOnly, meta = (AllowPrivateAccess = "true"))
     class USpringArmComponent* springArm_Bird = NULL;
 
