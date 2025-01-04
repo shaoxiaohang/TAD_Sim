@@ -255,7 +255,7 @@ public:
 
     virtual FVector2f getAzimuthRange()
     {
-        return FVector2f(0, 120.0f);
+        return FVector2f(-60.0f, 60.0f);
     }
 
 protected:

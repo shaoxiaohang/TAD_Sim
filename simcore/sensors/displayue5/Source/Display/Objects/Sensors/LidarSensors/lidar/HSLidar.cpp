@@ -56,8 +56,7 @@ void utm_time::set_us(uint8_t* data) const
 
 std::pair<float, float> HSLidar::getYawPitchAngle(uint32_t pos, uint32_t r) const
 {
-    return std::make_pair(
-        getHorizontalScanAngle(pos) + _horizontal_angles.at(r), _vertical_angles.at(r));
+    return std::make_pair(getHorizontalScanAngle(pos) + _horizontal_angles.at(r), _vertical_angles.at(r));
 }
 float HSLidar::getLaserRadius() const
 {
@@ -106,8 +105,7 @@ bool HSLidar::setAngleFromString(const FString& str)
             _horizontal_angles.push_back(0);
     }
     // Verify that both vectors have equal length
-    if (getRaysNum() > 0 &&
-        (_vertical_angles.size() != getRaysNum() || _horizontal_angles.size() != getRaysNum()))
+    if (getRaysNum() > 0 && (_vertical_angles.size() != getRaysNum() || _horizontal_angles.size() != getRaysNum()))
     {
         UE_LOG(LogTemp, Warning, TEXT("lidar %d: Error in angle str."), GetID());
         _vertical_angles.clear();
@@ -156,8 +154,7 @@ utm_time HSLidar::to_utime(std::time_t t) const
     return ut;
 }
 
-bool HSLidar::readini(
-    const std::string& ini, std::map<std::string, std::map<std::string, std::string>>& data)
+bool HSLidar::readini(const std::string& ini, std::map<std::string, std::map<std::string, std::string>>& data)
 {
     using namespace std;
     ifstream in_conf_file(ini);
@@ -182,8 +179,7 @@ bool HSLidar::readini(
         string str_key = "";
         string str_value = "";
         // Find the start of a new section or key value pair
-        if ((str_line.npos != (left_pos = str_line.find("["))) &&
-            (str_line.npos != (right_pos = str_line.find("]"))))
+        if ((str_line.npos != (left_pos = str_line.find("["))) && (str_line.npos != (right_pos = str_line.find("]"))))
         {
             // If we have reached the end of this section, insert it into our tree structure
             if (!node.empty() && !str_root.empty())
@@ -224,8 +220,7 @@ bool HSLidar::readini(
 }
 
 // 分割字符串
-void HSLidar::split_string(
-    const std::string& s, const std::string& delim, std::vector<std::string>& ret)
+void HSLidar::split_string(const std::string& s, const std::string& delim, std::vector<std::string>& ret)
 {
     ret.clear();
     size_t last = 0;
@@ -577,7 +572,7 @@ bool HSLidar128::Init()
 utm_time HSLidar128::to_utime(std::time_t t) const
 {
     utm_time ut;
-    ut.us = (uint32_t) (t % 1000000);
+    ut.us = (uint32_t)(t % 1000000);
     std::time_t unixTimestamp = t / 1000000;
     tm* ptm = std::localtime(&unixTimestamp);
     if (ptm)
@@ -661,7 +656,6 @@ uint32_t HSLidar128::getHorizontalScanMinUnit() const
     return point_data128::BLOCKS_PER_PACKAGE;
 }
 
-
 point_data128at::point_data128at()
 {
     memset(_data, 0, PTS_TOTAL_SIZE);
@@ -712,8 +706,7 @@ void point_data128at::set_block_azimuth(uint8_t bn, uint16_t azimuth1, uint8_t a
     data[2] = azimuth2;
 }
 
-void point_data128at::set_channel_data(
-    uint8_t bn, uint8_t cn, uint16_t distance, uint8_t reflectivity)
+void point_data128at::set_channel_data(uint8_t bn, uint8_t cn, uint16_t distance, uint8_t reflectivity)
 {
     assert(bn < BLOCKS_PER_PACKAGE);
     assert(cn < CHANNELS_PER_BLOCK);
@@ -922,39 +915,31 @@ bool HSLidar128AT::loadInterReference(const std::string& dir)
                     auto frame_num = m_PandarAT_corrections.header.frame_number;
                     auto channel_num = m_PandarAT_corrections.header.channel_number;
                     p += sizeof(PandarATCorrectionsHeader);
-                    memcpy((void*) &m_PandarAT_corrections.frame3.start_frame, p,
-                        sizeof(uint16_t) * frame_num);
+                    memcpy((void*) &m_PandarAT_corrections.frame3.start_frame, p, sizeof(uint16_t) * frame_num);
                     p += sizeof(uint16_t) * frame_num;
-                    memcpy((void*) &m_PandarAT_corrections.frame3.end_frame, p,
-                        sizeof(uint16_t) * frame_num);
+                    memcpy((void*) &m_PandarAT_corrections.frame3.end_frame, p, sizeof(uint16_t) * frame_num);
                     p += sizeof(uint16_t) * frame_num;
 
-                    memcpy((void*) &m_PandarAT_corrections.frame3.azimuth, p,
-                        sizeof(int16_t) * channel_num);
+                    memcpy((void*) &m_PandarAT_corrections.frame3.azimuth, p, sizeof(int16_t) * channel_num);
                     p += sizeof(int16_t) * channel_num;
-                    memcpy((void*) &m_PandarAT_corrections.frame3.elevation, p,
-                        sizeof(int16_t) * channel_num);
+                    memcpy((void*) &m_PandarAT_corrections.frame3.elevation, p, sizeof(int16_t) * channel_num);
                     p += sizeof(int16_t) * channel_num;
-                    memcpy((void*) &m_PandarAT_corrections.frame3.azimuth_offset, p,
-                        sizeof(int8_t) * 36000);
+                    memcpy((void*) &m_PandarAT_corrections.frame3.azimuth_offset, p, sizeof(int8_t) * 36000);
                     p += sizeof(int8_t) * 36000;
-                    memcpy((void*) &m_PandarAT_corrections.frame3.elevation_offset, p,
-                        sizeof(int8_t) * 36000);
+                    memcpy((void*) &m_PandarAT_corrections.frame3.elevation_offset, p, sizeof(int8_t) * 36000);
                     p += sizeof(int8_t) * 36000;
                     memcpy((void*) &m_PandarAT_corrections.SHA256, p, sizeof(uint8_t) * 32);
                     p += sizeof(uint8_t) * 32;
 
                     for (int i = 0; i < 128; i++)
                     {
-                        m_PandarAT_corrections.azimuth[i] =
-                            (double) m_PandarAT_corrections.frame3.azimuth[i] * 0.01;
+                        m_PandarAT_corrections.azimuth[i] = (double) m_PandarAT_corrections.frame3.azimuth[i] * 0.01;
                         m_PandarAT_corrections.elevation[i] =
                             (double) m_PandarAT_corrections.frame3.elevation[i] * 0.01;
                     }
                     for (int i = 0; i < 3; i++)
                     {
-                        m_PandarAT_corrections.start_frame[i] =
-                            m_PandarAT_corrections.frame3.start_frame[i] * 0.01f;
+                        m_PandarAT_corrections.start_frame[i] = m_PandarAT_corrections.frame3.start_frame[i] * 0.01f;
                     }
                 }
                 break;
@@ -964,17 +949,13 @@ bool HSLidar128AT::loadInterReference(const std::string& dir)
                     auto frame_num = m_PandarAT_corrections.header.frame_number;
                     auto channel_num = m_PandarAT_corrections.header.channel_number;
                     p += sizeof(PandarATCorrectionsHeader);
-                    memcpy((void*) &m_PandarAT_corrections.frame5.start_frame, p,
-                        sizeof(uint32_t) * frame_num);
+                    memcpy((void*) &m_PandarAT_corrections.frame5.start_frame, p, sizeof(uint32_t) * frame_num);
                     p += sizeof(uint32_t) * frame_num;
-                    memcpy((void*) &m_PandarAT_corrections.frame5.end_frame, p,
-                        sizeof(uint32_t) * frame_num);
+                    memcpy((void*) &m_PandarAT_corrections.frame5.end_frame, p, sizeof(uint32_t) * frame_num);
                     p += sizeof(uint32_t) * frame_num;
-                    memcpy((void*) &m_PandarAT_corrections.frame5.azimuth, p,
-                        sizeof(int32_t) * channel_num);
+                    memcpy((void*) &m_PandarAT_corrections.frame5.azimuth, p, sizeof(int32_t) * channel_num);
                     p += sizeof(int32_t) * channel_num;
-                    memcpy((void*) &m_PandarAT_corrections.frame5.elevation, p,
-                        sizeof(int32_t) * channel_num);
+                    memcpy((void*) &m_PandarAT_corrections.frame5.elevation, p, sizeof(int32_t) * channel_num);
                     p += sizeof(int32_t) * channel_num;
                     auto adjust_length = channel_num * 180;
                     // memcpy((void*)&m_PandarAT_corrections.frame5.azimuth_offset, p,
@@ -1001,18 +982,16 @@ bool HSLidar128AT::loadInterReference(const std::string& dir)
                     }
                     for (int i = 0; i < 128; i++)
                     {
-                        m_PandarAT_corrections.azimuth[i] =
-                            (double) m_PandarAT_corrections.frame5.azimuth[i] *
-                            m_PandarAT_corrections.header.resolution / 25600.0;
-                        m_PandarAT_corrections.elevation[i] =
-                            (double) m_PandarAT_corrections.frame5.elevation[i] *
-                            m_PandarAT_corrections.header.resolution / 25600.0;
+                        m_PandarAT_corrections.azimuth[i] = (double) m_PandarAT_corrections.frame5.azimuth[i] *
+                                                            m_PandarAT_corrections.header.resolution / 25600.0;
+                        m_PandarAT_corrections.elevation[i] = (double) m_PandarAT_corrections.frame5.elevation[i] *
+                                                              m_PandarAT_corrections.header.resolution / 25600.0;
                     }
                     for (int i = 0; i < 3; i++)
                     {
-                        m_PandarAT_corrections.start_frame[i] =
-                            (double) m_PandarAT_corrections.frame5.start_frame[i] *
-                            (double) m_PandarAT_corrections.header.resolution / 25600.0;
+                        m_PandarAT_corrections.start_frame[i] = (double) m_PandarAT_corrections.frame5.start_frame[i] *
+                                                                (double) m_PandarAT_corrections.header.resolution /
+                                                                25600.0;
                     }
                 }
                 break;
@@ -1035,11 +1014,15 @@ bool HSLidar128AT::loadInterReference(const std::string& dir)
         for (uint32_t j = 0; j < getRaysNum(); j++)
         {
             int aid = std::max(0, std::min(180, (int) (getHorizontalScanAngle(i) * 0.5 + 45.f)));
-            _horizontal_angles.push_back(getHorizontalScanAngle(i) -
-                                         m_PandarAT_corrections.azimuth[j] +
+            _horizontal_angles.push_back(getHorizontalScanAngle(i) - m_PandarAT_corrections.azimuth[j] +
                                          m_PandarAT_corrections.azimuth_offset[j * 180 + aid]);
-            _vertical_angles.push_back(m_PandarAT_corrections.elevation[j] +
-                                       m_PandarAT_corrections.elevation_offset[j * 180 + aid]);
+            _vertical_angles.push_back(
+                m_PandarAT_corrections.elevation[j] + m_PandarAT_corrections.elevation_offset[j * 180 + aid]);
+            // if (j == 0)
+            // {
+            //     UE_LOG(LogTemp, Log, TEXT("horizontal_angle: %f vertical_angle: %f"), _horizontal_angles.back(),
+            //         _vertical_angles.back());
+            // }
         }
     }
 
@@ -1096,8 +1079,7 @@ float HSLidar128AT::getHorizontalScanAngle(uint32_t pos) const
 
 std::pair<float, float> HSLidar128AT::getYawPitchAngle(uint32_t pos, uint32_t r) const
 {
-    return std::make_pair(
-        _horizontal_angles.at(pos * getRaysNum() + r), _vertical_angles.at(pos * getRaysNum() + r));
+    return std::make_pair(_horizontal_angles.at(pos * getRaysNum() + r), _vertical_angles.at(pos * getRaysNum() + r));
 }
 
 }    // namespace hslidar
