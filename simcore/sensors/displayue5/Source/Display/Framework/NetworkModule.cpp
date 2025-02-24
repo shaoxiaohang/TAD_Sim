@@ -22,7 +22,7 @@ void NetworkModule::Init(tx_sim::InitHelper& helper)
     GConfig->GetString(TEXT("MessageTopic"), TEXT("Traffic"), TrafficTopic, GGameIni);
     GConfig->GetString(TEXT("MessageTopic"), TEXT("Location"), LocationTopic, GGameIni);
 
-    //UE_LOG(SimLogNet, Log, TEXT("TRAFFIC %s "), *TrafficTopic);
+    // UE_LOG(SimLogNet, Log, TEXT("TRAFFIC %s "), *TrafficTopic);
 
     helper.Subscribe(TCHAR_TO_ANSI(*TrafficTopic));
 
@@ -90,18 +90,28 @@ void NetworkModule::Reset(tx_sim::ResetHelper& helper)
         NewInPtr->startLat = StartLoc.position().y();
         NewInPtr->startAlt = StartLoc.position().z();
         NewInPtr->startSpeed =
-            FVector(StartLoc.velocity().x(), StartLoc.velocity().y(), StartLoc.velocity().z())
-                .Size();
+            FVector(StartLoc.velocity().x(), StartLoc.velocity().y(), StartLoc.velocity().z()).Size();
         NewInPtr->startTheta = StartLoc.rpy().z();
+        UE_LOG(SimLogNet, Log, TEXT("start yaw is %f"), NewInPtr->startTheta);
         NewInPtr->mapDataBasePath = UTF8_TO_TCHAR(helper.map_file_path().c_str());
         NewInPtr->mapDataBasePath = NewInPtr->mapDataBasePath.Replace(TEXT("\\"), TEXT("/"));
         NewInPtr->mapDataBaseName = FPaths::GetCleanFilename(NewInPtr->mapDataBasePath);
         NewInPtr->sceneBuffer = helper.scene_pb();
 
+        auto EgoPath = helper.ego_path();
+        for (auto& v : EgoPath)
+        {
+            FVector point;
+            point.X = v.x;
+            point.Y = v.y;
+            point.Z = v.z;
+            NewInPtr->egoPath.Add(point);
+            UE_LOG(SimLogNet, Log, TEXT("ego path %f %f %f"), v.x, v.y, v.z);
+        }
+
         FString tadsim_path;
         bool bUseLocalScenarioDir = false;
-        GConfig->GetBool(
-            TEXT("Sensor"), TEXT("bUseLocalScenarioDir"), bUseLocalScenarioDir, GGameIni);
+        GConfig->GetBool(TEXT("Sensor"), TEXT("bUseLocalScenarioDir"), bUseLocalScenarioDir, GGameIni);
         if (bUseLocalScenarioDir)
         {
             if (GConfig->GetString(TEXT("Sensor"), TEXT("TadsimConfigPath"), tadsim_path, GGameIni))
@@ -114,19 +124,18 @@ void NetworkModule::Reset(tx_sim::ResetHelper& helper)
             {
             }
         }
-        NewInPtr->tadsimPath = FPaths::GetPath(
-            FPaths::GetPath(FPaths::GetPath(FPaths::GetPath(NewInPtr->configFilePath))));
+        NewInPtr->tadsimPath =
+            FPaths::GetPath(FPaths::GetPath(FPaths::GetPath(FPaths::GetPath(NewInPtr->configFilePath))));
         if (!tadsim_path.IsEmpty())
         {
             tadsim_path = tadsim_path.Replace(TEXT("\\"), TEXT("/"));
 
             UE_LOG(SimLogNet, Log, TEXT("tadsim dir is %s"), *tadsim_path);
-            FString cfgStr = NewInPtr->configFilePath.Right(
-                NewInPtr->configFilePath.Len() - NewInPtr->tadsimPath.Len() - 1);
+            FString cfgStr =
+                NewInPtr->configFilePath.Right(NewInPtr->configFilePath.Len() - NewInPtr->tadsimPath.Len() - 1);
             NewInPtr->configFilePath = FPaths::Combine(tadsim_path, cfgStr);
 
-            cfgStr = NewInPtr->mapDataBasePath.Right(
-                NewInPtr->mapDataBasePath.Len() - NewInPtr->tadsimPath.Len() - 1);
+            cfgStr = NewInPtr->mapDataBasePath.Right(NewInPtr->mapDataBasePath.Len() - NewInPtr->tadsimPath.Len() - 1);
             NewInPtr->mapDataBasePath = FPaths::Combine(tadsim_path, cfgStr);
 
             NewInPtr->tadsimPath = tadsim_path;
@@ -135,8 +144,7 @@ void NetworkModule::Reset(tx_sim::ResetHelper& helper)
         NewInPtr->name = TEXT("RESET");
         NewInPtr->timeStamp = 0;
         myGameInstance->simInDataArry.Add(NewInPtr);
-        asynchronousMode =
-            myGameInstance->GetGameConfig(TEXT("Mode"), TEXT("Asynchronous")) == TEXT("true");
+        asynchronousMode = myGameInstance->GetGameConfig(TEXT("Mode"), TEXT("Asynchronous")) == TEXT("true");
         myGameInstance->SetAsynchronousMode(asynchronousMode);
         myGameInstance->bSimInDataRefreshed = true;
 
@@ -176,8 +184,7 @@ void NetworkModule::Step(tx_sim::StepHelper& helper)
         simUpdateIn.timeStamp = timestamp;
 
         std::string strUnionLocation;
-        helper.GetSubscribedMessage(
-            TCHAR_TO_ANSI(*(UnionPrefixStr + LocationTopic)), strUnionLocation);
+        helper.GetSubscribedMessage(TCHAR_TO_ANSI(*(UnionPrefixStr + LocationTopic)), strUnionLocation);
 
         std::string strTraffic;
         helper.GetSubscribedMessage(TCHAR_TO_ANSI(*TrafficTopic), strTraffic);
@@ -200,11 +207,13 @@ void NetworkModule::Step(tx_sim::StepHelper& helper)
             {
                 NewInPtr->egoData.Emplace(UTF8_TO_TCHAR(groupname.c_str()), locationMsg);
             }
-            UE_LOG(SimLogNet, Log, TEXT("LOCATION time %f x %.8f y %.8f z %.8f"), timestamp,
-                locationMsg.position().x(), locationMsg.position().y(), locationMsg.position().z());
+            UE_LOG(SimLogNet, Log, TEXT("LOCATION group %s time %f x %.8f y %.8f z %.8f"),
+                UTF8_TO_TCHAR(groupname.c_str()), timestamp, locationMsg.position().x(), locationMsg.position().y(),
+                locationMsg.position().z());
         }
         NewInPtr->trafficData.ParseFromString(strTraffic);
-        //UE_LOG(SimLogNet, Log, TEXT("TRAFFIC %f %s"), timestamp, UTF8_TO_TCHAR(NewInPtr->trafficData.DebugString().c_str()));
+        // UE_LOG(SimLogNet, Log, TEXT("TRAFFIC %f %s"), timestamp,
+        // UTF8_TO_TCHAR(NewInPtr->trafficData.DebugString().c_str()));
         myGameInstance->simInDataArry.Add(NewInPtr);
         UE_LOG(SimLogNet, Log, TEXT("ADD SIMDATA %s %f "), *NewInPtr->name, timestamp);
         myGameInstance->bSimInDataRefreshed = true;
@@ -244,8 +253,7 @@ FEvent* NetworkModule::getThreadSuspendedEvent()
 void NetworkModule::PublicUpdateMessage(tx_sim::StepHelper& helper)
 {
     FScopeLock ScopeLock(&mutex_Output);
-    UE_LOG(SimLogNet, Log, TEXT("PublicUpdateMessage Size: %d"),
-        myGameInstance->simOutDataArry.Num());
+    UE_LOG(SimLogNet, Log, TEXT("PublicUpdateMessage Size: %d"), myGameInstance->simOutDataArry.Num());
     for (const auto& sout : myGameInstance->simOutDataArry)
     {
         if (sout->datatype == 1)
@@ -263,8 +271,7 @@ void NetworkModule::PublicUpdateMessage(tx_sim::StepHelper& helper)
         }
         if (sout->datatype == 2)
         {
-            const FSimSensorUpdateOut* simSenOut =
-                StaticCast<const FSimSensorUpdateOut*>(sout.Get());
+            const FSimSensorUpdateOut* simSenOut = StaticCast<const FSimSensorUpdateOut*>(sout.Get());
             std::string payload_;
             if (simSenOut->sensorData.SerializeToString(&payload_) && payload_.size())
             {

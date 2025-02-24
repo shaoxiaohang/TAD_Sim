@@ -323,6 +323,7 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
     {
         return;
     }
+
     const FLidarInput* Input = Cast_Sim<const FLidarInput>(_Input);
     // 频率控制
     if (lidarFrameAlign && config.frequency > 0 && (Input->timeStamp - timeStamp_last) < 999.9999999 / config.frequency)
@@ -331,7 +332,7 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
     }
     if (lidarFrameAlign)
     {
-        UE_LOG(LogTemp, Log, TEXT("LidarFrameAlign: %f"), Input->timeStamp);
+        UE_LOG(LogTemp, Log, TEXT("LidarFrameAlign: %f %f"), Input->timeStamp, config.frequency);
     }
     else
     {
@@ -389,10 +390,15 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
         UE_LOG(LogTemp, Log, TEXT("LidarMeasurement.TimeStamp0 < 0 %f"), timeStamp);
         LidarMeasurement.TimeStamp0 = timeStamp;
         LidarMeasurement.LidarBodyLoc0 = GetActorLocation();
-        return;
+        // return;
     }
     LidarMeasurement.TimeStamp = timeStamp;
     float DeltaTime = (timeStamp - LidarMeasurement.TimeStamp0) * 0.001f;
+    if (timeStamp == 0.0)
+    {
+        DeltaTime = 1.f / LidarSensor->getRotationFrequency();
+        UE_LOG(LogTemp, Log, TEXT("set delta time to 100ms when timeStamp == 0"));
+    }
     UE_LOG(LogTemp, Log, TEXT("DeltaTime  %f %f %f "), DeltaTime, timeStamp, LidarMeasurement.TimeStamp0);
     if ((DeltaTime - 1.f / LidarSensor->getRotationFrequency()) > -0.001f)
     {
@@ -510,6 +516,9 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
             ptlists.Reserve(tframe->data.points.size());
 
             int count = 0;
+            FTransform tf;
+            FRotator Rotator(0, 60.0, 0);
+            tf.SetRotation(Rotator.Quaternion());
             // 点云坐标转换
             for (const auto& p : tframe->data.points)
             {
@@ -526,7 +535,11 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
                         tp.x = p.x;
                         tp.y = -p.y;    // left to right
                     }
-                    tp.z = p.z;
+                    FVector point(tp.x, tp.y, tp.z);
+                    point = tf.TransformPosition(point);
+                    tp.x = point.X;
+                    tp.y = point.Y;
+                    tp.z = point.Z;
                     tp.i = p.instensity;
                     tp.t = p.tag_c;
                     ptlists.Add(tp);

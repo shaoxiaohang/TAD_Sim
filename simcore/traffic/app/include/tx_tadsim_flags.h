@@ -81,6 +81,8 @@ DECLARE_string(EgoUnion_TopicName);
 DECLARE_string(EgoUnion_Trailer_TopicName);
 DECLARE_string(EgoUnion_Specified_TopicName);
 DECLARE_string(EgoUnion_Specified_EgoGroup);
+DECLARE_string(EgoUnion_MapData_TopicName);
+
 
 DECLARE_double(TAD_Obs_Subdivide_Threshold);
 DECLARE_string(PreviewCachePath);

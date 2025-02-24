@@ -22,4 +22,4 @@ cd ..
 
 # Start compiling
 build_project "message" "generate_cpp.sh"
-build_project "map_sdk" "build.sh"
+#build_project "map_sdk" "build.sh"

@@ -106,7 +106,6 @@ function startScenarioService () {
     `--service_dir=${ProjectPath.serviceScenario}`,
     `--scenario_dir=${UserDataPath.scenario}`,
     `--app_dir=${AppPath}`,
-    '-log_dir=//home/aaa/workspace/hsim/log/dev',
   ]
   const options = {
     env,

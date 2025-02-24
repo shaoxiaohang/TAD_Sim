@@ -24,11 +24,21 @@ void SimEgoTemplate::ParseInitParameter(tx_sim::InitHelper& helper) TX_NOEXCEPT 
   if (Utils::Str2Type(helper.GetParameter("LogLevel_Ego_Loop"), FLAGS_LogLevel_Ego_Loop)) {
     LOG(INFO) << "[Input_Parameter] " << TX_FLAGS(LogLevel_Ego_Loop);
   }
-
+  if (Utils::Str2Type(helper.GetParameter("LogLevel_Ego_SceneEvent"), FLAGS_LogLevel_Ego_SceneEvent)) {
+    LOG(INFO) << "[Input_Parameter] " << TX_FLAGS(LogLevel_Ego_SceneEvent);
+  }
+  if (Utils::Str2Type(helper.GetParameter("LogLevel_SceneReader"), FLAGS_LogLevel_SceneReader)) {
+    LOG(INFO) << "[Input_Parameter] " << TX_FLAGS(LogLevel_SceneReader);
+  }
   if (Utils::Str2Type(helper.GetParameter("LogLevel_Ego_Element"), FLAGS_LogLevel_Ego_Element)) {
     LOG(INFO) << "[Input_Parameter] " << TX_FLAGS(LogLevel_Ego_Element);
   }
-
+  if (Utils::Str2Type(helper.GetParameter("LogLevel_MapSDK"), FLAGS_LogLevel_MapSDK)) {
+    LOG(INFO) << "[Input_Parameter] " << TX_FLAGS(LogLevel_MapSDK);
+  }
+  if (Utils::Str2Type(helper.GetParameter("LogLevel_ShowMapCacheInfo"), FLAGS_LogLevel_ShowMapCacheInfo)) {
+    LOG(INFO) << "[Input_Parameter] " << TX_FLAGS(LogLevel_ShowMapCacheInfo);
+  }
   if (Utils::Str2Type(helper.GetParameter("ego_rnd_seed"), FLAGS_ego_rnd_seed)) {
     LOG(INFO) << "[Input_Parameter] " << TX_FLAGS(ego_rnd_seed);
   }
@@ -436,6 +446,47 @@ Base::txBool SimEgoTemplate::GetMapManagerInitParams(HdMap::HadmapCacheConCurren
   __Lon__(refParams.SceneOriginGPS) = FLAGS_ego_map_local_origin_lon;
   __Lat__(refParams.SceneOriginGPS) = FLAGS_ego_map_local_origin_lat;
   __Alt__(refParams.SceneOriginGPS) = FLAGS_ego_map_local_origin_alt;
+
+  double min_lon = m_ego_start_location.position().x();
+  double min_lat = m_ego_start_location.position().y();
+  double max_lon = m_ego_start_location.position().x();
+  double max_lat = m_ego_start_location.position().y();
+
+  const double degree_per_meter = 1.0 / 110000.0;
+  const double offset_meters = 500.0;
+
+  double off_lon = degree_per_meter * offset_meters;
+  double off_lat = degree_per_meter * offset_meters;
+
+  if (m_ego_path.size() == 1) {
+    LogInfo << "ego path size is 1";
+    auto origin = m_ego_path[0];
+    min_lon = origin.x - off_lon;
+    max_lon = origin.x + off_lon;
+    min_lat = origin.y - off_lat;
+    max_lat = origin.y + off_lat;
+    LogInfo << " ego origin " << TX_VARS(origin.x) << TX_VARS(origin.y);
+  } else {
+    for (auto& route_point : m_ego_path) {
+      LogInfo << " ego path point " << TX_VARS(route_point.x) << TX_VARS(route_point.y);
+      min_lon = std::min(min_lon, route_point.x);
+      min_lat = std::min(min_lat, route_point.y);
+      max_lon = std::max(max_lon, route_point.x);
+      max_lat = std::max(max_lat, route_point.y);
+    }
+    min_lon = min_lon - off_lon;
+    max_lon = max_lon + off_lon;
+    min_lat = min_lat - off_lat;
+    max_lat = max_lat + off_lat;
+  }
+
+  LogInfo << " ego area " << TX_VARS(min_lon) << TX_VARS(max_lon) << TX_VARS(min_lat) << TX_VARS(max_lat);
+
+  Base::map_range_t map_range;
+  map_range.bottom_left = hadmap::txPoint(min_lon, min_lat, 0.0);
+  map_range.top_right = hadmap::txPoint(max_lon, max_lat, 0.0);
+  map_range.center = hadmap::txPoint((min_lon + max_lon) / 2.0, (min_lat + max_lat) / 2.0, 0.0);
+  refParams.op_map_range = map_range;
 
   LogInfo << "Map File From helper : " << refParams.strHdMapFilePath
           << TX_VARS_NAME(origin, Utils::ToString(refParams.SceneOriginGPS));

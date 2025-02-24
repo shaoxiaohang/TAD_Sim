@@ -2,9 +2,9 @@
 
 #include "HadmapManager.h"
 // hadmap header
+#include "Runtime/Core/Public/Misc/FileHelper.h"
 #include "common/coord_trans.h"
 #include "structs/base_struct.h"
-#include "Runtime/Core/Public/Misc/FileHelper.h"
 // hadmap header
 
 THIRD_PARTY_INCLUDES_START
@@ -28,7 +28,7 @@ HadmapManager::~HadmapManager()
     delete m_gKdtree;
 }
 
-bool hadmapue4::HadmapManager::CreateHadmapHandle()
+bool hadmapue4::HadmapManager::CreateHadmapHandle(const TArray<FVector>& _EgoPath)
 {
     CloseHadmapHandle();
 
@@ -46,21 +46,59 @@ bool hadmapue4::HadmapManager::CreateHadmapHandle()
             }
             routingmapHandle = NULL;
             routingmapInterface = NULL;
+            UE_LOG(LogTemp, Display, TEXT("load routing map: %s"), *mapPath_SQL);
             routingmapHandle = new hadmap::RoutingMap(
                 hadmap::CoordType::COORD_WGS84, std::string(TCHAR_TO_UTF8(*mapPath_SQL)).c_str());
-            // hadmap::txRoute Route;
-            // hadmap::PointVec StartEnd;
-            // StartEnd.push_back(hadmap::txPoint(startLon, startLat, mapOriginAlt));
-            // StartEnd.push_back(hadmap::txPoint(endLon, endLat, mapOriginAlt));
-            if (routingmapHandle /*&& routingmapHandle->routingSync(StartEnd, Route)*/)
+            hadmap::txRoute Route;
+            hadmap::PointVec StartEnd;
+            // for (auto Point : _EgoPath)
+            // {
+            //     StartEnd.push_back(hadmap::txPoint(Point.X, Point.Y, Point.Z));
+            //     UE_LOG(LogTemp, Display, TEXT("EgoPath: %f %f %f"), Point.X, Point.Y, Point.Z);
+            // }
+
+            double start_lon = 121.171245860000;
+            double start_lat = 31.303040040000;
+            double end_lon = 121.171647820000;
+            double end_lat = 31.303304620000;
+
+            // // Eigen::Vector2d min;
+            // // Eigen::Vector2d max;
+            // // min.x() = -1.03244e+06;
+            // // min.y() = -1.05542e+06;
+            // // max.x() = 833448;
+            // // max.y() = 1.14189e+06;
+            // // auto center = min-max;
+            // // std::cout << " center x " << center.x() << " center y " << center.y() << std::endl;
+
+            StartEnd.push_back(hadmap::txPoint(start_lon, start_lat, 3.053));
+            StartEnd.push_back(hadmap::txPoint(end_lon, end_lat, 3.099));
+            auto res = routingmapHandle->routingSync(StartEnd, Route);
+            if (res)
+            {
+                UE_LOG(LogTemp, Display, TEXT("routingSync success"));
+            }
+            else
+            {
+                UE_LOG(LogTemp, Display, TEXT("routingSync failed"));
+            }
+            UE_LOG(LogTemp, Display, TEXT("routing size %d"), Route.size());
+            if (routingmapHandle)
             {
                 routingmapInterface = routingmapHandle->getMapInterface();
+                auto lanes = routingmapInterface->getLanes(StartEnd[0], 100);
+                UE_LOG(LogTemp, Display, TEXT("lanes size: %d"), lanes.size());
+                for (auto& lane : lanes)
+                {
+                    UE_LOG(LogTemp, Display, TEXT("lane id: %d"), lane->getId());
+                }
             }
             // Detect init state
             if (routingmapHandle && routingmapInterface)
             {
                 bCreateSuccess = true;
             }
+
             break;
         }
         case hadmapue4::MAPENGINE:
@@ -74,8 +112,8 @@ bool hadmapue4::HadmapManager::CreateHadmapHandle()
             }
             hadmap::MAP_DATA_TYPE MapDataType = GetMapDataType(mapPath_SQL);
 #if PLATFORM_WINDOWS
-            mapEngineStat =
-                hadmap::hadmapConnect(std::string(TCHAR_TO_UTF8(*mapPath_SQL)).c_str(), MapDataType, &mapengineHandle, false);
+            mapEngineStat = hadmap::hadmapConnect(
+                std::string(TCHAR_TO_UTF8(*mapPath_SQL)).c_str(), MapDataType, &mapengineHandle, false);
 #else
             mapEngineStat =
                 hadmap::hadmapConnect(std::string(TCHAR_TO_UTF8(*mapPath_SQL)).c_str(), MapDataType, &mapengineHandle);
@@ -92,6 +130,22 @@ bool hadmapue4::HadmapManager::CreateHadmapHandle()
             {
                 bCreateSuccess = true;
             }
+            hadmap::PointVec StartEnd;
+            for (auto Point : _EgoPath)
+            {
+                StartEnd.push_back(hadmap::txPoint(Point.X, Point.Y, Point.Z));
+            }
+            hadmap::txLanes lanes;
+            // hadmap::getLanes(mapengineHandle, StartEnd[0], 10.0, lanes);
+            hadmap::txPoint point(121.174780,31.288912,0.000000);
+            hadmap::getLanes(mapengineHandle, point, 10.0, lanes);
+            UE_LOG(LogTemp, Warning, TEXT("mapengine lanes size: %d %f %f %f"), lanes.size(), StartEnd[0].x,
+                StartEnd[0].y, StartEnd[0].z);
+
+            hadmap::txRoads _roads;
+            hadmap::getRoads(mapengineHandle, true, _roads);
+            UE_LOG(LogTemp, Warning, TEXT("mapengine road size: %d"), _roads.size());
+
             break;
         }
         default:
@@ -135,7 +189,7 @@ void hadmapue4::HadmapManager::CloseHadmapHandle()
 }
 
 bool HadmapManager::Init(MapMode _Mode, FString _DBPath, double _OriginLon, double _OriginLat, double _OriginAlt,
-    const FString& _GPSFilePath)
+    const FString& _GPSFilePath, const TArray<FVector>& _EgoPath)
 {
     // Set sql file path
     mapPath_SQL = _DBPath;
@@ -153,7 +207,7 @@ bool HadmapManager::Init(MapMode _Mode, FString _DBPath, double _OriginLon, doub
     // Set new mode
     mapMode = _Mode;
     // Create hadmap handle
-    bMapDataLoaded = CreateHadmapHandle();
+    bMapDataLoaded = CreateHadmapHandle(_EgoPath);
     IsSuccess = IsSuccess && bMapDataLoaded;
 
     bInitSuccess = IsSuccess;
@@ -180,8 +234,7 @@ bool HadmapManager::Init(double _OriginLon, double _OriginLat, double _OriginAlt
         IsSuccess = bUseDecrypt;
     }
 
-    UE_LOG(LogTemp, Display, TEXT("HadmapManager Init lon %.6f lat %.6f alt %.6f"),
-    _OriginLon, _OriginLat, _OriginAlt);
+    UE_LOG(LogTemp, Display, TEXT("HadmapManager Init lon %.6f lat %.6f alt %.6f"), _OriginLon, _OriginLat, _OriginAlt);
 
     bInitSuccess = IsSuccess;
     return bInitSuccess;
@@ -380,8 +433,17 @@ hadmap::txMapHandle* HadmapManager::GetMapHandle() const
 
 void hadmapue4::HadmapManager::LocalToLonLat(double& _X, double& _Y, double& _Z)
 {
+    _X = -_X;
+    _Y = -_Y;
+
+    UE_LOG(
+        LogTemp, Log, TEXT("LocalToLonLat1 %f %f %f %f %f %f"), _X, _Y, _Z, mapOriginLon, mapOriginLat, mapOriginAlt);
     coord_trans_api::local2global(_X, _Y, _Z, mapOriginLon, mapOriginLat, mapOriginAlt);
+    UE_LOG(
+        LogTemp, Log, TEXT("LocalToLonLat2 %f %f %f %f %f %f"), _X, _Y, _Z, mapOriginLon, mapOriginLat, mapOriginAlt);
     coord_trans_api::global2lonlat(_X, _Y, _Z);
+    UE_LOG(
+        LogTemp, Log, TEXT("LocalToLonLat3 %f %f %f %f %f %f"), _X, _Y, _Z, mapOriginLon, mapOriginLat, mapOriginAlt);
 }
 
 void hadmapue4::HadmapManager::LocalToLonLat(const FVector& _Loc, double& _X, double& _Y, double& _Z)
@@ -430,8 +492,10 @@ void hadmapue4::HadmapManager::LocalToLonLat(const FVector& _Loc, double& _X, do
     X = _Loc.X;
     Y = _Loc.Y;
     Z = _Loc.Z;
+
     coord_trans_api::local2global(X, Y, Z, _MapOriginLon, _MapOriginLat, _MapOriginAlt);
     coord_trans_api::global2lonlat(X, Y, Z);
+
     _X = X;
     _Y = Y;
     _Z = Z;
@@ -444,9 +508,10 @@ void hadmapue4::HadmapManager::LonLatToLocal(
     double Y = _Y;
     double Z = _Z;
     coord_trans_api::lonlat2local(X, Y, Z, _MapOriginLon, _MapOriginLat, _MapOriginAlt);
+
     X = X * 100.f;
     Y = -(Y * 100.f);
-    Z = 4.f;
+    Z = Z * 100.f;
     _Loc = FVector(X, Y, Z);
 }
 

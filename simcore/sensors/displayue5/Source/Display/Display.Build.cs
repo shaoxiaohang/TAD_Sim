@@ -31,7 +31,8 @@ public class Display : ModuleRules
 				"SlateCore",
 				"WorldXShaders",
 				"Renderer",
-				"UMG" 
+				"UMG",
+				"CustomMeshComponent"
 			}
 			);
 

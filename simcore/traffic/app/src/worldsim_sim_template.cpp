@@ -60,6 +60,7 @@ void WorldsimSimLoop::Init(tx_sim::InitHelper& helper) TX_NOEXCEPT {
   helper.Subscribe(FLAGS_EgoUnion_TopicName /*EgoUnion/LOCATION*/);
   helper.Subscribe(FLAGS_EgoUnion_Trailer_TopicName /*EgoUnion/LOCATION_TRAILER*/);
   helper.Subscribe(FLAGS_EgoUnion_Specified_TopicName /*.hightlight_group*/);
+  helper.Publish(FLAGS_EgoUnion_MapData_TopicName);
 #endif
   // publish our topics with messages we produced in Step callback.
   helper.Publish(FLAGS_Traffic_TopicName /*tx_sim::topic::kTraffic*/);
@@ -187,6 +188,9 @@ void WorldsimSimLoop::ReceiveEgoInfo(tx_sim::StepHelper& helper, const Base::Tim
   GetSubscribedMessage(helper, FLAGS_EgoUnion_TopicName, m_payload_);
   TrafficSystemPtr()->UpdatePlanningCarData(timeMgr, Base::Enums::EgoSubType::eLeader, m_payload_);
 
+  // update ego map data
+  ReceiveEgoMapData(helper, timeMgr, m_payload_);
+
   // update ego trailers
   GetSubscribedMessage(helper, FLAGS_EgoUnion_Trailer_TopicName, m_payload_trailer_);
   TrafficSystemPtr()->UpdatePlanningCarData(timeMgr, Base::Enums::EgoSubType::eFollower, m_payload_trailer_);
@@ -208,6 +212,36 @@ void WorldsimSimLoop::ReceiveEgoInfo(tx_sim::StepHelper& helper, const Base::Tim
   m_payload_.clear();
   m_payload_trailer_.clear();
 #endif /*USE_EgoGroup*/
+}
+
+void WorldsimSimLoop::ReceiveEgoMapData(tx_sim::StepHelper& helper, const Base::TimeParamManager& timeMgr,
+                                        const Base::txString& EgoUnionLocation) TX_NOEXCEPT {
+#if USE_EgoGroup
+  sim_msg::Union egoUnion;
+  egoUnion.ParseFromString(EgoUnionLocation);
+  for (int i = 0; i < egoUnion.messages_size(); ++i) {
+    const auto& msg = egoUnion.messages(i);
+    Base::txString groupname = msg.groupname();
+    Base::txString content = msg.content();
+    sim_msg::Location locationMsg;
+    if (locationMsg.ParseFromString(content)) {
+      LogInfo << "get ego location " << TX_VARS(groupname);
+      LogInfo << TX_VARS(locationMsg.t()) << TX_VARS(locationMsg.position().x()) << TX_VARS(locationMsg.position().y())
+              << TX_VARS(locationMsg.position().z());
+
+      sim_msg::EgoMapData egoMapData;
+      if (HdMap::HadmapCacheConCurrent::QueryEgoMapData(timeMgr.TimeStamp(), locationMsg, egoMapData)) {
+        LogInfo << "Ego Map Data " << egoMapData.ShortDebugString();
+        // PublishMessage(helper, FLAGS_EgoUnion_MapData_TopicName, "Ego_001", egoMapData);
+      } else {
+        LogWarn << "failed to get ego mapdata";
+      }
+
+    } else {
+      LogInfo << "failed to parse ego location " << TX_VARS(groupname);
+    }
+  }
+#endif
 }
 
 void WorldsimSimLoop::SimulationTraffic(tx_sim::StepHelper& helper, const Base::TimeParamManager& timeMgr) TX_NOEXCEPT {

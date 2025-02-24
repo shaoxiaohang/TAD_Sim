@@ -18,6 +18,7 @@
 #include "planStatus.pb.h"
 #include "sensor_raw.pb.h"
 #include "environment.pb.h"
+#include "egoMapData.pb.h"
 #include "union.pb.h"
 #include "scene.pb.h"
 #ifdef _MSC_VER
@@ -161,6 +162,7 @@ public:
     double endLon;
     double endLat;
     double endAlt;
+    TArray<FVector> egoPath;
 
     int32 mapIndex;
     FString mapDataBaseName;
@@ -222,6 +224,7 @@ public:
     sim_msg::Location egoData;
     sim_msg::Traffic trafficData;
     sim_msg::DisplayPose trafficPose;
+    sim_msg::EgoMapData egoMapData;
     
     std::string topic_egoData = "LOCATION";
     std::string topic_trafficData = "TRAFFIC";

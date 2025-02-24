@@ -6,9 +6,12 @@
 #include <boost/functional/hash.hpp>
 #include <boost/optional.hpp>
 #include <functional>
+#include "egoMapData.pb.h"
 #include "hadmap.h"
+#include "location.pb.h"
 #include "mapengine/engine_defs.h" /*hadmap::MAP_DATA_TYPE*/
 #include "mapengine/hadmap_engine.h"
+#include "routingmap/routing_map.h"
 #include "tbb/blocked_range.h"
 #include "tbb/concurrent_hash_map.h"
 #include "tbb/concurrent_unordered_set.h"
@@ -62,6 +65,7 @@ class HadmapCacheConCurrent {
     Base::txString strTrafficFilePath; /*simData.traffic.c_str(),*/
     Base::txString strHadmapFilter;    /*black list*/
     boost::optional<Base::map_range_t> op_map_range;
+    hadmap::PointVec egoPath;
   };
 
   using LaneUIdHashCompare = Utils::LaneUIdHashCompare;
@@ -665,7 +669,7 @@ class HadmapCacheConCurrent {
    */
   static txWGS84 GetLanePos(const Base::txLaneUId& _laneUid, const txFloat _s) TX_NOEXCEPT;
 
-    /**
+  /**
    * @brief 获取给定道路位置信息和距离下的WGS84坐标
    *
    * 通过提供的道路在局部坐标系下的位置信息和距离，此函数会计算出该道路在WGS84坐标系下的位置。
@@ -832,7 +836,7 @@ class HadmapCacheConCurrent {
   static txBool Get_LAL_Lane_By_S(const Base::Info_Lane_t& _lane_loc_info, const txFloat _s,
                                   txWGS84& resPos) TX_NOEXCEPT;
 
-   /**
+  /**
    * @brief 通过给定的 S 值，获取与指定车道相关的位置信息
    *
    * 该函数通过输入的车道 ID 和给定的 S 值，获取与指定车道相关的位置信息。
@@ -1726,6 +1730,9 @@ class HadmapCacheConCurrent {
   static hadmap::txMapHandle* pMapHandle;
   static Base::txBool sValid;
   static hadmap::PointVec s_envelope;
+  static Base::txString s_last_map_file_path;
+  static hadmap::RoutingMap* s_routing_map;
+  static hadmap::PointVec s_ego_path;
 
  public:
   using id2roadPtrType = tbb::concurrent_hash_map<txRoadID, hadmap::txRoadPtr, RoadIdHashCompare>;
@@ -1910,6 +1917,19 @@ class HadmapCacheConCurrent {
    * @return 函数执行成功时返回true，否则返回false
    */
   static Base::txBool QueryTrick_LaneKeepTime(const txRoadID rid, Base::txFloat& spLaneKeepTime) TX_NOEXCEPT;
+
+  /**
+   * @brief 获取主车附近的地图信息和当前导航信息
+   *
+   * 根据给定的主车位置，查询并返回主车周围地图信息和导航信息
+   *
+   * @param timestamp 当前仿真时间，单位秒
+   * @param egoLocation 指定的主车位置
+   * @param spLaneKeepTime 返回主车导航信息
+   * @return 函数执行成功时返回true，否则返回false
+   */
+  static Base::txBool QueryEgoMapData(double timestamp, const sim_msg::Location& egoLocation,
+                                      sim_msg::EgoMapData& egoMapData) TX_NOEXCEPT;
 };
 
 TX_NAMESPACE_CLOSE(HdMap)

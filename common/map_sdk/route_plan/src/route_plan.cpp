@@ -144,8 +144,11 @@ bool RoutePlan::searchPath(std::vector<txPoint>& dsts, hadmap::txRoute& traj) {
         hadmap::txRouteNode routeNode;
         routeNode.setRouteType(road.roadId < 0 ? hadmap::txRouteNode::JUNCTION_ROUTE : hadmap::txRouteNode::ROAD_ROUTE)
             .setId(road.roadId)
+            .setLaneId(road.laneId)
             .setPreId(road.fromRId)
+            .setPreLaneId(road.fromLId)
             .setNextId(road.toRId)
+            .setNextLaneId(road.toLId)
             .setStartRange(road.begin)
             .setEndRange(road.end)
             .setLength(road.length)

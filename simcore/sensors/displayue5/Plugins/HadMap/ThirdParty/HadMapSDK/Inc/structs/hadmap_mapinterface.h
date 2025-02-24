@@ -89,7 +89,7 @@ class TXSIMMAP_API txMapInterface {
 
   // get lanes with specified area
   // pos coord is the same as map geom coord
-  // radius -> meter
+// radius -> meter
   virtual txLanes getLanes(const txPoint& pos, const double& radius) = 0;
 
   // nearest lane by distance

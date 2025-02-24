@@ -5,6 +5,8 @@
 #include "its_sim.pb.h"
 #include "location.pb.h"
 #include "traffic.pb.h"
+#include "union.pb.h"
+#include "egoMapData.pb.h"
 #include "tx_assembler_context.h"
 #include "tx_element_manager_base.h"
 #include "tx_marco.h"

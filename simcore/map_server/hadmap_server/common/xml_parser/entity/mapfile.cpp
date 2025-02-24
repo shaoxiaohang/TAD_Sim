@@ -413,53 +413,53 @@ int CMapFile::ParseMapV2(const char* strMapFile, bool bReadHadmapConfig /* = tru
         }
         int nParse = rIdRights.size();
         int index = 0;
-        for (auto itroad : rIdRights) {
-          std::shared_ptr<CSignLight> _light(new CSignLight);
-          _light->m_strID = std::to_string(id_init);
-          _light->m_strRouteID = std::to_string(id_init);
-          // three lights
-          id_init += 10;
-          _light->m_strStartShift = std::to_string(0);
-          _light->m_strStartTime = std::to_string(index * 9 + 1);
-          _light->m_strOffset = std::to_string(0);
-          _light->m_strTimeGreen = std::to_string(5);
-          _light->m_strTimeYellow = std::to_string(2);
-          _light->m_strTimeRed = std::to_string((nParse - 1) * 9 + 2);
-          _light->m_strDirection = std::to_string(180);
-          _light->m_strPhase = "A";
-          _light->m_strStatus = "Activated";
-          _light->m_strLane = "ALL";
-          _light->m_strEventId = "";
-          if (road2lightid.find(itroad.first) != road2lightid.end()) {
-            for (auto it : road2lightid.find(itroad.first)->second) {
-              _light->m_strSignalheadVec.push_back(std::to_string(it));
-            }
-            _light->m_strStatus = "Activated";
-          }
+        // for (auto itroad : rIdRights) {
+        //   std::shared_ptr<CSignLight> _light(new CSignLight);
+        //   _light->m_strID = std::to_string(id_init);
+        //   _light->m_strRouteID = std::to_string(id_init);
+        //   // three lights
+        //   id_init += 10;
+        //   _light->m_strStartShift = std::to_string(0);
+        //   _light->m_strStartTime = std::to_string(index * 9 + 1);
+        //   _light->m_strOffset = std::to_string(0);
+        //   _light->m_strTimeGreen = std::to_string(5);
+        //   _light->m_strTimeYellow = std::to_string(2);
+        //   _light->m_strTimeRed = std::to_string((nParse - 1) * 9 + 2);
+        //   _light->m_strDirection = std::to_string(180);
+        //   _light->m_strPhase = "A";
+        //   _light->m_strStatus = "Activated";
+        //   _light->m_strLane = "ALL";
+        //   _light->m_strEventId = "";
+        //   if (road2lightid.find(itroad.first) != road2lightid.end()) {
+        //     for (auto it : road2lightid.find(itroad.first)->second) {
+        //       _light->m_strSignalheadVec.push_back(std::to_string(it));
+        //     }
+        //     _light->m_strStatus = "Activated";
+        //   }
 
-          _light->m_strPlan = "0";
-          _light->m_strJunction = std::to_string(itjun->getId());
-          _light->m_strPhasenumber = std::to_string(index + 1);
-          // get roadCenterPoint
-          hadmap::txRoadPtr roadPtr;
-          hadmap::getRoad(pMapHandler, itroad.first, true, roadPtr);
-          hadmap::txPoint txpoint;
-          bool fRet = getRoadEndCenterPoint(roadPtr, txpoint, itroad.second);
-          std::map<std::string, std::vector<int>> parsetolanes;
-          std::map<std::string, std::vector<int>> parsetolanelinks;
-          getRoadLaneLinks(roadPtr, parsetolanes, parsetolanelinks, itroad.second);
-          if (!fRet) {
-            continue;
-          }
-          hadmap::txLanePtr lanePtr;
-          _light->m_frouteLon = txpoint.x;
-          _light->m_frouteLat = txpoint.y;
-          _light->m_frouteAlt = txpoint.z;
-          _light->m_parsetolanes = parsetolanes;
-          _light->m_parsetolanelinks = parsetolanelinks;
-          this->m_lights.push_back(_light);
-          index++;
-        }
+        //   _light->m_strPlan = "0";
+        //   _light->m_strJunction = std::to_string(itjun->getId());
+        //   _light->m_strPhasenumber = std::to_string(index + 1);
+        //   // get roadCenterPoint
+        //   hadmap::txRoadPtr roadPtr;
+        //   hadmap::getRoad(pMapHandler, itroad.first, true, roadPtr);
+        //   hadmap::txPoint txpoint;
+        //   bool fRet = getRoadEndCenterPoint(roadPtr, txpoint, itroad.second);
+        //   std::map<std::string, std::vector<int>> parsetolanes;
+        //   std::map<std::string, std::vector<int>> parsetolanelinks;
+        //   getRoadLaneLinks(roadPtr, parsetolanes, parsetolanelinks, itroad.second);
+        //   if (!fRet) {
+        //     continue;
+        //   }
+        //   hadmap::txLanePtr lanePtr;
+        //   _light->m_frouteLon = txpoint.x;
+        //   _light->m_frouteLat = txpoint.y;
+        //   _light->m_frouteAlt = txpoint.z;
+        //   _light->m_parsetolanes = parsetolanes;
+        //   _light->m_parsetolanelinks = parsetolanelinks;
+        //   this->m_lights.push_back(_light);
+        //   index++;
+        // }
       }
     }
     SYSTEM_LOGGER_DEBUG("parse lanelink data");

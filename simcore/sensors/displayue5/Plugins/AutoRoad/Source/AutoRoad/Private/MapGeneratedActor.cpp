@@ -1,36 +1,34 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "MapGeneratedActor.h"
+
 #include "HadmapManager.h"
 #include "assert.h"
 // #include "common/coord_trans.h"
 
 #include "ArrowActor.h"
-#include "DrawDebugHelpers.h"
-#include "PLineActor.h"
-#include "RoadObjectActor.h"
 #include "Components/LineBatchComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Core/OpenDriveBaseStruct.h"
+#include "DrawDebugHelpers.h"
+#include "Engine/StaticMeshActor.h"
+#include "JsonObjectConverter.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "MapModelComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
-#include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
-
-#include "Runtime/Engine/Classes/Components/SplineComponent.h"
-#include "Runtime/Engine/Classes/Components/SplineMeshComponent.h"
-
-#include "routingmap/routing_utils.h"
-#include "common/coord_trans.h"
-
 #include "MeshDescription.h"
 #include "MeshDescriptionBuilder.h"
-#include "StaticMeshAttributes.h"
-#include "Kismet/KismetSystemLibrary.h"
-#include "JsonObjectConverter.h"
-#include "Engine/StaticMeshActor.h"
-#include "Kismet/GameplayStatics.h"
 #include "Misc/Paths.h"
-#include "MapModelComponent.h"
+#include "PLineActor.h"
 #include "PhysicsEngine/BodySetup.h"
+#include "RoadObjectActor.h"
+#include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
+#include "Runtime/Engine/Classes/Components/SplineComponent.h"
+#include "Runtime/Engine/Classes/Components/SplineMeshComponent.h"
+#include "StaticMeshAttributes.h"
+#include "common/coord_trans.h"
+#include "routingmap/routing_utils.h"
 // Sets default values
 
 using namespace hadmap;
@@ -548,6 +546,10 @@ AMapGeneratedActor::AMapGeneratedActor()
     RoadMarkColorConfig = conHelperLinearColor.Object;
 
     AMapGeneratedActor::InitTypeStrMap();
+
+    RefX = .0f;
+    RefY = .0f;
+    RefZ = .0f;
 }
 
 // Called when the game starts or when spawned
@@ -573,7 +575,7 @@ void AMapGeneratedActor::DrawMap(FString pathIput, FString DecryptFilePath, bool
         return;
     }
 
-    UE_LOG(LogTemp, Log, TEXT("AMapGeneratedActor DrawMap % s"), *pathIput);
+    UE_LOG(LogTemp, Log, TEXT("AMapGeneratedActor DrawMap %s %f %f %f "), *pathIput, RefX, RefY, RefZ);
 
     if (MapModelComponent)
     {
@@ -1125,9 +1127,8 @@ void AMapGeneratedActor::DrawRoadDetails(TArray<LaneBoundaryInfo>& lane_bdids_in
 
 void AMapGeneratedActor::DrawMarkDetails(TArray<LaneBoundaryInfo>& lane_bdids_in)
 {
-    auto getOffsets =
-        [](const std::vector<FVector>& opoints, const std::vector<FVector>& rightDirs, const double offsetWidth)
-    {
+    auto getOffsets = [](const std::vector<FVector>& opoints, const std::vector<FVector>& rightDirs,
+                          const double offsetWidth) {
         assert(opoints.size() == rightDirs.size());
         std::vector<FVector> points(opoints.size());
         for (size_t i = 0; i < opoints.size(); ++i)
@@ -1464,9 +1465,10 @@ void AMapGeneratedActor::DrawMarkDetails(TArray<LaneBoundaryInfo>& lane_bdids_in
                     // const FVector& rightDir = normaldata.size() > i ? normaldata[i] : normaldata[normaldata.size() -
                     // 1];
                     const FVector& rightDir =
-                        i > 0
-                            ? FVector::CrossProduct(((points_tpm[i] - points_tpm[i - 1])).GetSafeNormal2D(), FVector::UpVector)
-                            : FVector::CrossProduct(((points_tpm[1] - points_tpm[0])).GetSafeNormal2D(), FVector::UpVector);
+                        i > 0 ? FVector::CrossProduct(
+                                    ((points_tpm[i] - points_tpm[i - 1])).GetSafeNormal2D(), FVector::UpVector)
+                              : FVector::CrossProduct(
+                                    ((points_tpm[1] - points_tpm[0])).GetSafeNormal2D(), FVector::UpVector);
 
                     const FVector& curLoc = points_tpm[i];
                     float Dis = 0.f;
@@ -2237,7 +2239,7 @@ void AMapGeneratedActor::DrawObjDetails()
                     iterData = userData.find("bridge_span");
                     bool bRelateRoad = false;
 
-                    // uncomment later patch   
+                    // uncomment later patch
                     // if (iterData != userData.end())
                     // {
                     //     float BeidgeLength = std::stof(iterData->second) * 100.f;
@@ -2825,8 +2827,7 @@ UStaticMesh* AMapGeneratedActor::CreateStaticMesh(const TArray<FVector>& Vertice
         }
 
         {
-            auto IsMaterialNameUnique = [staticMesh, MaterialIndex](const FName TestName)
-            {
+            auto IsMaterialNameUnique = [staticMesh, MaterialIndex](const FName TestName) {
                 for (int32 MatIndex = 0; MatIndex < staticMesh->GetStaticMaterials().Num(); ++MatIndex)
                 {
                     if (MatIndex == MaterialIndex)
@@ -3166,11 +3167,12 @@ void AMapGeneratedActor::GenearateTunnel(hadmap::txObjectPtr Obj)
 
     TArray<TPair<double, double>> RoadRangeList;    // ST坐标 起点的s ，length
 
-    if (RelateTunnel) {
+    if (RelateTunnel)
+    {
         RelateTunnel->getST(S, T);
         RelateTunnel->getLWH(Len, Width, Height);
     }
-   
+
     RoadRangeList.Add(TPair<double, double>(S, Len));
 
     Obj->getST(S, T);

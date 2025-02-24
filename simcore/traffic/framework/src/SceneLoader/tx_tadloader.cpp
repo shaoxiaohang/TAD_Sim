@@ -340,6 +340,32 @@ Base::txBool TAD_SceneLoader::GetRoutingInfo(sim_msg::Location& refEgoData) TX_N
   }
 }
 
+std::vector<std::tuple<double, double, double>> extractPoints(const std::string& input) {
+  std::vector<std::tuple<double, double, double>> points;
+
+  std::stringstream ss(input);
+  std::string pointStr;
+
+  // Split the input string by ';'
+  while (std::getline(ss, pointStr, ';')) {
+    std::stringstream pointSS(pointStr);
+    std::string token;
+    std::vector<double> coords;
+
+    // Split each point by ','
+    while (std::getline(pointSS, token, ',')) {
+      coords.push_back(std::stod(token));  // Convert string to double
+    }
+
+    // Ensure we have exactly 3 coordinates (lon, lat, alt)
+    if (coords.size() == 3) {
+      points.emplace_back(coords[0], coords[1], coords[2]);
+    }
+  }
+
+  return points;
+}
+
 Base::txBool TAD_SceneLoader::GetMapManagerInitParams(HdMap::HadmapCacheConCurrent::InitParams_t& refParams)
     TX_NOEXCEPT {
   refParams.strTrafficFilePath = GetSimSimulationTraffic(); /*simulation.traffic,*/
@@ -363,6 +389,99 @@ Base::txBool TAD_SceneLoader::GetMapManagerInitParams(HdMap::HadmapCacheConCurre
     const Base::txString cfg_path = app_path + "/HadmapFilter.cfg";
     refParams.strHadmapFilter = cfg_path;
   }
+
+  double start_lon = 0.0;
+  double start_lat = 0.0;
+  double end_lon = 0.0;
+  double end_lat = 0.0;
+  const double degree_per_meter = 1.0 / 110000.0;
+  const double offset_meters = 500.0;
+
+  double off_lon = degree_per_meter * offset_meters;
+  double off_lat = degree_per_meter * offset_meters;
+
+  if (m_DataSource_Scene) {
+    auto planner = m_DataSource_Scene->_planner;
+    auto path = planner.InputPath;
+    auto points = extractPoints(path.points);
+    LOG(INFO) << "input path  " << path.points;
+    for (auto point : points) {
+      refParams.egoPath.push_back(hadmap::txPoint(std::get<0>(point), std::get<1>(point), std::get<2>(point)));
+      LOG(INFO) << std::get<0>(point) << " " << std::get<1>(point) << " " << std::get<2>(point);
+    }
+    if (points.size() == 1) {
+      start_lon = std::get<0>(points[0]);
+      start_lat = std::get<1>(points[0]);
+      end_lon = std::get<0>(points[0]);
+      end_lat = std::get<1>(points[0]);
+    } else {
+      start_lon = std::get<0>(points[0]);
+      start_lat = std::get<1>(points[0]);
+      end_lon = std::get<0>(points[0]);
+      end_lat = std::get<1>(points[0]);
+      for (auto point : points) {
+        start_lon = std::min(start_lon, std::get<0>(point));
+        start_lat = std::min(start_lat, std::get<1>(point));
+        end_lon = std::max(end_lon, std::get<0>(point));
+        end_lat = std::max(end_lat, std::get<1>(point));
+      }
+    }
+  }
+
+  // start_lon = start_lon - off_lon;
+  // start_lat = start_lat - off_lat;
+  // end_lon = end_lon + off_lon;
+  // end_lat = end_lat + off_lat;
+
+  LOG(INFO) << TX_VARS(start_lon) << TX_VARS(start_lat) << TX_VARS(end_lon) << TX_VARS(end_lat);
+  // double start_lon = startLon();
+  // double start_lat = startLat();
+  // double end_lon = endLon();
+  // double end_lat = endLat();
+  // auto mid_points = midPoints();
+
+  // LOG(INFO) << "ego start lon  " << start_lon;
+  // LOG(INFO) << "ego start lat  " << start_lat;
+  // LOG(INFO) << "ego end lon  " << end_lon;
+  // LOG(INFO) << "ego end lat  " << end_lat;
+  // for (const auto& middle : mid_points) {
+  //   LOG(INFO) << "mid   " << middle.first << " " << middle.second;
+  // }
+
+  // double min_lon = m_ego_start_location.position().x();
+  // double min_lat = m_ego_start_location.position().y();
+  // double max_lon = m_ego_start_location.position().x();
+  // double max_lat = m_ego_start_location.position().y();
+
+  // if (m_ego_path.size() == 1) {
+  //   LogInfo << "ego path size is 1";
+  //   auto origin = m_ego_path[0];
+  //   min_lon = origin.x - off_lon;
+  //   max_lon = origin.x + off_lon;
+  //   min_lat = origin.y - off_lat;
+  //   max_lat = origin.y + off_lat;
+  //   LogInfo << " ego origin " << TX_VARS(origin.x) << TX_VARS(origin.y);
+  // } else {
+  //   for (auto& route_point : m_ego_path) {
+  //     LogInfo << " ego path point " << TX_VARS(route_point.x) << TX_VARS(route_point.y);
+  //     min_lon = std::min(min_lon, route_point.x);
+  //     min_lat = std::min(min_lat, route_point.y);
+  //     max_lon = std::max(max_lon, route_point.x);
+  //     max_lat = std::max(max_lat, route_point.y);
+  //   }
+  //   min_lon = min_lon - off_lon;
+  //   max_lon = max_lon + off_lon;
+  //   min_lat = min_lat - off_lat;
+  //   max_lat = max_lat + off_lat;
+  // }
+
+  // LogInfo << " ego area " << TX_VARS(min_lon) << TX_VARS(max_lon) << TX_VARS(min_lat) << TX_VARS(max_lat);
+
+  Base::map_range_t map_range;
+  map_range.bottom_left = hadmap::txPoint(start_lon, start_lat, 0.0);
+  map_range.top_right = hadmap::txPoint(end_lon, end_lat, 0.0);
+  map_range.center = hadmap::txPoint((start_lon + end_lon) / 2.0, (start_lat + end_lat) / 2.0, 0.0);
+  refParams.op_map_range = map_range;
 
   std::tuple<Base::txFloat, Base::txFloat> start_tuple;
   if (GetSimSimulationPlannerRouteStart(start_tuple)) {
@@ -550,8 +669,8 @@ Base::txFloat TAD_SceneLoader::TAD_RouteViewer::endLat() const TX_NOEXCEPT {
   }
 }
 
-std::vector<std::pair<Base::txFloat, Base::txFloat> > TAD_SceneLoader::TAD_RouteViewer::midPoints() const TX_NOEXCEPT {
-  std::vector<std::pair<Base::txFloat, Base::txFloat> > res;
+std::vector<std::pair<Base::txFloat, Base::txFloat>> TAD_SceneLoader::TAD_RouteViewer::midPoints() const TX_NOEXCEPT {
+  std::vector<std::pair<Base::txFloat, Base::txFloat>> res;
   if (_NonEmpty_(m_route.mid)) {
     res = float_float_pair_parser(m_route.mid);
   }
@@ -675,9 +794,9 @@ Base::ISceneLoader::EventActionType TAD_SceneLoader::TAD_AccelerationViewer::Act
   return m_type;
 }
 
-std::vector<std::pair<Base::txFloat, Base::txFloat> >
+std::vector<std::pair<Base::txFloat, Base::txFloat>>
 TAD_SceneLoader::TAD_AccelerationViewer::timestamp_acceleration_pair_vector() const TX_NOEXCEPT {
-  std::vector<std::pair<Base::txFloat, Base::txFloat> > retVec;
+  std::vector<std::pair<Base::txFloat, Base::txFloat>> retVec;
   if (_plus_(EventActionType::TIME_TRIGGER) == ActionType()) {
     TX_MARK("profile=\"0.0, 0.0; 5.0, -2.0; 9.1, 0.0\"");
     retVec = float_float_pair_parser(profile());
@@ -695,10 +814,10 @@ std::vector<TAD_SceneLoader::EventEndCondition_t> TAD_SceneLoader::TAD_Accelerat
   }
   return retVec;
 }
-std::vector<std::tuple<Base::txFloat, Base::txFloat, TAD_SceneLoader::DistanceProjectionType, Base::txUInt> >
+std::vector<std::tuple<Base::txFloat, Base::txFloat, TAD_SceneLoader::DistanceProjectionType, Base::txUInt>>
 TAD_SceneLoader::TAD_AccelerationViewer::ttc_acceleration_pair_vector() const TX_NOEXCEPT {
   using namespace boost::algorithm;
-  std::vector<std::tuple<Base::txFloat, Base::txFloat, TAD_SceneLoader::DistanceProjectionType, Base::txUInt> > retVec;
+  std::vector<std::tuple<Base::txFloat, Base::txFloat, TAD_SceneLoader::DistanceProjectionType, Base::txUInt>> retVec;
   if (_plus_(EventActionType::TTC_EgoDist_With_DefaultProjection) == ActionType()) {
     TX_MARK("profile=\"ttc 3.0, 1;egodistance 6.0, -1\"");
     retVec = float_float_pair_parser(profile(), FLAGS_EventTypeTTC);
@@ -721,10 +840,10 @@ TAD_SceneLoader::TAD_AccelerationViewer::ttc_acceleration_pair_vector() const TX
   }
   return retVec;
 }
-std::vector<std::tuple<Base::txFloat, Base::txFloat, TAD_SceneLoader::DistanceProjectionType, Base::txUInt> >
+std::vector<std::tuple<Base::txFloat, Base::txFloat, TAD_SceneLoader::DistanceProjectionType, Base::txUInt>>
 TAD_SceneLoader::TAD_AccelerationViewer::egodistance_acceleration_pair_vector() const TX_NOEXCEPT {
   using namespace boost::algorithm;
-  std::vector<std::tuple<Base::txFloat, Base::txFloat, TAD_SceneLoader::DistanceProjectionType, Base::txUInt> > retVec;
+  std::vector<std::tuple<Base::txFloat, Base::txFloat, TAD_SceneLoader::DistanceProjectionType, Base::txUInt>> retVec;
   if (_plus_(EventActionType::TTC_EgoDist_With_DefaultProjection) == ActionType()) {
     TX_MARK("profile=\"ttc 3.0, 1;egodistance 6.0, -1\"");
     retVec = float_float_pair_parser(profile(), FLAGS_EventTypeEgoDistance);
@@ -807,9 +926,9 @@ Base::txString TAD_SceneLoader::TAD_MergeViewer::profile() const TX_NOEXCEPT {
 
 Base::ISceneLoader::EventActionType TAD_SceneLoader::TAD_MergeViewer::ActionType() const TX_NOEXCEPT { return m_type; }
 
-std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat /*Duration*/, Base::txFloat /*offset*/> >
+std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat /*Duration*/, Base::txFloat /*offset*/>>
 TAD_SceneLoader::TAD_MergeViewer::timestamp_direction_pair_vector() const TX_NOEXCEPT {
-  std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat /*Duration*/, Base::txFloat /*offset*/> > retVec;
+  std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat /*Duration*/, Base::txFloat /*offset*/>> retVec;
   if (_plus_(EventActionType::TIME_TRIGGER) == ActionType()) {
     TX_MARK("profile=\"0.0, +1, 4.5, v; 5.0, 0, 4.5, v; 9.1,-2, 3.0, 2.0\"");
     retVec = float_int_pair_parser(profile());
@@ -828,11 +947,11 @@ TAD_SceneLoader::TAD_MergeViewer::timestamp_direction_pair_vector() const TX_NOE
 }
 
 std::vector<std::tuple<Base::txFloat, Base::txInt, TAD_SceneLoader::DistanceProjectionType, Base::txFloat /*Duration*/,
-                       Base::txFloat /*offset*/, Base::txUInt> >
+                       Base::txFloat /*offset*/, Base::txUInt>>
 TAD_SceneLoader::TAD_MergeViewer::ttc_direction_pair_vector() const TX_NOEXCEPT {
   using namespace boost::algorithm;
   std::vector<std::tuple<Base::txFloat, Base::txInt, Base::ISceneLoader::DistanceProjectionType,
-                         Base::txFloat /*Duration*/, Base::txFloat /*offset*/, Base::txUInt> >
+                         Base::txFloat /*Duration*/, Base::txFloat /*offset*/, Base::txUInt>>
       retVec;
   if (_plus_(EventActionType::TTC_EgoDist_With_DefaultProjection) == ActionType()) {
     TX_MARK("profile=\"ttc 3.0, 1;egodistance 6.0, -1\"");
@@ -858,11 +977,11 @@ TAD_SceneLoader::TAD_MergeViewer::ttc_direction_pair_vector() const TX_NOEXCEPT 
   return retVec;
 }
 std::vector<std::tuple<Base::txFloat, Base::txInt, TAD_SceneLoader::DistanceProjectionType, Base::txFloat /*Duration*/,
-                       Base::txFloat /*offset*/, Base::txUInt> >
+                       Base::txFloat /*offset*/, Base::txUInt>>
 TAD_SceneLoader::TAD_MergeViewer::egodistance_direction_pair_vector() const TX_NOEXCEPT {
   using namespace boost::algorithm;
   std::vector<std::tuple<Base::txFloat, Base::txInt, Base::ISceneLoader::DistanceProjectionType,
-                         Base::txFloat /*Duration*/, Base::txFloat /*offset*/, Base::txUInt> >
+                         Base::txFloat /*Duration*/, Base::txFloat /*offset*/, Base::txUInt>>
       retVec;
   if (_plus_(EventActionType::TTC_EgoDist_With_DefaultProjection) == ActionType()) {
     TX_MARK("profile=\"ttc 3.0, 1;egodistance 6.0, -1\"");
@@ -948,9 +1067,9 @@ Base::ISceneLoader::EventActionType TAD_SceneLoader::TAD_VelocityViewer::ActionT
   return m_type;
 }
 
-std::vector<std::pair<Base::txFloat, Base::txFloat> > TAD_SceneLoader::TAD_VelocityViewer::timestamp_speed_pair_vector()
+std::vector<std::pair<Base::txFloat, Base::txFloat>> TAD_SceneLoader::TAD_VelocityViewer::timestamp_speed_pair_vector()
     const TX_NOEXCEPT {
-  std::vector<std::pair<Base::txFloat, Base::txFloat> > retVec;
+  std::vector<std::pair<Base::txFloat, Base::txFloat>> retVec;
   if (_plus_(EventActionType::TIME_TRIGGER) == ActionType()) {
     TX_MARK("profile=\"0.0, 3.3; 5.0, 4.4; 9.1, 5.5\"");
     retVec = float_float_pair_parser(profile());
@@ -958,10 +1077,10 @@ std::vector<std::pair<Base::txFloat, Base::txFloat> > TAD_SceneLoader::TAD_Veloc
   return retVec;
 }
 
-std::vector<std::tuple<Base::txFloat, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt> >
+std::vector<std::tuple<Base::txFloat, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt>>
 TAD_SceneLoader::TAD_VelocityViewer::ttc_speed_pair_vector() const TX_NOEXCEPT {
   using namespace boost::algorithm;
-  std::vector<std::tuple<Base::txFloat, Base::txFloat, DistanceProjectionType, Base::txUInt> > retVec;
+  std::vector<std::tuple<Base::txFloat, Base::txFloat, DistanceProjectionType, Base::txUInt>> retVec;
   if (_plus_(EventActionType::TTC_EgoDist_With_DefaultProjection) == ActionType()) {
     TX_MARK("profile=\"ttc 3.0, 1.2;egodistance 6.0, -1.6\"");
     retVec = float_float_pair_parser(profile(), FLAGS_EventTypeTTC);
@@ -985,10 +1104,10 @@ TAD_SceneLoader::TAD_VelocityViewer::ttc_speed_pair_vector() const TX_NOEXCEPT {
   return retVec;
 }
 
-std::vector<std::tuple<Base::txFloat, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt> >
+std::vector<std::tuple<Base::txFloat, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt>>
 TAD_SceneLoader::TAD_VelocityViewer::egodistance_speed_pair_vector() const TX_NOEXCEPT {
   using namespace boost::algorithm;
-  std::vector<std::tuple<Base::txFloat, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt> >
+  std::vector<std::tuple<Base::txFloat, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt>>
       retVec;
   if (_plus_(EventActionType::TTC_EgoDist_With_DefaultProjection) == ActionType()) {
     TX_MARK("profile=\"ttc 3.0, 1.2;egodistance 6.0, -1.6\"");
@@ -1058,17 +1177,17 @@ TAD_SceneLoader::EventActionType TAD_SceneLoader::TAD_PedestriansEvent_time_velo
 }
 
 std::vector<
-    std::tuple<Base::txFloat, Base::txInt, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt> >
+    std::tuple<Base::txFloat, Base::txInt, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt>>
 TAD_SceneLoader::TAD_PedestriansEvent_time_velocity_Viewer::ttc_threshold_direction_velocity_tuple_vector() const
     TX_NOEXCEPT {
-  return std::vector<std::tuple<txFloat, txInt, txFloat, DistanceProjectionType, Base::txUInt> >();
+  return std::vector<std::tuple<txFloat, txInt, txFloat, DistanceProjectionType, Base::txUInt>>();
 }
 
 std::vector<
-    std::tuple<Base::txFloat, Base::txInt, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt> >
+    std::tuple<Base::txFloat, Base::txInt, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt>>
 TAD_SceneLoader::TAD_PedestriansEvent_time_velocity_Viewer::egodistance_threshold_direction_velocity_tuple_vector()
     const TX_NOEXCEPT {
-  return std::vector<std::tuple<txFloat, txInt, txFloat, DistanceProjectionType, Base::txUInt> >();
+  return std::vector<std::tuple<txFloat, txInt, txFloat, DistanceProjectionType, Base::txUInt>>();
 }
 
 Base::txString TAD_SceneLoader::TAD_PedestriansEvent_time_velocity_Viewer::Str() const TX_NOEXCEPT {
@@ -1078,14 +1197,14 @@ Base::txString TAD_SceneLoader::TAD_PedestriansEvent_time_velocity_Viewer::Str()
   return ss.str();
 }
 
-std::vector<std::pair<Base::txFloat, Base::txFloat> >
+std::vector<std::pair<Base::txFloat, Base::txFloat>>
 TAD_SceneLoader::TAD_PedestriansEvent_time_velocity_Viewer::timestamp_speed_pair_vector() const TX_NOEXCEPT {
-  return std::vector<std::pair<Base::txFloat, Base::txFloat> >();
+  return std::vector<std::pair<Base::txFloat, Base::txFloat>>();
 }
 
-std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat> >
+std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat>>
 TAD_SceneLoader::TAD_PedestriansEvent_time_velocity_Viewer::timestamp_direction_speed_tuple_vector() const TX_NOEXCEPT {
-  std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat> > retVec;
+  std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat>> retVec;
   if (_plus_(EventActionType::TIME_TRIGGER) == ActionType()) {
     TX_MARK("profile=\"time,direction,velocity;time,direction,velocity;time,direction,velocity\"");
     retVec = float_int_float_tuple_parser(profile());
@@ -1093,14 +1212,14 @@ TAD_SceneLoader::TAD_PedestriansEvent_time_velocity_Viewer::timestamp_direction_
   return retVec;
 }
 
-std::vector<std::tuple<Base::txFloat, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt> >
+std::vector<std::tuple<Base::txFloat, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt>>
 TAD_SceneLoader::TAD_PedestriansEvent_time_velocity_Viewer::ttc_speed_pair_vector() const TX_NOEXCEPT {
-  return std::vector<std::tuple<Base::txFloat, Base::txFloat, DistanceProjectionType, Base::txUInt> >();
+  return std::vector<std::tuple<Base::txFloat, Base::txFloat, DistanceProjectionType, Base::txUInt>>();
 }
 
-std::vector<std::tuple<Base::txFloat, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt> >
+std::vector<std::tuple<Base::txFloat, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt>>
 TAD_SceneLoader::TAD_PedestriansEvent_time_velocity_Viewer::egodistance_speed_pair_vector() const TX_NOEXCEPT {
-  return std::vector<std::tuple<Base::txFloat, Base::txFloat, DistanceProjectionType, Base::txUInt> >();
+  return std::vector<std::tuple<Base::txFloat, Base::txFloat, DistanceProjectionType, Base::txUInt>>();
 }
 #endif /*__TX_Mark__("TAD_SceneLoader::TAD_PedestriansEvent_time_velocity_Viewer")*/
 
@@ -1144,17 +1263,17 @@ TAD_SceneLoader::EventActionType TAD_SceneLoader::TAD_PedestriansEvent_event_vel
 }
 
 std::vector<
-    std::tuple<Base::txFloat, Base::txInt, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt> >
+    std::tuple<Base::txFloat, Base::txInt, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt>>
 TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::ttc_threshold_direction_velocity_tuple_vector() const
     TX_NOEXCEPT {
-  return std::vector<std::tuple<txFloat, txInt, txFloat, DistanceProjectionType, Base::txUInt> >();
+  return std::vector<std::tuple<txFloat, txInt, txFloat, DistanceProjectionType, Base::txUInt>>();
 }
 
 std::vector<
-    std::tuple<Base::txFloat, Base::txInt, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt> >
+    std::tuple<Base::txFloat, Base::txInt, Base::txFloat, Base::ISceneLoader::DistanceProjectionType, Base::txUInt>>
 TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::egodistance_threshold_direction_velocity_tuple_vector()
     const TX_NOEXCEPT {
-  return std::vector<std::tuple<txFloat, txInt, txFloat, DistanceProjectionType, Base::txUInt> >();
+  return std::vector<std::tuple<txFloat, txInt, txFloat, DistanceProjectionType, Base::txUInt>>();
 }
 
 Base::txString TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::Str() const TX_NOEXCEPT {
@@ -1164,39 +1283,39 @@ Base::txString TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::Str(
   return ss.str();
 }
 
-std::vector<std::pair<Base::txFloat, Base::txFloat> >
+std::vector<std::pair<Base::txFloat, Base::txFloat>>
 TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::timestamp_speed_pair_vector() const TX_NOEXCEPT {
-  return std::vector<std::pair<Base::txFloat, Base::txFloat> >();
+  return std::vector<std::pair<Base::txFloat, Base::txFloat>>();
 }
 
 std::vector<
     std::tuple<Base::txFloat, Base::txFloat,
-               TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::DistanceProjectionType, Base::txUInt> >
+               TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::DistanceProjectionType, Base::txUInt>>
 TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::ttc_speed_pair_vector() const TX_NOEXCEPT {
   return std::vector<
       std::tuple<Base::txFloat, Base::txFloat,
-                 TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::DistanceProjectionType, Base::txUInt> >();
+                 TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::DistanceProjectionType, Base::txUInt>>();
 }
 
 std::vector<
     std::tuple<Base::txFloat, Base::txFloat,
-               TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::DistanceProjectionType, Base::txUInt> >
+               TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::DistanceProjectionType, Base::txUInt>>
 TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::egodistance_speed_pair_vector() const TX_NOEXCEPT {
-  return std::vector<std::tuple<Base::txFloat, Base::txFloat, DistanceProjectionType, Base::txUInt> >();
+  return std::vector<std::tuple<Base::txFloat, Base::txFloat, DistanceProjectionType, Base::txUInt>>();
 }
 
-std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat> >
+std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat>>
 TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::timestamp_direction_speed_tuple_vector() const
     TX_NOEXCEPT {
-  return std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat> >();
+  return std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat>>();
 }
 
 std::vector<
     std::tuple<Base::txFloat, Base::txInt, Base::txFloat,
-               TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::DistanceProjectionType, Base::txUInt> >
+               TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::DistanceProjectionType, Base::txUInt>>
 TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::ttc_direction_speed_pair_vector() const TX_NOEXCEPT {
   using namespace boost::algorithm;
-  std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat, DistanceProjectionType, Base::txUInt> > retVec;
+  std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat, DistanceProjectionType, Base::txUInt>> retVec;
   if (_plus_(EventActionType::TTC_EgoDist_With_SpecialProjection_With_TriggerIndex) == ActionType()) {
     TX_MARK("profile=\"ttc laneprojection 3.0,direction,1.2 [4];egodistance laneprojection 6.0,direction,-1.6 [1]\"");
     retVec = float_int_float_tuple_parser_with_projectionType_with_triggerIndex(profile(), FLAGS_EventTypeTTC);
@@ -1217,11 +1336,11 @@ TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::ttc_direction_speed
 
 std::vector<
     std::tuple<Base::txFloat, Base::txInt, Base::txFloat,
-               TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::DistanceProjectionType, Base::txUInt> >
+               TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::DistanceProjectionType, Base::txUInt>>
 TAD_SceneLoader::TAD_PedestriansEvent_event_velocity_Viewer::egodistance_direction_speed_pair_vector() const
     TX_NOEXCEPT {
   using namespace boost::algorithm;
-  std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat, DistanceProjectionType, Base::txUInt> > retVec;
+  std::vector<std::tuple<Base::txFloat, Base::txInt, Base::txFloat, DistanceProjectionType, Base::txUInt>> retVec;
   if (_plus_(EventActionType::TTC_EgoDist_With_SpecialProjection_With_TriggerIndex) == ActionType()) {
     TX_MARK("profile=\"ttc laneprojection 3.0,1.2 [4];egodistance laneprojection 6.0,-1.6 [1]\"");
     retVec = float_int_float_tuple_parser_with_projectionType_with_triggerIndex(profile(), FLAGS_EventTypeEgoDistance);

@@ -13,6 +13,7 @@
 #include <limits>
 #include "control.pb.h"
 #include "control_v2.pb.h"
+#include "egoMapData.pb.h"
 #include "location.pb.h"
 #include "traffic.pb.h"
 #include "trajectory.pb.h"
@@ -203,6 +204,18 @@ class txSimulationTemplate : public txLoop {
    */
   virtual void PublishMessage(tx_sim::StepHelper& helper, const txString& strTopics,
                               const sim_msg::Control_V2& sendControl) TX_NOEXCEPT;
+
+  /**
+   * @brief 向指定的EgoMapData话题发布主车周边地图消息
+   *
+   * 该函数向指定的话题发布控制消息。
+   *
+   * @param helper tx_sim::StepHelper类型的帮助对象，用于获取和设置模拟过程中的一些信息
+   * @param strTopics 字符串类型的话题列表，多个话题用英文逗号分隔
+   * @param egoMapData sim_msg::EgoMapData类型的已解析好的ProtoBuf格式的控制消息字符串
+   */
+  virtual void PublishMessage(tx_sim::StepHelper& helper, const txString& strTopics, const txString& groupName,
+                              const sim_msg::EgoMapData& egoMapData) TX_NOEXCEPT;
 
   /**
    * @brief 获取订阅的消息

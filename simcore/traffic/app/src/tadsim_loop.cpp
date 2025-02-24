@@ -20,6 +20,15 @@
 TX_NAMESPACE_OPEN(TrafficFlow)
 
 void ParseInitParameter(tx_sim::InitHelper& helper) TX_NOEXCEPT {
+  if (Utils::Str2Type(helper.GetParameter("LogLevel_TADSim_Loop"), FLAGS_LogLevel_TADSim_Loop)) {
+    LogInfo << "[Input_Parameter] " << TX_FLAGS(LogLevel_TADSim_Loop);
+  }
+  if (Utils::Str2Type(helper.GetParameter("LogLevel_SceneLoader"), FLAGS_LogLevel_SceneLoader)) {
+    LogInfo << "[Input_Parameter] " << TX_FLAGS(LogLevel_SceneLoader);
+  }
+  if (Utils::Str2Type(helper.GetParameter("LogLevel_MapSDK"), FLAGS_LogLevel_MapSDK)) {
+    LOG(INFO) << "[Input_Parameter] " << TX_FLAGS(LogLevel_MapSDK);
+  }
   if (Utils::Str2Type(helper.GetParameter("EnableTrafficVisionFilter"), FLAGS_EnableTrafficVisionFilter)) {
     LogInfo << "[Input_Parameter] " << TX_FLAGS(EnableTrafficVisionFilter);
   }
@@ -27,7 +36,9 @@ void ParseInitParameter(tx_sim::InitHelper& helper) TX_NOEXCEPT {
   if (Utils::Str2Type(helper.GetParameter("TrafficVisionFilterRadius"), FLAGS_TrafficVisionFilterRadius)) {
     LogInfo << "[Input_Parameter] " << TX_FLAGS(TrafficVisionFilterRadius);
   }
-
+  if (Utils::Str2Type(helper.GetParameter("LogLevel_SceneReader"), FLAGS_LogLevel_SceneReader)) {
+    LogInfo << "[Input_Parameter] " << TX_FLAGS(LogLevel_SceneReader);
+  }
   if (Utils::Str2Type(helper.GetParameter("TrafficVisionFilterAltitudeDiff"), FLAGS_TrafficVisionFilterAltitudeDiff)) {
     LogInfo << "[Input_Parameter] " << TX_FLAGS(TrafficVisionFilterAltitudeDiff);
   }

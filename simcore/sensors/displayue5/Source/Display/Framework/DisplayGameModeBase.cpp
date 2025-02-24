@@ -263,6 +263,10 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
                 }
                 UE_LOG(LogSimSystem, Error, TEXT("Auto Road Origin is %f, %f, %f"), HadMapActor->RefX,
                     HadMapActor->RefY, HadMapActor->RefZ);
+                const TMap<FString, TPair<FString, FVector>>& MapModelData =
+                    GetGameInstance<UDisplayGameInstance>()->GetCatalogDataSource()->GetMapModelData();
+                HadMapActor->DrawMap(ResetInPtr->mapDataBasePath, ResetInPtr->decryptFilePath, bArtLevel, MapModelData,
+                    ResetInPtr->ModelPath);
             }
             else
             {
@@ -275,10 +279,6 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
                 UE_LOG(LogSimSystem, Error, TEXT("Map Defined Origin is %f, %f, %f"), HadMapActor->RefX,
                     HadMapActor->RefY, HadMapActor->RefZ);
             }
-            const TMap<FString, TPair<FString, FVector>>& MapModelData =
-                GetGameInstance<UDisplayGameInstance>()->GetCatalogDataSource()->GetMapModelData();
-            HadMapActor->DrawMap(ResetInPtr->mapDataBasePath, ResetInPtr->decryptFilePath, bArtLevel, MapModelData,
-                ResetInPtr->ModelPath);
         }
 
         FLocalResetIn* LocalResetInPtr = static_cast<FLocalResetIn*>(&_LocalData);
@@ -301,11 +301,12 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
             hadmapue4::HadmapManager::Get()->LonLatToLocal(x, y, z, EgoConfig.startLocation);
 
             UE_LOG(LogSimSystem, Warning,
-                TEXT("egoType %s egoName %s lon %f lat %f alt %f x %f y %f z %f origin lon %f lat "
+                TEXT("egoType %s egoName %s lon %f lat %f alt %f x %f y %f z %f yaw %f origin lon %f lat "
                      "%f alt %f"),
                 *Elem.egoType, *Elem.egoName, Elem.startLon, Elem.startLat, Elem.startAlt, EgoConfig.startLocation.X,
-                EgoConfig.startLocation.Y, EgoConfig.startLocation.Z, hadmapue4::HadmapManager::Get()->mapOriginLon,
-                hadmapue4::HadmapManager::Get()->mapOriginLat, hadmapue4::HadmapManager::Get()->mapOriginAlt);
+                EgoConfig.startLocation.Y, EgoConfig.startLocation.Z, Elem.startTheta * 180 / PI,
+                hadmapue4::HadmapManager::Get()->mapOriginLon, hadmapue4::HadmapManager::Get()->mapOriginLat,
+                hadmapue4::HadmapManager::Get()->mapOriginAlt);
 
             // Rotation
             FRotator egoVehicleRotation(ForceInit);
@@ -351,9 +352,9 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
             hadmapue4::HadmapManager::Get()->LonLatToLocal(
                 Location.position().x(), Location.position().y(), Location.position().z(), EgoInput.location);
 
-            UE_LOG(LogSimSystem, Display, TEXT("Update ego lon %f lat %f alt %f x %f y %f z %f"),
+            UE_LOG(LogSimSystem, Display, TEXT("Update ego lon %f lat %f alt %f x %f y %f z %f yaw %f"),
                 Location.position().x(), Location.position().y(), Location.position().z(), EgoInput.location.X,
-                EgoInput.location.Y, EgoInput.location.Z);
+                EgoInput.location.Y, EgoInput.location.Z, Location.rpy().z());
 
             // Rotation
             FRotator egoVehicleRotation(ForceInit);
@@ -539,6 +540,12 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
     }
 }
 
+void ADisplayGameModeBase::FillEgoMapData(FSimUpdateOut& _OutData, double lon, double lat, double alt)
+{
+    auto& EgoMapData = _OutData.egoMapData;
+    // hadmapue4::HadmapManager::Get()->FillEgoMapData(EgoMapData);
+}
+
 void ADisplayGameModeBase::ConvertData_LocalToSim(const FLocalData& _LocalData, FSimData& _SimData)
 {
     if (_LocalData.name == TEXT("RESET"))
@@ -563,6 +570,9 @@ void ADisplayGameModeBase::ConvertData_LocalToSim(const FLocalData& _LocalData, 
                     const auto& out = UpdateInPtr->transportManager.vehicleManagerOut.egoOutArry[i];
                     double Px, Py, Pz = 0.0;
                     hadmapue4::HadmapManager::Get()->LocalToLonLat(out.locPose, Px, Py, Pz);
+                    UE_LOG(LogTemp, Warning, TEXT("SEND POSE: %f %f %f %f %f %f"), out.locPose.X, out.locPose.Y,
+                        out.locPose.Z, Px, Py, Pz);
+                    FillEgoMapData(*SimUpdateInPtr, Px, Py, Pz);
                     auto* object = SimUpdateInPtr->trafficPose.add_egos();
                     object->set_id(out.id + 1);
                     object->set_timestamp(out.timeStamp0);
@@ -603,7 +613,7 @@ void ADisplayGameModeBase::ConvertData_LocalToSim(const FLocalData& _LocalData, 
                     object->set_center_x(out.bboxCenter.X * 0.01);
                     object->set_center_y(out.bboxCenter.Y * 0.01);
                     object->set_center_z(out.bboxCenter.Z * 0.01);
-                    if(out.bHasSubComponent)
+                    if (out.bHasSubComponent)
                     {
                         hadmapue4::HadmapManager::Get()->LocalToLonLat(out.subComponentLocation, Px, Py, Pz);
                         object = SimUpdateInPtr->trafficPose.add_cars();
@@ -653,6 +663,10 @@ void ADisplayGameModeBase::ConvertData_LocalToSim(const FLocalData& _LocalData, 
             else if (senbuf.type == "Camera")
             {
                 sensor->set_type(sim_msg::SensorRaw_Type_TYPE_CAMERA);
+            }
+            else if (senbuf.type == "Fisheye")
+            {
+                sensor->set_type(sim_msg::SensorRaw_Type_TYPE_FISHEYE);
             }
         }
         _SimData.name = _LocalData.name;

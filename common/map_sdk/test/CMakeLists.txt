@@ -25,9 +25,9 @@ else()
     ../datamodel/include
   )
   link_directories(
-    ../devel/bin
+    ../hadmap/lib
   )
-  set(LIB_MAPSDK mapengine mapdb transmission mapimport datamodel spatialite sqlite3 curl proj)
+  set(LIB_MAPSDK routingmap mapengine mapdb transmission  mapimport datamodel spatialite sqlite3 curl proj)
   set(DEP_LIBS_SYS pthread)
   set(CMAKE_SKIP_RPATH TRUE)
   set(CMAKE_SKIP_BUILD_RPATH TRUE)

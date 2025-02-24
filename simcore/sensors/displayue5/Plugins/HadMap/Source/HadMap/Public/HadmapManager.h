@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "hadmap.h"
-#include "mapengine/hadmap_engine.h"
 #include "mapengine/hadmap_codes.h"
+#include "mapengine/hadmap_engine.h"
 #include "routingmap/routing_map.h"
 
 namespace flann
@@ -64,7 +64,7 @@ private:
     hadmap::txMapInterfacePtr routingmapInterface = NULL;
 
     HadmapManager();
-    bool CreateHadmapHandle();
+    bool CreateHadmapHandle(const TArray<FVector>& _EgoPath = TArray<FVector>());
     void CloseHadmapHandle();
 
 public:
@@ -81,7 +81,7 @@ public:
     };
     // Init hadmap, load hadmap default
     bool Init(MapMode _Mode, FString _DBPath, double _OriginLon, double _OriginLat, double _OriginAlt,
-        const FString& _GPSFilePath = TEXT(""));
+        const FString& _GPSFilePath = TEXT(""), const TArray<FVector>& _EgoPath = TArray<FVector>());
     // Init hadmap, do not load hadmap default
     bool Init(double _OriginLon, double _OriginLat, double _OriginAlt, const FString& _GPSFilePath = TEXT(""));
     // Get map type

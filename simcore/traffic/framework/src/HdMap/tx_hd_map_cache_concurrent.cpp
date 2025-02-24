@@ -21,10 +21,13 @@
 #include "tx_sys_info.h"
 const bool showMapCacheLog = true;
 #define LogInfo LOG_IF(INFO, FLAGS_LogLevel_MapSDK)
+#define LogError LOG_IF(ERROR, FLAGS_LogLevel_MapSDK)
 TX_NAMESPACE_OPEN(HdMap)
 
 void HadmapCacheConCurrent::ShowCacheInfo() TX_NOEXCEPT {
   LOG(INFO) << TX_VARS(pMapHandle) << std::endl
+            << TX_VARS(s_routing_map) << std::endl
+            << TX_VARS(s_ego_path.size()) << std::endl
             << TX_VARS(s_id2roadPtr.size()) << std::endl
             << TX_VARS(s_sectionUid2sectionPtr.size()) << std::endl
             << TX_VARS(s_id2lanelinkPtr.size()) << std::endl
@@ -58,6 +61,8 @@ Base::txLaneID HadmapCacheConCurrent::LaneUtilityInfo::GetLaneIndex() const TX_N
 }
 
 hadmap::txMapHandle *HadmapCacheConCurrent::pMapHandle = nullptr;
+hadmap::RoutingMap *HadmapCacheConCurrent::s_routing_map = nullptr;
+hadmap::PointVec HadmapCacheConCurrent::s_ego_path;
 hadmap::PointVec HadmapCacheConCurrent::s_envelope;
 HadmapCacheConCurrent::id2roadPtrType HadmapCacheConCurrent::s_id2roadPtr;
 HadmapCacheConCurrent::sectionUid2sectionPtrType HadmapCacheConCurrent::s_sectionUid2sectionPtr;
@@ -115,6 +120,7 @@ HadmapCacheConCurrent::hdmapTrick_LaneUidLeftRightType HadmapCacheConCurrent::s_
 HadmapCacheConCurrent::hdmapTrick_RoadLaneKeepTimeType HadmapCacheConCurrent::s_hdmapTrick_RoadLaneKeepTimeType;
 
 Base::txBool HadmapCacheConCurrent::sValid = false;
+Base::txString HadmapCacheConCurrent::s_last_map_file_path = "";
 
 Coord::txENU HadmapCacheConCurrent::s_bottom_left;
 Coord::txENU HadmapCacheConCurrent::s_top_right;
@@ -124,6 +130,8 @@ Base::txBool HadmapCacheConCurrent::Release() TX_NOEXCEPT {
   if (NonNull_Pointer(pMapHandle)) {
     hadmap::hadmapClose(&pMapHandle);
   }
+  s_routing_map = nullptr;
+  s_ego_path.clear();
   pMapHandle = nullptr;
   s_id2roadPtr.clear();
   s_sectionUid2sectionPtr.clear();
@@ -467,7 +475,17 @@ void HadmapCacheConCurrent::PrintMapFile(const Base::txString mapPath) TX_NOEXCE
 Base::txBool HadmapCacheConCurrent::Initialize(const InitParams_t &refParam) TX_NOEXCEPT {
   using namespace Utils;
   using namespace boost::filesystem;
+
+  // if(s_last_map_file_path == refParam.strHdMapFilePath){
+  //   LOG(INFO) << "skip init, same map" << s_last_map_file_path;
+  //   return true;
+  // }else{
+  //   LOG(INFO) << "init map" << s_last_map_file_path;
+  // }
+
   Release();
+
+  // s_last_map_file_path = refParam.strHdMapFilePath;
 
   {
     FilePath file_name = FilePath(refParam.strHdMapFilePath).filename();
@@ -504,6 +522,26 @@ Base::txBool HadmapCacheConCurrent::Initialize(const InitParams_t &refParam) TX_
   map_range_list.emplace_back(std::make_tuple(s_envelope[0], s_envelope[1]));
   LOG(INFO) << "connect hadmap : " << refParam.strHdMapFilePath << Utils::ToString(s_envelope[0])
             << Utils::ToString(s_envelope[1]) << " start...";
+  s_routing_map = new hadmap::RoutingMap(hadmap::CoordType::COORD_WGS84, refParam.strHdMapFilePath);
+  s_ego_path = refParam.egoPath;
+  hadmap::PointVec start_end;
+  hadmap::txRoute route;
+  const auto range = (*refParam.op_map_range);
+  start_end.push_back(range.bottom_left);
+  start_end.push_back(range.top_right);
+  if (s_routing_map->routingSync(start_end, route)) {
+    LOG(INFO) << "routing good ";
+    for (auto &route_node : route) {
+      LOG(INFO) << TX_VARS(route_node.getId()) << (int)route_node.getRouteType() << " lane id "
+                << route_node.getLaneId() << " pre id " << route_node.getPreId() << " pre lane id "
+                << route_node.getPreLaneId() << " next id " << route_node.getNextId() << "next lane id "
+                << route_node.getNextLaneId() << " length " << route_node.getLength();
+    }
+
+  } else {
+    LOG(INFO) << "routing failed ";
+  }
+
 #ifdef ON_CLOUD
   if (CallSucc(Utils::CheckRetCode(
           hadmap::hadmapConnect(refParam.strHdMapFilePath.c_str(), map_range_list, mapType, &pMapHandle)))) {
@@ -514,9 +552,13 @@ Base::txBool HadmapCacheConCurrent::Initialize(const InitParams_t &refParam) TX_
 #if __TX_Mark__("GetAllRoads")
 
     Coord::txWGS84 envelope_0(s_envelope[0]), envelope_1(s_envelope[1]);
-    auto edgeLength = envelope_0.ToENU().ENU2D() - envelope_1.ToENU().ENU2D();
+
+    Base::txVec2 min = envelope_0.ToENU().ENU2D();
+    Base::txVec2 max = envelope_1.ToENU().ENU2D();
+    auto edgeLength = min - max;
+    LOG(INFO) << TX_VARS(edgeLength.x()) << TX_VARS(edgeLength.y());
     const Base::txFloat envelope_area = std::fabs(edgeLength[0]) * std::fabs(edgeLength[1]);
-    LogInfo << TX_VARS(envelope_area) << TX_VARS(envelope_0) << TX_VARS(envelope_1);
+    LOG(INFO) << TX_VARS(envelope_area) << TX_VARS(envelope_0) << TX_VARS(envelope_1);
 
     hadmap::txLanes pLanes;
     LOG(INFO) << "call hadmap::getLanes start.";
@@ -1319,13 +1361,14 @@ void HadmapCacheConCurrent::MapCheck(const hadmap::txLanes &lanePtrVec, const ha
     }
   }
   LOG(INFO) << "Check Lane Uid On Section Pass.";
-  LOG(INFO) << "Start Map Check Pass.";  // txPAUSE;
+  LOG(INFO) << "Finish Map Check Pass.";  // txPAUSE;
 }
 
 HadmapCacheConCurrent::txBool HadmapCacheConCurrent::RegisterLaneSyncInit(const hadmap::txLanePtr lanePtr) TX_NOEXCEPT {
   if (Utils::IsLaneValid(lanePtr)) {
     const Base::txLaneUId _laneUid = lanePtr->getTxLaneId();
     txBool ret = true;
+    //(INFO) << "Start Processing Lane " << _laneUid << " road id " << lanePtr->getRoadId() << std::endl;
 #if __TX_Mark__("GetTxLanePtr")
     { ret = ret TX_MARK("Logic short circuit") && NonNull_Pointer(GetTxLanePtr(_laneUid)); }
 #endif /*__TX_Mark__("GetTxLanePtr")*/
@@ -1347,6 +1390,7 @@ HadmapCacheConCurrent::txBool HadmapCacheConCurrent::RegisterLaneSyncInit(const 
       HdMap::HadmapCacheConCurrent::GetLaneMark_LR(/*_laneUid*/ lanePtr);
     }
 #endif /*__TX_Mark__("GetLaneMark_LR")*/
+    // LOG(INFO) << "Finish Processing Lane " << _laneUid << std::endl;
     return ret;
   } else {
     LOG(WARNING) << "RegisterLaneSyncInit failure, lanePtr invalid.";
@@ -1580,6 +1624,7 @@ HadmapCacheConCurrent::txBool HadmapCacheConCurrent::RegisterLanePrePostTopoInfo
 void HadmapCacheConCurrent::RegisterRoadInfoSyncRunTime(const hadmap::txRoadPtr _roadPtr) TX_NOEXCEPT {
   Base::Info_Road_t _roadInfo(_roadPtr->getId());
   RoadLocInfo2GeomInfoType::const_accessor ca;
+  // LOG(INFO) << "start processing road " << _roadPtr->getId();
   if (CallFail(s_roadlocinfo2GeomInfo.find(ca, _roadInfo))) {
     ca.release();
     const hadmap::txLineCurve *targetLaneCurve = dynamic_cast<const hadmap::txLineCurve *>(_roadPtr->getGeometry());
@@ -1598,6 +1643,7 @@ void HadmapCacheConCurrent::RegisterRoadInfoSyncRunTime(const hadmap::txRoadPtr 
           } else {
             LOG(FATAL) << " make_shared txRoadInfo Pointer failure." << _roadInfo;
           }
+          // LOG(INFO) << "finish processing road " << _roadPtr->getId();
           return;
         } else if (controlPointSize >= 2 TX_MARK("may be 3")) {
           auto laneInfoPtr =
@@ -1610,6 +1656,7 @@ void HadmapCacheConCurrent::RegisterRoadInfoSyncRunTime(const hadmap::txRoadPtr 
           } else {
             LOG(FATAL) << " make_shared txRoadShortInfo Pointer failure." << _roadInfo;
           }
+          // LOG(INFO) << "finish processing road " << _roadPtr->getId();
           return;
         }
         LOG(FATAL) << " RegisterLaneSync " << TX_VARS(controlPointSize);
@@ -3491,6 +3538,253 @@ Base::txBool HadmapCacheConCurrent::QueryTrick_LaneKeepTime(const txRoadID rid,
   } else {
     return false;
   }
+}
+
+sim_msg::EgoMapData::LANE_ARROW FromtxLaneArrow(hadmap::LANE_ARROW lane_arrow) {
+  switch (lane_arrow) {
+    case hadmap::LANE_ARROW::LANE_ARROW_None:
+      return sim_msg::EgoMapData::LANE_ARROW_None;
+      break;
+    case hadmap::LANE_ARROW::LANE_ARROW_Straight:
+      return sim_msg::EgoMapData::LANE_ARROW_Straight;
+      break;
+    case hadmap::LANE_ARROW::LANE_ARROW_Left:
+      return sim_msg::EgoMapData::LANE_ARROW_Left;
+      break;
+    case hadmap::LANE_ARROW::LANE_ARROW_Right:
+      return sim_msg::EgoMapData::LANE_ARROW_Right;
+    case hadmap::LANE_ARROW::LANE_ARROW_Uturn:
+      return sim_msg::EgoMapData::LANE_ARROW_Uturn;
+      break;
+    case hadmap::LANE_ARROW::LANE_ARROW_SkewLeft:
+      return sim_msg::EgoMapData::LANE_ARROW_SkewLeft;
+      break;
+    case hadmap::LANE_ARROW::LANE_ARROW_SkewRight:
+      return sim_msg::EgoMapData::LANE_ARROW_SkewRight;
+      break;
+    case hadmap::LANE_ARROW::LANE_ARROW_StraightLeft:
+      return sim_msg::EgoMapData::LANE_ARROW_StraightLeft;
+      break;
+    case hadmap::LANE_ARROW::LANE_ARROW_StraightRight:
+      return sim_msg::EgoMapData::LANE_ARROW_StraightRight;
+      break;
+    case hadmap::LANE_ARROW::LANE_ARROW_LeftRight:
+      return sim_msg::EgoMapData::LANE_ARROW_LeftRight;
+      break;
+    case hadmap::LANE_ARROW::LANE_ARROW_LeftUturn:
+      return sim_msg::EgoMapData::LANE_ARROW_LeftUturn;
+      break;
+    case hadmap::LANE_ARROW::LANE_ARROW_StraightUturn:
+      return sim_msg::EgoMapData::LANE_ARROW_StraightUturn;
+      break;
+    default:
+      return sim_msg::EgoMapData::LANE_ARROW_None;
+  };
+}
+
+Base::txBool HadmapCacheConCurrent::QueryEgoMapData(double timestamp, const sim_msg::Location &egoLocation,
+                                                    sim_msg::EgoMapData &egoMapData) TX_NOEXCEPT {
+  using namespace hadmap;
+  if (pMapHandle && s_routing_map && s_ego_path.size() > 1) {
+    txPoint loc(egoLocation.position().x(), egoLocation.position().y(), egoLocation.position().z());
+
+    bool on_lane = false;
+    bool on_link = false;
+    hadmap::txLanePtr lane_ptr;
+    hadmap::txLaneLinkPtr link_ptr;
+
+    if (TX_HADMAP_DATA_OK == getLane(pMapHandle, loc, lane_ptr, 0.1)) {
+      LogInfo << "get lane";
+      on_lane = true;
+    }
+    if (TX_HADMAP_DATA_OK == getLaneLink(pMapHandle, loc, link_ptr, 0.1)) {
+      LogInfo << "get link";
+      on_link = true;
+    }
+
+    PointVec start_end;
+    txRoute route;
+    size_t start_route_index = 0;
+
+    double lane_s = 0.0;
+    double lane_l = 0.0;
+    double lane_yaw = 0.0;
+    double lane_length = 0.0;
+    double lane_dis_to_end = 0.0;
+
+    double link_s = 0.0;
+    double link_l = 0.0;
+    double link_yaw = 0.0;
+    double link_length = 0.0;
+    double link_dis_to_end = 0.0;
+
+    if (on_lane) {
+      double s, l;
+      if (lane_ptr->getGeometry()->xy2sl(loc.x, loc.y, lane_s, lane_l, lane_yaw)) {
+        lane_length = lane_ptr->getGeometry()->getLength();
+        lane_dis_to_end = lane_length - lane_s;
+        LogInfo << TX_VARS(lane_s) << TX_VARS(lane_dis_to_end);
+        on_lane = lane_s > 0.0 && lane_dis_to_end > 0.0;
+      } else {
+        LogInfo << "failed to get lane frenet  " << TX_VARS(loc.x) << TX_VARS(loc.y);
+        on_lane = false;
+      }
+    }
+
+    if (on_link) {
+      if (link_ptr->getGeometry()->xy2sl(loc.x, loc.y, link_s, link_l, link_yaw)) {
+        link_length = link_ptr->getGeometry()->getLength();
+        link_dis_to_end = link_length - link_s;
+        LogInfo << TX_VARS(link_s) << TX_VARS(link_dis_to_end);
+        on_link = link_s > 0.0 && link_dis_to_end > 0.0;
+      } else {
+        on_link = false;
+        LogInfo << "failed to get link frenet  " << TX_VARS(loc.x) << TX_VARS(loc.y);
+      }
+    }
+
+    if (on_lane && on_link) {
+      LogError << "on lane and on link";
+      return false;
+    }
+
+    if (!on_lane && !on_link) {
+      LogError << "not on lane and not on link";
+      return false;
+    }
+
+    if (on_lane) {
+      LogInfo << "on lane";
+      start_end.push_back(loc);
+      start_end.push_back(s_ego_path[s_ego_path.size() - 1]);
+      start_route_index = 0;
+    } else {
+      LogInfo << "on link";
+      auto from_lane_id = link_ptr->fromTxLaneId();
+      auto from_lane = GetTxLanePtr(from_lane_id);
+      if (!from_lane) {
+        LogError << "failed to find from lane " << TX_VARS(from_lane_id.roadId) << TX_VARS(from_lane_id.laneId);
+        return false;
+      }
+      auto from_lane_length = from_lane->getLength();
+      auto start = from_lane->getGeometry()->getPoint(from_lane_length / 2.0);
+      start_end.push_back(start);
+      start_end.push_back(s_ego_path[s_ego_path.size() - 1]);
+      start_route_index = 1;
+    }
+
+    egoMapData.set_on_lane(on_lane);
+    egoMapData.set_on_link(on_link);
+
+    if (s_routing_map->routingSync(start_end, route)) {
+      if (on_link && route.size() < 2) {
+        LogError << "on lane_link but route size less than 2";
+        return false;
+      }
+
+      LogInfo << "step routing good " << TX_VARS_NAME(route_size, route.size());
+      auto header = egoMapData.mutable_header();
+      header->set_time_stamp(timestamp);
+
+      auto &first_route_node = route[start_route_index];
+
+      // check first lane id match
+      if (on_lane) {
+        if (first_route_node.getId() != lane_ptr->getRoadId()) {
+          LogError << "on lane but road id mismatch ";
+          return false;
+        }
+        egoMapData.set_s(lane_s);
+        egoMapData.set_l(lane_l);
+        egoMapData.set_yaw(lane_yaw);
+        egoMapData.set_dis_to_end(lane_dis_to_end);
+      }
+
+      if (on_link) {
+        auto prev_id = first_route_node.getPreId();
+        auto prev_lane_id = first_route_node.getPreLaneId();
+        auto next_id = first_route_node.getNextId();
+        auto next_lane_id = first_route_node.getNextLaneId();
+        txLaneUId from_lane_id(prev_id, 0, prev_lane_id);
+        txLaneUId to_lane_id(next_id, 0, next_lane_id);
+        auto lane_link = GetTxLaneLinkPtr(from_lane_id, to_lane_id);
+        if (!lane_link) {
+          LogError << "cant get lane link ";
+          return false;
+        }
+        if (lane_link->getUniqueId() != link_ptr->getUniqueId()) {
+          LogError << "on link but link id mismatch " << TX_VARS_NAME(lane_link_id, lane_link->getUniqueId())
+                   << TX_VARS_NAME(route_lane_link_id, link_ptr->getUniqueId());
+        }
+        if (route.size() <= 1) {
+          LogError << "on link but route size less than 2";
+          return false;
+        }
+        egoMapData.set_s(link_s);
+        egoMapData.set_l(link_l);
+        egoMapData.set_yaw(link_yaw);
+        egoMapData.set_dis_to_end(link_dis_to_end);
+      }
+
+      for (size_t i = start_route_index; i < route.size(); ++i) {
+        auto &route_node = route[i];
+        LogInfo << TX_VARS(route_node.getId()) << TX_VARS(route_node.getLaneId())
+                << TX_VARS_NAME(type, (int)route_node.getRouteType()) << " pre id " << route_node.getPreId()
+                << " next id " << route_node.getNextId() << " length " << route_node.getLength();
+        auto route_type = route_node.getRouteType();
+        auto id = route_node.getId();
+        if (route_type == hadmap::txRouteNode::ROAD_ROUTE) {
+          auto lane_id = route_node.getLaneId();
+          txLaneId tx_lane_id(id, 0, lane_id);
+          auto lane = GetTxLanePtr(tx_lane_id);
+          if (lane) {
+            auto lane_length = lane->getLength();
+            auto lane_arrow = FromtxLaneArrow(lane->getLaneArrow());
+            auto route_node_proto = egoMapData.add_route_nodes();
+
+            auto lane_proto = route_node_proto->mutable_lane();
+            lane_proto->set_road_id(id);
+            lane_proto->set_lane_id(lane_id);
+            lane_proto->set_arrow(lane_arrow);
+            lane_proto->set_length(lane_length);
+          } else {
+            LogError << "failed to get lane " << TX_VARS(loc.x) << TX_VARS(loc.y) << TX_VARS(id) << TX_VARS(lane_id);
+          }
+        } else {
+          auto prev_id = route_node.getPreId();
+          auto prev_lane_id = route_node.getPreLaneId();
+          auto next_id = route_node.getNextId();
+          auto next_lane_id = route_node.getNextLaneId();
+          txLaneUId from_lane_id(prev_id, 0, prev_lane_id);
+          txLaneUId to_lane_id(next_id, 0, next_lane_id);
+          auto lane_link = GetTxLaneLinkPtr(from_lane_id, to_lane_id);
+          if (lane_link) {
+            auto link_data = lane_link->getTxData();
+            auto route_node_proto = egoMapData.add_route_nodes();
+            auto link_proto = route_node_proto->mutable_link();
+            link_proto->set_link_id(link_data.pkid);
+            link_proto->set_from_road_id(link_data.from_road_pkid);
+            link_proto->set_from_section_id(link_data.from_section_id);
+            link_proto->set_from_lane_id(link_data.from_lane_id);
+            link_proto->set_to_road_id(link_data.to_road_pkid);
+            link_proto->set_to_section_id(link_data.to_section_id);
+            link_proto->set_to_lane_id(link_data.to_lane_id);
+            link_proto->set_junction_id(link_data.junction_id);
+            link_proto->set_length(lane_link->getGeometry()->getLength());
+          } else {
+            LogInfo << "failed to get link " << TX_VARS_NAME(pre_road, route_node.getPreId())
+                    << TX_VARS_NAME(next_road, route_node.getNextId());
+          }
+        }
+      }
+    } else {
+      LogInfo << "step routing failed ";
+      return false;
+    }
+  } else {
+    return false;
+  }
+  return true;
 }
 
 void HadmapCacheConCurrent::MakeConsistency() TX_NOEXCEPT {}

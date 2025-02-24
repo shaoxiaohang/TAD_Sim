@@ -39,6 +39,7 @@ bool RouteGeneration::generateTrajectory() {
     NodePtr p_node = *it;
     RoadInfo p_road;
     p_road.roadId = p_node->nodeId.roadId;
+    p_road.laneId = p_node->nodeId.laneId;
     p_road.length = p_node->roadLen;
 
     traj.push_back(p_road);

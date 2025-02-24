@@ -48,7 +48,7 @@ ATransportPawn::ATransportPawn()
     springArm_Bird->SetupAttachment(meshComp, TEXT("FreeView"));
     springArm_Bird->SetRelativeRotation(FRotator(-89.f, 0.f, 0.f));
     springArm_Bird->SetRelativeLocation(FVector(0.f, 0.f, 200.f));
-    springArm_Bird->TargetArmLength = 2300;
+    springArm_Bird->TargetArmLength = 4300;
     springArm_Bird->bDoCollisionTest = false;
     springArm_Bird->ProbeChannel = ECollisionChannel::ECC_GameTraceChannel2;
 

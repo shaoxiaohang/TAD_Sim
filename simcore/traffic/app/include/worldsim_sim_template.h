@@ -103,6 +103,17 @@ class WorldsimSimLoop : public Base::txSimulationTemplate, public txPassiveSimTe
    */
   virtual void ReceiveEgoInfo(tx_sim::StepHelper& helper, const Base::TimeParamManager& timeMgr) TX_NOEXCEPT;
 
+  /**
+   * @brief 接收ego地图信息的虚函数，用以更新地图和导航信息
+   *
+   * @param helper 模拟步骤辅助类对象的引用
+   * @param timeMgr 时间参数管理器对象的引用
+   * @param EgoUnionLocation "EgoUnion/LOCATION"的系列化字符串，包含主车当前位置
+   * 
+   */
+  virtual void ReceiveEgoMapData(tx_sim::StepHelper& helper, const Base::TimeParamManager& timeMgr,
+                                 const Base::txString& EgoUnionLocation) TX_NOEXCEPT;
+
   // SimulationTraffic is called during the simulation to simulate traffic behavior.
   // It can be used to update the simulation state with traffic behavior information.
   /**

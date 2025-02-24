@@ -597,6 +597,32 @@ void ACameraSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
                 }
             }
         }
+        // png用自带的编码器
+        else if (imageFormat == EImageFormat::PNG)
+        {
+            getRawBuff();
+            if (BitData.empty())
+            {
+                UE_LOG(LogTemp, Warning, TEXT("CameraSensor: read image buf faild."));
+            }
+            else
+            {
+                IImageWrapperModule& ImageWrapperModule =
+                    FModuleManager::LoadModuleChecked<IImageWrapperModule>("ImageWrapper");
+                TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(imageFormat);
+                TArray<uint8_t> BitMap;
+                BitMap.SetNum(dataBuf.buffer.size() / 4);
+                for (int i = 0; i < BitMap.Num(); i++)
+                {
+                    BitMap[i] = dataBuf.buffer[i * 4 + 3];
+                }
+                if (ImageWrapper->SetRaw(BitMap.GetData(), sizeof(uint8_t) * imageRes.X * imageRes.Y, imageRes.X,
+                        imageRes.Y, ERGBFormat::Gray, 8))
+                {
+                    imgbuf = ImageWrapper->GetCompressed();
+                }
+            }
+        }
         // 落盘
         if (!savePath.IsEmpty())
         {

@@ -3,7 +3,7 @@ FROM hub.hobot.cc/imagesys/4dlabel:tadsim-desktop-ubuntu20.04
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
-    libegl1 libxext6
+    libegl1 libxext6 gawk bison
 
 COPY vulkan/10_nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
 COPY vulkan/nvidia_icd.json /usr/share/vulkan/icd.d/nvidia_icd.json

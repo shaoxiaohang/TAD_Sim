@@ -3,13 +3,15 @@
 MESSAGE_ROOT=$(dirname $0)
 MESSAGE_BUILD="$MESSAGE_ROOT/build"
 
+protoc=/saturnv/protoc-3.9.1-linux-x86_64/bin/protoc
+
 # clean & mkdir
 rm -rf $MESSAGE_BUILD
 mkdir -p $MESSAGE_BUILD
 
 for f in $MESSAGE_ROOT/*.proto
 do
-  protoc -I=$MESSAGE_ROOT --cpp_out=$MESSAGE_BUILD $f
+  $protoc -I=$MESSAGE_ROOT --cpp_out=$MESSAGE_BUILD $f
 done
 
 GRPC_CPP_PLUGIN=`which grpc_cpp_plugin`

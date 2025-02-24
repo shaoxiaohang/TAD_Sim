@@ -6,6 +6,7 @@
 #include <boost/filesystem.hpp>
 #include "tx_parallel_def.h"
 #include "tx_protobuf_utils.h"
+#include "union.pb.h"
 TX_NAMESPACE_OPEN(Base)
 
 void txSimulationTemplate::PublishMessage(tx_sim::StepHelper& helper, const txString& strTopics,
@@ -93,6 +94,22 @@ void txSimulationTemplate::PublishMessage(tx_sim::StepHelper& helper, const txSt
   static txString strPB;
   sendControl_v2.SerializeToString(&strPB);
   helper.PublishMessage(strTopics, strPB);
+}
+
+void txSimulationTemplate::PublishMessage(tx_sim::StepHelper& helper, const txString& strTopics,
+                                          const txString& groupName,
+                                          const sim_msg::EgoMapData& egoMapData) TX_NOEXCEPT {
+  static txString egoMapDataPB;
+  static txString egoUnionPB;
+  sim_msg::Union unionData;
+  egoMapData.SerializeToString(&egoMapDataPB);
+
+  auto mapData = unionData.add_messages();
+  mapData->set_groupname(groupName);
+  mapData->set_content(egoMapDataPB);
+
+  unionData.SerializeToString(&egoUnionPB);
+  helper.PublishMessage(strTopics, egoUnionPB);
 }
 
 void txSimulationTemplate::GetSubscribedMessage(tx_sim::StepHelper& helper, const txString& strTopics,

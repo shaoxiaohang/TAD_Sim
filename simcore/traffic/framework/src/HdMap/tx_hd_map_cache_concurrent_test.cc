@@ -23,8 +23,8 @@ std::shared_ptr<tbb::task_scheduler_init> HadmapCacheConCurrentTest::scheduler_i
 
 TEST_F(HadmapCacheConCurrentTest, Initialize) {
   HadmapCacheConCurrent::InitParams_t param;
-  param.strHdMapFilePath = "./map.xodr";
-  param.SceneOriginGPS = hadmap::txPoint(113.43891907, 22.94175339, 0.00004235);
+  param.strHdMapFilePath = "/saturnv/datas/maps/SH1.sqlite";
+  param.SceneOriginGPS = hadmap::txPoint(121.12873077392578, 31.26028060913086, 0);
   HadmapCacheConCurrent::Initialize(param);
 }
 }  // namespace HdMap

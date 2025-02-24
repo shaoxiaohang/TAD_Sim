@@ -245,10 +245,23 @@ else()
   )
 endif()
 
-if(BUILD_TESTING)
-  add_executable(txTrafficFramework_test src/HdMap/tx_hd_map_cache_concurrent_test.cc)
-  target_link_libraries(txTrafficFramework_test gtest gtest_main)
-endif()
+add_executable(txTrafficFramework_test src/HdMap/tx_hd_map_cache_concurrent_test.cc)
+target_link_libraries(
+  txTrafficFramework_test
+  txTrafficFramework 
+  gtest 
+  gtest_main 
+  txProtoBuf
+  txSceneLoader
+  ${MAPSDK_LIBRARYS}
+  tbb
+  ${PROTOBUF_LIBRARIES}
+  glog
+  gflags
+  dl
+  pthread
+  rt
+)
 
 # if(WIN32)
 # if(NOT CMAKE_BUILD_TYPE)

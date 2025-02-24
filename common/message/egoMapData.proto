@@ -8,146 +8,86 @@ syntax = "proto3";
 
 package sim_msg;
 
-import "basic.proto";
 import "header.proto";
 
 message EgoMapData {
-  message Lane {
-    //
-    string id = 1;
 
-    // 0 for no adjacent one or unknown.
-    // 0 表示没有相邻或未知.
-    //
-    uint64 left_lane_boundary_id = 2;
-
-    // 0 for no adjacent one or unknown.
-    // 0 表示没有相邻或未知.
-    //
-    uint64 right_lane_boundary_id = 3;
-
-    // \sub position.x, Longitude of the current position, WGS84 coordinate system. \n
-    // 当前位置经度, WGS84 坐标系.
-    //
-    // Unit: degree, Range: [-180..180], Default: 0.0
-    //
-    // \sub position.y, Latitude of the current position, WGS84 coordinate system. \n
-    // 当前位置纬度, WGS84 坐标系.
-    //
-    // Unit: degree, Range: [-90..90], Default: 0.0
-    //
-    // \sub position.z, Altitude of the current position, WGS84 coordinate system. \n
-    // 当前位置高度, WGS84 坐标系.
-    //
-    // Unit: m, Range: [0..inf], Default: 0.0
-    //
-    repeated Vec3 centerline = 4;
-
-    // 0 for no limit or unknown.
-    // 0 表示无限制或未知.
-    //
-    uint32 speed_max_limit = 5;
-
-    // 0 for no limit or unknown.
-    // 0 表示无限制或未知.
-    //
-    uint32 speed_mim_limit = 6;
-
-    //
-    repeated string next_lane_ids = 7;
-
-    //
-    repeated string prev_lane_ids = 8;
-
-    // 0 for no adjacent one or unknown.
-    // 0 表示没有相邻或未知.
-    //
-    string left_lane_id = 9;
-
-    // 0 for no adjacent one or unknown.
-    // 0 表示没有相邻或未知.
-    //
-    string right_lane_id = 10;
-
-    //
-    uint64 road_id = 11;
+  enum LANE_ARROW {
+    LANE_ARROW_None = 0;
+    LANE_ARROW_Straight = 1;
+    LANE_ARROW_Left = 2;
+    LANE_ARROW_Right = 3;
+    LANE_ARROW_Uturn = 4;
+    LANE_ARROW_SkewLeft = 5;
+    LANE_ARROW_SkewRight = 6;
+    LANE_ARROW_StraightLeft = 7;
+    LANE_ARROW_StraightRight = 8;
+    LANE_ARROW_LeftRight = 9;
+    LANE_ARROW_LeftUturn = 10;
+    LANE_ARROW_StraightUturn = 11;
   }
 
-  message LaneBoundary {
+  message Lane {
+
+    uint64 road_id = 1;
+
+    int64 lane_id = 2;
+
+    LANE_ARROW arrow = 3;
+
+    double length = 4;
+
+  }
+
+  message Link{
+
+    uint64 link_id = 1;
+
+    uint64 from_road_id = 2;
+
+    uint64 from_section_id = 3;
+
+    int64 from_lane_id = 4;
+
+    uint64 to_road_id = 5;
+
+    uint64 to_section_id = 6;
+
+    int64 to_lane_id = 7;
+
+    uint64 junction_id = 8;
+
+    double length = 9;
+  }
+
+  message RouteNode{
+    
     enum Type {
       TYPE_UNKNOWN = 0;
-      TYPE_SOLID_LINE = 1;
-      TYPE_DASHED_LINE = 2;
+      TYPE_LANE = 1;
+      TYPE_LINK = 2;
     }
 
-    // globally unique id.
-    // 全局唯一 ID.
-    //
-    uint64 id = 1;
-
-    // \sub position.x, Longitude of the current position, WGS84 coordinate system. \n
-    // 当前位置经度, WGS84 坐标系.
-    //
-    // Unit: degree, Range: [-180..180], Default: 0.0
-    //
-    // \sub position.y, Latitude of the current position, WGS84 coordinate system. \n
-    // 当前位置纬度, WGS84 坐标系.
-    //
-    // Unit: degree, Range: [-90..90], Default: 0.0
-    //
-    // \sub position.z, Altitude of the current position, WGS84 coordinate system. \n
-    // 当前位置高度, WGS84 坐标系.
-    //
-    // Unit: m, Range: [0..inf], Default: 0.0
-    //
-    repeated Vec3 boundary_line = 2;
-
-    //
-    Type type = 3;
+    oneof node {
+      Lane lane = 1;
+      Link link = 2;
+    }
   }
 
-  message Section {
-    //
-    repeated Lane lanes = 1;
-  }
-
-  //
   Header header = 1;
 
-  // the id of the current lane on which the ego car is.
-  // 当前车道的 id.
-  //
-  string current_lane_id = 2;
+  repeated RouteNode route_nodes = 2;
 
-  // forward order from the ego car.
-  // 从 ego 发出前进指令.
-  //
-  repeated Section sections = 3;
+  bool on_lane = 3;
 
-  // key represents the lane boundary id.
-  // 键表示车道边界 ID.
-  //
-  map<uint64, LaneBoundary> boundaries = 4;
+  bool on_link = 4;
 
-  // \sub position.x, Longitude of the current position, WGS84 coordinate system. \n
-  // 当前位置经度, WGS84 坐标系.
-  //
-  // Unit: degree, Range: [-180..180], Default: 0.0
-  //
-  // \sub position.y, Latitude of the current position, WGS84 coordinate system. \n
-  // 当前位置纬度, WGS84 坐标系.
-  //
-  // Unit: degree, Range: [-90..90], Default: 0.0
-  //
-  // \sub position.z, Altitude of the current position, WGS84 coordinate system. \n
-  // 当前位置高度, WGS84 坐标系.
-  //
-  // Unit: m, Range: [0..inf], Default: 0.0
-  //
-  Vec3 suggested_destination = 7;
+  double s = 5;
 
-  // A list consist of the id of roads from the start point to the destination.
-  // 由从起点到终点的道路 ID 组成的列表.
-  //
-  repeated uint64 route = 8;
+  double l = 6;
+
+  double yaw = 7;
+
+  double dis_to_end = 8;
+
 }

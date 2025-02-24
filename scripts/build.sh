@@ -22,10 +22,39 @@ function build_framwork() {
   popd > /dev/null
 }
 
+function build_sim_traffic() {
+  pushd $TADSIM_ROOT/simcore > /dev/null
+  build_project traffic build.sh
+  cp ./traffic/build/bin/txSimTraffic $TADSIM_DEV_SERVICE_DIR/traffic
+  popd > /dev/null
+}
+
+function build_sim_planning() {
+  pushd $TADSIM_ROOT/simcore > /dev/null
+  build_project perfect_planning build.sh
+  cp ./perfect_planning/build/bin/libtx_perfect_planning.so $TADSIM_DEV_SERVICE_DIR/perfect_planning
+  popd > /dev/null
+}
+
+function build_map_sdk {
+  pushd $TADSIM_ROOT/common > /dev/null
+  build_project map_sdk build.sh
+  popd > /dev/null
+}
+
 function build_sim_label() {
   pushd $TADSIM_ROOT/simcore/sensors > /dev/null
   build_project sim_label build.sh
   cp ./sim_label/build/lib/libsim_label.so  $TADSIM_DEV_SERVICE_DIR/sim_label
+  popd > /dev/null
+}
+
+function build_map_test() {
+  pushd $TADSIM_ROOT/common/map_sdk/test > /dev/null
+  mkdir -p build
+  cd build
+  cmake ..
+  make -j
   popd > /dev/null
 }
 
@@ -66,6 +95,22 @@ while [[ $# -gt 0 ]]; do
       ;;
     sim_label)
       build_sim_label
+      shift
+      ;;
+    planning)
+      build_sim_planning
+      shift
+      ;;
+    traffic)
+      build_sim_traffic
+      shift
+      ;;
+    map_test)
+      build_map_test
+      shift
+      ;;
+    map_sdk)
+      build_map_sdk
       shift
       ;;
     *)

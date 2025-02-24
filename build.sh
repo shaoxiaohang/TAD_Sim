@@ -55,9 +55,9 @@ TADSIM_BUILD_SCENARIO="$TADSIM_BUILD/scenario"
 # echo "=== End clean"
 
 # ====== Start compiling ======
-build_project "simapp" "build.sh"
-#build_project "common" "build.sh"
-#build_project "simcore" "build.sh"
+#build_project "simapp" "build.sh"
+build_project "common" "build.sh"
+build_project "simcore" "build.sh"
 #build_project "co_simulation" "build.sh"
 #build_project "adapter" "build.sh"
 
@@ -99,6 +99,8 @@ cp -rf "$TADSIM_ROOT/simcore/map_server/build/bin/libOpenDrivePlugin.so" "$TADSI
 cp -rf "$TADSIM_ROOT/common/map_sdk/mapdb/libmapdb.so" "$TADSIM_BUILD/release/linux-unpacked/resources/app/service/simdeps/"
 cp -rf "$TADSIM_ROOT/common/map_sdk/map_engine/libmapengine.so" "$TADSIM_BUILD/release/linux-unpacked/resources/app/service/simdeps/"
 cp -rf "$TADSIM_ROOT/common/map_sdk/datamodel/libdatamodel.so" $TADSIM_BUILD/release/linux-unpacked/resources/app/service/simdeps/
+cp -rf "$TADSIM_ROOT/common/map_sdk/routingmap/libroutingmap.so" $TADSIM_BUILD/release/linux-unpacked/resources/app/service/simdeps/
+
 
 mkdir -p "$TADSIM_BUILD_SERVICE/osi"
 cp -rf "$TADSIM_ROOT/adapter/osi/build/bin/libtxSimOSIAdapter.so" "$TADSIM_BUILD_SERVICE/osi/"
@@ -249,9 +251,9 @@ cnpm install
 npm run release
 echo "=== End gen"
 
-# #====== 拷贝 SDK 产物 ======
-# echo "=== Begin copy SDK zips"
-# cp -rf "$TADSIM_ROOT/simcore/grading/external_eval/txSimGradingSDK_linux.tar.gz" "$TADSIM_BUILD/release/"
-# cp -rf "$TADSIM_ROOT/simcore/framework/build/txSimSDK_linux.tar.gz" "$TADSIM_BUILD/release/"
-# cp -rf "$TADSIM_ROOT/common/map_sdk/hadmap.tar.gz" "$TADSIM_BUILD/release/txSimMapSDK_linux.tar.gz"
-# echo "=== End copy SDK zips"
+#====== 拷贝 SDK 产物 ======
+echo "=== Begin copy SDK zips"
+cp -rf "$TADSIM_ROOT/simcore/grading/external_eval/txSimGradingSDK_linux.tar.gz" "$TADSIM_BUILD/release/"
+cp -rf "$TADSIM_ROOT/simcore/framework/build/txSimSDK_linux.tar.gz" "$TADSIM_BUILD/release/"
+cp -rf "$TADSIM_ROOT/common/map_sdk/hadmap.tar.gz" "$TADSIM_BUILD/release/txSimMapSDK_linux.tar.gz"
+echo "=== End copy SDK zips"

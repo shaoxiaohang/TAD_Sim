@@ -210,8 +210,8 @@ if(WIN32)
   )
 else()
   target_link_libraries(txPlanning
-    txProtoBuf
     txTrafficFramework
+    txProtoBuf
     txSceneLoader
     ${MAPSDK_LIBRARYS}
     ${FRAMEWORK_LIBRARY_SERVICE}
@@ -232,11 +232,11 @@ else()
     rt)
 
   target_link_libraries(tx_perfect_planning
+    txTrafficFramework
+    txProtoBuf
+    txSceneLoader
     ${MAPSDK_LIBRARYS}
     ${FRAMEWORK_LIBRARY_SERVICE}
-    txProtoBuf
-    txTrafficFramework
-    txSceneLoader
     tbb
     protobuf
     spatialite

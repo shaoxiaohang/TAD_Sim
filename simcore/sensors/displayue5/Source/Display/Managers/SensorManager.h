@@ -4,6 +4,7 @@
 #include "Managers/Manager.h"
 #include "Objects/Sensors/CameraSensors/CameraSensor.h"
 #include "Objects/Sensors/LidarSensors/TLidarSensor.h"
+#include "Objects/Sensors/CameraSensors/FisheyeSensor.h"
 #include "SensorManager.generated.h"
 
 
@@ -18,7 +19,7 @@ public:
     TArray<FLidarConfig> lidarArry;
     // TArray<FUltrasonicConfig> ultrasonicArry;
     // TArray<FCameraConfig> depthArry;
-    // TArray<FFisheyeConfig> fisheyeArry;
+    TArray<FFisheyeConfig> fisheyeArry;
     // TArray<FCameraConfig> ringArry;
 };
 

@@ -194,20 +194,20 @@ bool ALidarBufferDepth::ReadLidarData_RenderThreadSingleCaptureSVE(TSharedPtr<De
 
 void ALidarBufferDepth::IgnoreActor(AActor* actor)
 {
-    if (actor)
-    {
-        for (auto& captureComponent : SceneCaptures)
-        {
-            captureComponent->HiddenActors.Add(actor);
-        }
-        if (bOutputExtraInfo)
-        {
-            for (auto& captureComponent : ExtraSceneCaptures)
-            {
-                captureComponent->HiddenActors.Add(actor);
-            }
-        }
-    }
+    // if (actor)
+    // {
+    //     for (auto& captureComponent : SceneCaptures)
+    //     {
+    //         captureComponent->HiddenActors.Add(actor);
+    //     }
+    //     if (bOutputExtraInfo)
+    //     {
+    //         for (auto& captureComponent : ExtraSceneCaptures)
+    //         {
+    //             captureComponent->HiddenActors.Add(actor);
+    //         }
+    //     }
+    // }
 }
 
 void ALidarBufferDepth::FetchReadbackBuffer(TSharedPtr<DepthLidarBuffer> buffer)
@@ -347,11 +347,12 @@ void ALidarBufferDepth::PrepareParallelRays(std::shared_ptr<lidar::TraditionalLi
         float azimuth = yawpitch.first;
         float horizontal_angle = yawpitch.first;
 
+
         // UE_LOG(LogTemp, Log, TEXT("yaw: %f pitch: %f"), yawpitch.first, yawpitch.second);
 
         // UE_LOG(LogTemp, Log, TEXT("horizontal_angle: %f azimuth: %f"), horizontal_angle, azimuth);
 
-        horizontal_angle = FMath::Fmod(horizontal_angle + AzimuthRange.Y, MaxAzimuth);
+        horizontal_angle = FMath::Fmod(horizontal_angle + 60.0 + 120.0 , MaxAzimuth);
         int CameraID = horizontal_angle / FovHorizonPerCamera;
 
         // if (LaserID == 0)
@@ -379,9 +380,9 @@ void ALidarBufferDepth::PrepareParallelRays(std::shared_ptr<lidar::TraditionalLi
             UE_LOG(LogTemp, Error,
                 TEXT("index: %d row: %d column: %d ImageWidthPerCamera: %d ImageHeightPerCamera: %d CenterWidth: "
                      "%f CenterHeight: %f vertical_angle: %f LaserRay X %f LaserRay Y %f horizontal_angle: %f "
-                     "vertical_angle: %f"),
+                     "vertical_angle: %f azimuth %f"),
                 index, row, column, ImageWidthPerCamera, ImageHeightPerCamera, CenterWidth, CenterHeight,
-                vertical_angle, LaserRay.X, LaserRay.Y, horizontal_angle, vertical_angle);
+                vertical_angle, LaserRay.X, LaserRay.Y, horizontal_angle, vertical_angle, azimuth);
         }
 
         int ImageSpaceIndex = RayNumPerCamera[CameraID].fetch_add(1);

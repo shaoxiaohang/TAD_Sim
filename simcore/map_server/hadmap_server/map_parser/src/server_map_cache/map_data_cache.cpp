@@ -153,6 +153,7 @@ const wchar_t* CMapDataCache::LoadHadMap(const wchar_t* wstrHadmapFile) {
     pHadmap->PushLaneLink(mapfile.m_lanelinks);
     pHadmap->PushObject(mapfile.m_mapobjects);
     pHadmap->PushTrafficLights(mapfile.m_lights);
+    SYSTEM_LOGGER_INFO("hadmap: push traffic size %d", mapfile.m_lights.size());
     pHadmap->PushJunctionTraffics(mapfile.m_roadJunctionId);
     pHadmap->RearrangeData();
     // pHadmap->PrepareData();

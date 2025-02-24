@@ -110,7 +110,9 @@ void TrajRefiner::mockJunctionToRoad(RoadInfoArray& traj) {
   } else {
     for (auto itr = traj.begin(); itr != traj.end() - 1; ++itr) {
       hadmap::roadpkid curRoadId = (*itr).roadId;
+      hadmap::roadpkid curLaneId = (*itr).laneId;
       hadmap::roadpkid nextRoadId = (*(std::next(itr))).roadId;
+      hadmap::roadpkid nextLaneId = (*(std::next(itr))).laneId;
 
       txLaneLinks lanelinks;
       if (NodeOpt::getInstance()->getLaneLinks(curRoadId, nextRoadId, lanelinks)) {
@@ -119,7 +121,9 @@ void TrajRefiner::mockJunctionToRoad(RoadInfoArray& traj) {
           RoadInfo mockRoad;
           mockRoad.roadId = -1;
           mockRoad.fromRId = curRoadId;
+          mockRoad.fromLId = curLaneId;
           mockRoad.toRId = nextRoadId;
+          mockRoad.toLId = nextLaneId;
 
           double l = 0.0;
           for (auto& linkPtr : lanelinks) l += linkPtr->getGeometry()->getLength();

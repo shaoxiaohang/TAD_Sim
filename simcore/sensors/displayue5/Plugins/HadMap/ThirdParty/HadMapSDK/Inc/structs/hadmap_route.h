@@ -44,8 +44,14 @@ class TXSIMMAP_API txRouteNode {
   // get pre route id
   roadpkid getPreId() const;
 
+  // get pre lane id
+  lanepkid getPreLaneId() const;
+
   // get next route id
   roadpkid getNextId() const;
+
+  // get next lane id
+  lanepkid getNextLaneId() const;
 
   // get start range from cur route
   double getStartRange() const;

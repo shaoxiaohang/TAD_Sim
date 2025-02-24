@@ -82,6 +82,7 @@ DEFINE_string(EgoUnion_TopicName, "EgoUnion/LOCATION", "");
 DEFINE_string(EgoUnion_Trailer_TopicName, "EgoUnion/LOCATION_TRAILER", "");
 DEFINE_string(EgoUnion_Specified_TopicName, ".hightlight_group", "");
 DEFINE_string(EgoUnion_Specified_EgoGroup, "", "");
+DEFINE_string(EgoUnion_MapData_TopicName, "EgoUnion/MapData", "");
 
 DEFINE_double(TAD_Obs_Subdivide_Threshold, 5.0, "");
 DEFINE_string(PreviewCachePath, ".", "");
@@ -208,6 +209,7 @@ void PrintFlagsValues_TADSim() TX_NOEXCEPT {
   LOG(INFO) << TX_FLAGS(EgoUnion_Trailer_TopicName);
   LOG(INFO) << TX_FLAGS(EgoUnion_Specified_TopicName);
   LOG(INFO) << TX_FLAGS(EgoUnion_Specified_EgoGroup);
+  LOG(INFO) << TX_FLAGS(EgoUnion_MapData_TopicName);
 
   LOG(INFO) << TX_FLAGS(TAD_Obs_Subdivide_Threshold);
   LOG(INFO) << TX_FLAGS(PreviewCachePath);

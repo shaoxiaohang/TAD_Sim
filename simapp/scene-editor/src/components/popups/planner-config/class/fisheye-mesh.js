@@ -82,7 +82,8 @@ class FisheyeMesh extends Mesh {
       hScale = scale
     }
 
-    // console.log(maxFov, vScale, hScale, 333333333333)
+
+
 
     const sphereGeometry = new SphereGeometry(
       far,
@@ -112,6 +113,18 @@ class FisheyeMesh extends Mesh {
     )
     this.capMeshF.rotation.x = Math.PI / 2
     this.capMeshF.position.z = -height / 2
+
+    console.log('ggggg min fov', minFov)
+    console.log('ggggg max fov', maxFov)
+    console.log('ggggg hscale', hScale)
+    console.log('ggggg vscale', vScale)
+    console.log('sphere radius', far)
+    console.log('sphere length', maxFov)
+    console.log('cone height', height)
+    console.log('cone radius',  Math.sin(maxFov) * far)
+
+
+
 
     this.capMeshB.geometry.dispose()
     this.capMeshB.geometry = this.capMeshF.geometry.clone()

@@ -479,6 +479,9 @@ const wchar_t* CSceneData::SaveSceneDataByParam(const wchar_t* wstrParam) {
 
   try {
     sTagEntityScenario scenario;
+
+    SYSTEM_LOGGER_INFO("parse scene param %s", strParam.c_str());
+
     int nRet = jParser.ParseScenarioCreateParams(strParam.c_str(), scenario);
 
     if (nRet != 0) {

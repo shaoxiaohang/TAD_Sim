@@ -276,7 +276,7 @@ void UDisplayGameInstance::SendSimData()
                     *currentSimSensorOutData->name, currentSimSensorOutData->timeStamp);
                 simOutDataArry.Add(currentSimSensorOutData);
             }
-                
+
             currentSimOutData = nullptr;
             currentSimSensorOutData = nullptr;
         }
@@ -303,7 +303,7 @@ void UDisplayGameInstance::SyncSimData()
     }
     if (currentSimInData->name == TEXT("INIT"))
     {
-        Sim_InitBeginLoadWorld();
+        // Sim_InitBeginLoadWorld();
     }
     if (currentSimInData->name == TEXT("RESET"))
     {
@@ -324,7 +324,7 @@ std::string UDisplayGameInstance::getName()
 {
     return moduleName;
 }
-
+                                                                                                                                                                                                                                                  
 void UDisplayGameInstance::OnAllClientLevelLoaded()
 {
     ULevel* Level = GetWorld()->GetCurrentLevel();
@@ -345,12 +345,12 @@ void UDisplayGameInstance::OnAllClientLevelLoaded()
     {
         UE_LOG(LogSimGameInstance, Log, TEXT("Reset After Load World!"));
         // Update hadmap
-        if (hadmapHandle && hadmapHandle->IsMapReady() && hadmapHandle->GetMapMode() == hadmapue4::MapMode::ROUTINGMAP)
-        {
-            hadmapHandle->UpdateRoutingmap(StaticCast<FSimResetIn*>(currentSimInData.Get())->startLon,
-                StaticCast<FSimResetIn*>(currentSimInData.Get())->startLat,
-                StaticCast<FSimResetIn*>(currentSimInData.Get())->startAlt);
-        }
+        // if (hadmapHandle && hadmapHandle->IsMapReady() && hadmapHandle->GetMapMode() == hadmapue4::MapMode::ROUTINGMAP)
+        // {
+        //     hadmapHandle->UpdateRoutingmap(StaticCast<FSimResetIn*>(currentSimInData.Get())->startLon,
+        //         StaticCast<FSimResetIn*>(currentSimInData.Get())->startLat,
+        //         StaticCast<FSimResetIn*>(currentSimInData.Get())->startAlt);
+        // }
         SimInput(*currentSimInData);
         currentSimInData->bIsConsumed = CONSUMED_MAXTICK + 1;
         UE_LOG(LogSimGameInstance, Log, TEXT("Execute ResetAfterLoadedWorld Over!"));
@@ -553,13 +553,14 @@ void UDisplayGameInstance::Sim_ResetBeginLoadWorld()
     FString ErrorMessage;
     if (GetMapInfo(ResetIn->mapIndex, ResetIn->mapDataBaseName, NewMapInfo, ErrorMessage))
     {
-        UE_LOG(LogSimSystem, Log, TEXT("Sim_Reset mapIndex : %d"), ResetIn->mapIndex);
         ResetIn->mapOriginLon = NewMapInfo.origin_Lon;
         ResetIn->mapOriginLat = NewMapInfo.origin_Lat;
         ResetIn->mapOriginAlt = NewMapInfo.origin_Alt;
         ResetIn->mapPath = NewMapInfo.mapPath;
         ResetIn->mapName = NewMapInfo.mapName;
         ResetIn->decryptFilePath = NewMapInfo.decryptFilePath;
+        UE_LOG(LogSimSystem, Log, TEXT("Sim_Reset mapIndex : %d %s origin_Lon: %f origin_Lat: %f"), ResetIn->mapIndex,
+            *ResetIn->mapDataBaseName, ResetIn->mapOriginLon, ResetIn->mapOriginLat);
         // currentMapInfo = NewMapInfo;
     }
     else
@@ -573,15 +574,15 @@ void UDisplayGameInstance::Sim_ResetBeginLoadWorld()
     int32 MapModeIndex = 0;
     GConfig->GetBool(TEXT("Mode"), TEXT("bLoadHadmap"), bNeedToLoadHadmap, GGameIni);
     GConfig->GetInt(TEXT("Mode"), TEXT("MapMode"), MapModeIndex, GGameIni);
-    hadmapue4::MapMode MapMode = hadmapue4::MapMode::ROUTINGMAP;
-    if (MapModeIndex == 0)
-    {
-        MapMode = hadmapue4::MapMode::ROUTINGMAP;
-    }
-    if (MapModeIndex == 1)
-    {
-        MapMode = hadmapue4::MapMode::MAPENGINE;
-    }
+    hadmapue4::MapMode MapMode = hadmapue4::MapMode::MAPENGINE;
+    // if (MapModeIndex == 0)
+    // {
+    //     MapMode = hadmapue4::MapMode::ROUTINGMAP;
+    // }
+    // else
+    // {
+    //     MapMode = hadmapue4::MapMode::MAPENGINE;
+    // }
 
     // Reset HadMap
     hadmapHandle = SHadmap;
@@ -591,7 +592,7 @@ void UDisplayGameInstance::Sim_ResetBeginLoadWorld()
         if (hadmapHandle)
         {
             if (hadmapHandle->Init(MapMode, ResetIn->mapDataBasePath, ResetIn->mapOriginLon, ResetIn->mapOriginLat,
-                    ResetIn->mapOriginAlt, ResetIn->decryptFilePath))
+                    ResetIn->mapOriginAlt, ResetIn->decryptFilePath, ResetIn->egoPath))
             {
                 UE_LOG(LogSimSystem, Log, TEXT("Init hadmap success!"));
             }
