@@ -130,6 +130,7 @@ Base::txBool TAD_StandAlone_TrafficElementSystem::UpdatePlanningCarHighlight(
   highlightGroup.ParseFromString(highlightStr);
   if (CallFail(highlightGroup.groupname().empty())) {
     FLAGS_EgoUnion_Specified_EgoGroup = highlightGroup.groupname();
+    LogInfo << "EgoUnion_Specified_EgoGroup " << FLAGS_EgoUnion_Specified_EgoGroup;
     return true;
   }
   return false;

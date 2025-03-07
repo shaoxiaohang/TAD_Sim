@@ -55,7 +55,6 @@ void txsim_service_error_destruct(txsim_service_error_t err) {
   delete err;
 }
 
-
 struct txsim_service {
   void* err = nullptr;
   void* lib_;

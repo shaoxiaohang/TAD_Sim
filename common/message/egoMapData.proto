@@ -27,6 +27,11 @@ message EgoMapData {
     LANE_ARROW_StraightUturn = 11;
   }
 
+  message WayPoint{
+    double lon = 1;
+    double lat = 2;
+  }
+
   message Lane {
 
     uint64 road_id = 1;
@@ -37,6 +42,7 @@ message EgoMapData {
 
     double length = 4;
 
+    repeated WayPoint waypoints = 5;
   }
 
   message Link{
@@ -58,6 +64,8 @@ message EgoMapData {
     uint64 junction_id = 8;
 
     double length = 9;
+
+    repeated WayPoint waypoints = 10;
   }
 
   message RouteNode{
@@ -68,10 +76,11 @@ message EgoMapData {
       TYPE_LINK = 2;
     }
 
-    oneof node {
-      Lane lane = 1;
-      Link link = 2;
-    }
+    Type type = 1;
+
+    Lane lane = 2;
+    
+    Link link = 3;
   }
 
   Header header = 1;

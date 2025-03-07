@@ -60,7 +60,6 @@ void WorldsimSimLoop::Init(tx_sim::InitHelper& helper) TX_NOEXCEPT {
   helper.Subscribe(FLAGS_EgoUnion_TopicName /*EgoUnion/LOCATION*/);
   helper.Subscribe(FLAGS_EgoUnion_Trailer_TopicName /*EgoUnion/LOCATION_TRAILER*/);
   helper.Subscribe(FLAGS_EgoUnion_Specified_TopicName /*.hightlight_group*/);
-  helper.Publish(FLAGS_EgoUnion_MapData_TopicName);
 #endif
   // publish our topics with messages we produced in Step callback.
   helper.Publish(FLAGS_Traffic_TopicName /*tx_sim::topic::kTraffic*/);
@@ -78,13 +77,14 @@ void WorldsimSimLoop::Reset(tx_sim::ResetHelper& helper) TX_NOEXCEPT {
 
 // step回调函数，进行每一步的仿真
 void WorldsimSimLoop::Step(tx_sim::StepHelper& helper) TX_NOEXCEPT {
+  LogInfo << "call Step " << helper.timestamp();
   const Base::TimeParamManager timeMgr = MakeTimeMgr(helper.timestamp());
   timeMgr.str();
   Simulation(helper, timeMgr);
 }
 
 void WorldsimSimLoop::Stop(tx_sim::StopHelper& helper) TX_NOEXCEPT {
-  LogInfo << "call ";
+  LogInfo << "call stop";
   helper.set_feedback("stepCounts", std::to_string(m_step_count_));
 }
 
@@ -177,9 +177,12 @@ void WorldsimSimLoop::PreSimulation(tx_sim::StepHelper& helper, const Base::Time
 
 void WorldsimSimLoop::ReceiveEgoInfo(tx_sim::StepHelper& helper, const Base::TimeParamManager& timeMgr) TX_NOEXCEPT {
 #if USE_EgoGroup
+  LogInfo << "ReceiveEgoInfo";
   // update highlight ego
   Base::txString specifiedEgoGroupPayload;
   GetSubscribedMessage(helper, FLAGS_EgoUnion_Specified_TopicName, specifiedEgoGroupPayload);
+
+  LogInfo << "EgoUnion_Specified_TopicName " << FLAGS_EgoUnion_Specified_TopicName;
 
   TrafficSystemPtr()->UpdatePlanningCarHighlight(timeMgr, specifiedEgoGroupPayload);
 
@@ -218,7 +221,10 @@ void WorldsimSimLoop::ReceiveEgoMapData(tx_sim::StepHelper& helper, const Base::
                                         const Base::txString& EgoUnionLocation) TX_NOEXCEPT {
 #if USE_EgoGroup
   sim_msg::Union egoUnion;
-  egoUnion.ParseFromString(EgoUnionLocation);
+  if (!egoUnion.ParseFromString(EgoUnionLocation)) {
+    LogInfo << "failed to parse ego union ";
+  }
+  LogInfo << "ego union size " << egoUnion.messages_size();
   for (int i = 0; i < egoUnion.messages_size(); ++i) {
     const auto& msg = egoUnion.messages(i);
     Base::txString groupname = msg.groupname();
@@ -231,8 +237,8 @@ void WorldsimSimLoop::ReceiveEgoMapData(tx_sim::StepHelper& helper, const Base::
 
       sim_msg::EgoMapData egoMapData;
       if (HdMap::HadmapCacheConCurrent::QueryEgoMapData(timeMgr.TimeStamp(), locationMsg, egoMapData)) {
-        LogInfo << "Ego Map Data " << egoMapData.ShortDebugString();
-        // PublishMessage(helper, FLAGS_EgoUnion_MapData_TopicName, "Ego_001", egoMapData);
+        LogInfo << "Ego Map Data " << egoMapData.DebugString();
+        PublishMessage(helper, FLAGS_EgoUnion_MapData_TopicName, groupname, egoMapData);
       } else {
         LogWarn << "failed to get ego mapdata";
       }

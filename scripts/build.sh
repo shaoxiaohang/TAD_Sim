@@ -51,6 +51,7 @@ function build_sim_label() {
 
 function build_map_test() {
   pushd $TADSIM_ROOT/common/map_sdk/test > /dev/null
+  rm -rf build
   mkdir -p build
   cd build
   cmake ..
@@ -61,7 +62,7 @@ function build_map_test() {
 function build_message() {
   pushd $TADSIM_ROOT/common > /dev/null
   build_project "message" "generate_cpp.sh"
-  cp $TADSIM_ROOT/common/message/build/*  $TADSIM_DISPLAY_DIR/Source/Display/SimMsg
+  #cp $TADSIM_ROOT/common/message/build/*  $TADSIM_DISPLAY_DIR/Source/Display/SimMsg
   popd > /dev/null
 }
 

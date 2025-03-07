@@ -15,6 +15,7 @@
 #include "glog/logging.h"
 #include "json/json.h"
 
+#include "location.pb.h"
 #include "txsim_messenger.h"
 #include "union.pb.h"
 #include "utils/json_helper.h"
@@ -185,7 +186,8 @@ CmdErrorCode Coordinator::CheckCmdState(Command cmd) {
     return kCmdAccepted;
   }
 
-  if (cmd == kCmdSetup && un_setup_.load(std::memory_order_acquire)) return kCmdCancelled;
+  if (cmd == kCmdSetup && un_setup_.load(std::memory_order_acquire))
+    return kCmdCancelled;
   else if ((cmd == kCmdRun || cmd == kCmdStep) && pause_.load(std::memory_order_acquire))
     return kCmdCancelled;
 
@@ -312,7 +314,9 @@ void Coordinator::AddLocalServiceDefaultSetupModule(const std::vector<ModuleConf
   // 设置本地服务类型
   m_serviceType = kServiceLocal;
   m_vecAutoLaunchModule.clear();
-  for (auto item : vecModuleConfig) { m_vecAutoLaunchModule.emplace_back(item); }
+  for (auto item : vecModuleConfig) {
+    m_vecAutoLaunchModule.emplace_back(item);
+  }
 }
 
 //! @brief 函数名：AddCloudCityDefaultStepModule
@@ -687,7 +691,8 @@ void Coordinator::ApplyModuleTopics(const std::string& module_name, const TopicP
 void Coordinator::CheckIsLogplayModule(const std::string& module_name, const std::vector<std::string>& pubs) {
   bool pub_traffic = false, pub_location = false;
   for (const auto& t : pubs) {
-    if (t == tx_sim::topic::kTraffic) pub_traffic = true;
+    if (t == tx_sim::topic::kTraffic)
+      pub_traffic = true;
     else if (t == tx_sim::topic::kLocation)
       pub_location = true;
   }
@@ -715,10 +720,14 @@ void Coordinator::SplitMoudleByScheme(EgoSchemeMap& EgoSchemeMap) {
       EgoSchemeMap[EgoScheme(sGroupName, sScheme)].emplace_back(kv.second);
     }
   }
-  for (auto& kv : EgoSchemeMap) { kv.second.insert(kv.second.end(), globalModules.begin(), globalModules.end()); }
+  for (auto& kv : EgoSchemeMap) {
+    kv.second.insert(kv.second.end(), globalModules.begin(), globalModules.end());
+  }
 
   // for global module and group name is empty.
-  if (EgoSchemeMap.empty()) { EgoSchemeMap[EgoScheme("", "")] = globalModules; }
+  if (EgoSchemeMap.empty()) {
+    EgoSchemeMap[EgoScheme("", "")] = globalModules;
+  }
 }
 bool Coordinator::CheckConflictTopic(const std::vector<ModulePlayContext>& vecModules, size_t idx,
                                      CommandStatus& status) {
@@ -816,7 +825,8 @@ void Coordinator::ApplyModuleLog2WorldTopic(TopicMeta& tm,
     topic_mode = kLog2WorldTopicLogging;
   switch (topic_mode) {
     case kLog2WorldTopicLogging: {
-      if (is_logplay_module) tm.topic.display_name = tm.topic.name + kLogTopicPostfix;
+      if (is_logplay_module)
+        tm.topic.display_name = tm.topic.name + kLogTopicPostfix;
       else
         tm.topic.sim_name = tm.topic.display_name = "";
     } break;
@@ -832,7 +842,8 @@ void Coordinator::ApplyModuleLog2WorldTopic(TopicMeta& tm,
     case kLog2WorldTopicLog2Sim: {
       if (!is_logplay_module) tm.topic.sim_name = tm.topic.display_name = "";
     } break;
-    default: break;
+    default:
+      break;
   }
 }
 
@@ -900,7 +911,9 @@ void Coordinator::PrintTopicConfigs() {
   auto print_unionTopic = [](std::unordered_set<std::string> m_unionTopic) {
     std::ostringstream sUnionTopic;
     sUnionTopic << "<";
-    for (const auto& key : m_unionTopic) { sUnionTopic << key << ","; }
+    for (const auto& key : m_unionTopic) {
+      sUnionTopic << key << ",";
+    }
     sUnionTopic << ">";
     return sUnionTopic.str();
   };
@@ -1001,7 +1014,8 @@ uint32_t Coordinator::Step(CommandStatus& status, const CommandInfo& cmd_info) {
                 // whose request is already sent out, but no new requests anymore.
       ModuleStepRequest req;
       LoadModuleStepRequest(req, event.module_name);
-      LOG(INFO) << "module step: " << event.module_name << "  " <<  sim_time_;
+      LOG(INFO) << "module step: " << event.module_name << "  " << sim_time_ << " max_sim_time " << max_sim_time_
+                << " sModuleGroupName " << sModuleGroupName << " group " << req.group;
       AddSystemTime(req);
       req.group = sModuleGroupName;
       hdl.has_outstanding_step_request = hdl.conn->Send(req);  // should always return true.
@@ -1112,7 +1126,9 @@ void Coordinator::Run(CommandStatus& status, const CommandStatusCb& cb) {
     status.Clear();
     uint32_t time_to_next_step = Step(status, step_cmd);
     tmpSimTime += time_to_next_step;
-    if (!highlight_group_.empty()) { FilterCommandStatus(status, highlight_group_); }
+    if (!highlight_group_.empty()) {
+      FilterCommandStatus(status, highlight_group_);
+    }
     if (!CheckRunStatus(status, cb, t_step_start)) break;
     ControlStepTime(time_to_next_step, t_step_start, t_sim_start, tmpSimTime);
   }
@@ -1286,10 +1302,19 @@ void Coordinator::LoadModuleStepRequest(ModuleStepRequest& req, const std::strin
     m_highlight_group_msg.rebuild(highlightGroup.ByteSizeLong());
     highlightGroup.SerializeToArray(m_highlight_group_msg.data(), m_highlight_group_msg.size());
     req.messages[kTopicHightLightGroup].copy(m_highlight_group_msg);
+    LOG(INFO) << "highlight_group  " << highlight_group_;
   }
   // loading message of each topic.
-  for (const TopicMeta& tm : hdl.sub_topics)
-    if (tm.message_loading_handler) (this->*(tm.message_loading_handler))(tm.topic, hdl, req);
+  for (const TopicMeta& tm : hdl.sub_topics) {
+    LOG(INFO) << module_name << " sub topic " << tm.topic.name;
+    if (tm.message_loading_handler) {
+      (this->*(tm.message_loading_handler))(tm.topic, hdl, req);
+    }
+    const auto& messages = req.messages;
+    for (auto& [name, msg] : messages) {
+      LOG(INFO) << module_name << " actual topic " << name;
+    }
+  }
 }
 
 //! @brief 函数名：UnloadModuleStepResult
@@ -1319,7 +1344,9 @@ void Coordinator::UnloadModuleStepResult(ModuleStepResponse& resp, const std::st
     m_gradingPerfStats[module_name].execute_period = module_execute_period;
     m_gradingPerfStats[module_name].step_count++;
     m_gradingPerfStats[module_name].total_step_real_time += resp.time_cost;
-    if (resp.time_cost > module_execute_period) { m_gradingPerfStats[module_name].ntime_out++; }
+    if (resp.time_cost > module_execute_period) {
+      m_gradingPerfStats[module_name].ntime_out++;
+    }
 
     const auto& current_topics = hdl.pub_topics[hdl.current_sim_phrase];
     for (const TopicMeta& tm : current_topics)
@@ -1343,7 +1370,8 @@ void Coordinator::UnloadModuleStepResult(ModuleStepResponse& resp, const std::st
     LOG(ERROR) << "coordinator step " << (in_shadow_mode ? "shadow " : "") << "module " << module_name << " error: ["
                << Enum2String(resp.type) << "] " << resp.err;
     // module internal implementation error is also a system error.
-    if (resp.type == kModuleSystemError) status.ApplyErrCode(kCmdSystemError);
+    if (resp.type == kModuleSystemError)
+      status.ApplyErrCode(kCmdSystemError);
     else if (!in_shadow_mode)
       status.ApplyErrCode(kCmdFailed);
     ms.msg = resp.err;
@@ -1404,19 +1432,30 @@ void Coordinator::UnloadModuleStopResult(ModuleStopResponse& resp, const std::st
 //! @note 该函数根据模拟主题和模块播放上下文，处理消息加载。
 void Coordinator::HandleMessageLoading(const SimTopic& topic, ModulePlayContext& module, ModuleStepRequest& req) {
   auto it = messages_.find(EgoTopic(module.config.module_group_name, topic.sim_name));
+
+  for (const auto& [topic, msg] : messages_) {
+    LOG(INFO) << "TOPIC " << topic.sEgoGroup << " " << topic.sTopic;
+  }
+  for (const auto& [topic, msg_map] : union_messages_) {
+    LOG(INFO) << "UNION TOPIC " << topic;
+    for (const auto& [group, msg] : msg_map) {
+      LOG(INFO) << "UNION GROUP " << group;
+    }
+  }
+
   if (it != messages_.cend()) {
     if (topic.name == kTopicPlayConfig && sim_time_ > 0) return;
     req.messages[topic.name].copy(it->second);
     if (TXSIM_UNLIKELY(current_config_.log_perf)) module.perf_stats.sent_bytes += it->second.size();
-    VLOG(2) << "module " << module.config.name << " loading message: " << topic.name << "(" << it->second.size()
-            << " bytes)";
+    LOG(INFO) << "module " << module.config.name << " loading message: " << topic.name << "(" << it->second.size()
+              << " bytes)";
   } else {
     it = messages_.find(EgoTopic("", topic.sim_name));
     if (it != messages_.cend()) {
       req.messages[topic.name].copy(it->second);
       if (TXSIM_UNLIKELY(current_config_.log_perf)) module.perf_stats.sent_bytes += it->second.size();
-      VLOG(2) << "module " << module.config.name << " loading message: " << topic.name << "(" << it->second.size()
-              << " bytes)";
+      LOG(INFO) << "module " << module.config.name << " loading message: " << topic.name << "(" << it->second.size()
+                << " bytes)";
     }
   }
 
@@ -1432,8 +1471,16 @@ void Coordinator::HandleMessageLoading(const SimTopic& topic, ModulePlayContext&
       sim_msg::MsgPair* pair = union_msg.add_messages();
       pair->set_groupname(compose.first);
       pair->set_content(msg_payload);
-      VLOG(2) << "module " << module.config.name << " loading union message: " << compose.first << "("
-              << compose.second.size() << " bytes)";
+
+      if (topic.sim_name == "EgoUnion/LOCATION") {
+        sim_msg::Location loc;
+        loc.ParseFromString(msg_payload);
+        LOG(INFO) << " SEGOS " << loc.t() << " " << loc.position().x() << " " << loc.position().y() << " "
+                  << loc.position().z();
+      }
+
+      LOG(INFO) << "module " << module.config.name << " loading union message: " << compose.first << "("
+                << compose.second.size() << " bytes)";
     }
     std::string union_payload;
     union_msg.SerializeToString(&union_payload);
@@ -1495,6 +1542,7 @@ void Coordinator::HandleMessageUnloading(const SimTopic& topic, ModulePlayContex
         topic_display_name = topic_result[1];
         ego_group_name = topic_result[0];
       }
+      LOG(INFO) << "module_group_name empty " << module.config.name << " " << ego_group_name << " " << topic_name;
     }
   }
 
@@ -1514,7 +1562,10 @@ void Coordinator::HandleMessageUnloading(const SimTopic& topic, ModulePlayContex
     if (!topic.sim_name.empty()) {
       messages_[EgoTopic(ego_group_name, topic_name)].copy(it->second);
       if (1 == m_unionTopic.count(topic_name)) {
+        LOG(INFO) << "add union " << module.config.name << " " << topic_name;
         union_messages_[kUnionFlag + topic_name][ego_group_name].copy(it->second);
+      } else {
+        LOG(INFO) << "not add union " << module.config.name << " " << topic_name;
       }
 
       // add mesages_
@@ -1526,8 +1577,8 @@ void Coordinator::HandleMessageUnloading(const SimTopic& topic, ModulePlayContex
         }
       }
       // GetCurrentControllerName(topic.name, it->second.data(), it->second.size());
-      VLOG(2) << "module " << module.config.name << " unloading message: " << topic.name << "(" << it->second.size()
-              << " bytes)";
+      LOG(INFO) << "module " << module.config.name << " unloading message: " << topic.name << "(" << it->second.size()
+                << " bytes)";
     }
 
     // add status_msgs add LOCATION and TRAJECTORY;
@@ -1627,7 +1678,9 @@ void Coordinator::ReceiveModuleReply(const std::string& name, ModulePlayContext&
   }
   if (m_bTerminateSetup) reply.type = kModuleTimeout;
   m.last_cmd_timed_out = (reply.type == kModuleTimeout || reply.type == kModuleProcessExit);
-  if (m.last_cmd_timed_out) { module_mgr_->RemoveRegistryModule(name); }
+  if (m.last_cmd_timed_out) {
+    module_mgr_->RemoveRegistryModule(name);
+  }
 }
 
 //! @brief 函数名：CheckScenarioStarted
@@ -1675,6 +1728,7 @@ inline bool Coordinator::CheckRunStatus(CommandStatus& status, const CommandStat
   if (TXSIM_UNLIKELY(current_config_.log_perf)) LoggingPerfStats();
   // check if scenario is timeout.
   if (TXSIM_UNLIKELY(sim_time_ > max_sim_time_)) {
+    LOG(INFO) << "sim time " << sim_time_ << " greater than max sim time " << max_sim_time_;
     status.Clear();
     status.ec = kCmdScenarioTimeout;
     Stop(status, cb, kStopRecordAll);  // auto stop the scenario.
@@ -1695,7 +1749,8 @@ inline bool Coordinator::CheckRunStatus(CommandStatus& status, const CommandStat
 inline void Coordinator::ControlStepTime(uint32_t time_to_next_step, int64_t step_start_time, int64_t sim_start_time,
                                          int64_t tmpSimTime) {
   auto& ctrl_rate = current_config_.control_rate;
-  if (TXSIM_LIKELY(ctrl_rate == 100)) SleepUntilMillis(sim_start_time + tmpSimTime);
+  if (TXSIM_LIKELY(ctrl_rate == 100))
+    SleepUntilMillis(sim_start_time + tmpSimTime);
   else if (TXSIM_LIKELY(ctrl_rate == 0))
     return;
   else
@@ -1713,7 +1768,9 @@ inline void Coordinator::CallbackRoutine(const CommandStatusCb& cb, const Comman
   if (!cb) return;
   try {
     cb(st);
-  } catch (const std::exception& e) { LOG(ERROR) << "coordinator SetupModules callback exception: " << e.what(); }
+  } catch (const std::exception& e) {
+    LOG(ERROR) << "coordinator SetupModules callback exception: " << e.what();
+  }
 }
 
 const std::string Coordinator::kPerfLogPath = "perf/core_perf.";
@@ -1857,8 +1914,12 @@ void Coordinator::FilterCommandStatus(CommandStatus& status, const std::string& 
     if (group_name == filter_group || group_name.empty()) {
       const std::vector<TopicMeta>& pub_topics = hdl.pub_topics[kWorldsimPhraseIdx];
       const std::vector<TopicMeta>& sub_topics = hdl.sub_topics;
-      for (const auto& meta : pub_topics) { total_pub_topics.insert(meta.topic.sim_name); }
-      for (const auto& meta : sub_topics) { total_sub_topics.insert(meta.topic.sim_name); }
+      for (const auto& meta : pub_topics) {
+        total_pub_topics.insert(meta.topic.sim_name);
+      }
+      for (const auto& meta : sub_topics) {
+        total_sub_topics.insert(meta.topic.sim_name);
+      }
     }
   }
   for (TopicMessageList::iterator iter = status.step_message.messages.begin();

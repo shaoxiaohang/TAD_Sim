@@ -574,15 +574,15 @@ void UDisplayGameInstance::Sim_ResetBeginLoadWorld()
     int32 MapModeIndex = 0;
     GConfig->GetBool(TEXT("Mode"), TEXT("bLoadHadmap"), bNeedToLoadHadmap, GGameIni);
     GConfig->GetInt(TEXT("Mode"), TEXT("MapMode"), MapModeIndex, GGameIni);
-    hadmapue4::MapMode MapMode = hadmapue4::MapMode::MAPENGINE;
-    // if (MapModeIndex == 0)
-    // {
-    //     MapMode = hadmapue4::MapMode::ROUTINGMAP;
-    // }
-    // else
-    // {
-    //     MapMode = hadmapue4::MapMode::MAPENGINE;
-    // }
+    hadmapue4::MapMode MapMode = hadmapue4::MapMode::ROUTINGMAP;
+    if (MapModeIndex == 0)
+    {
+        MapMode = hadmapue4::MapMode::ROUTINGMAP;
+    }
+    else
+    {
+        MapMode = hadmapue4::MapMode::MAPENGINE;
+    }
 
     // Reset HadMap
     hadmapHandle = SHadmap;

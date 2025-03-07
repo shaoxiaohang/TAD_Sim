@@ -137,7 +137,7 @@ bool CSimParser::BuildInitEgo(sim_msg::InitialEgo* pInitialEgo, const tinyxml2::
       sim_msg::PositionWorld* pPositonWorld = pPositon->mutable_world();
       pPositonWorld->set_x(std::stod(point_triple[0]));
       pPositonWorld->set_y(std::stod(point_triple[1]));
-      pPositonWorld->set_h(point_triple.size() >= 3 ? std::stod(point_triple[2]) : 0.0);
+      pPositonWorld->set_z(point_triple.size() >= 3 ? std::stod(point_triple[2]) : 0.0);
       pWayPoint->mutable_speed()->set_value(point_triple.size() >= 4 ? std::stod(point_triple[3]) : 0.0);
 
       sGear = point_triple.size() >= 5 ? point_triple[4] : "";
@@ -162,7 +162,7 @@ bool CSimParser::BuildInitEgo(sim_msg::InitialEgo* pInitialEgo, const tinyxml2::
       sim_msg::PositionWorld* pPositonWorld = pPositon->mutable_world();
       pPositonWorld->set_x(std::stod(point_triple[0]));
       pPositonWorld->set_y(std::stod(point_triple[1]));
-      pPositonWorld->set_h(point_triple.size() >= 3 ? std::stod(point_triple[2]) : 0.0);
+      pPositonWorld->set_z(point_triple.size() >= 3 ? std::stod(point_triple[2]) : 0.0);
     }
   } else {
     sim_msg::Waypoint* pWayPoint = pInitialEgo->mutable_common()->add_waypoints();
@@ -177,7 +177,7 @@ bool CSimParser::BuildInitEgo(sim_msg::InitialEgo* pInitialEgo, const tinyxml2::
     ParsePosStr(GetNodeAttribute(route_node, "start", "route"), point_triple);
     pPositonWorld->set_x(std::stod(point_triple[0]));
     pPositonWorld->set_y(std::stod(point_triple[1]));
-    pPositonWorld->set_h(std::stod(sAltitudeStart));
+    pPositonWorld->set_z(std::stod(sAltitudeStart));
 
     pWayPoint = pInitialEgo->mutable_common()->add_waypoints();
     pPositon = pWayPoint->mutable_position();
@@ -185,7 +185,7 @@ bool CSimParser::BuildInitEgo(sim_msg::InitialEgo* pInitialEgo, const tinyxml2::
     ParsePosStr(GetNodeAttribute(route_node, "end", "route"), point_triple);
     pPositonWorld->set_x(std::stod(point_triple[0]));
     pPositonWorld->set_y(std::stod(point_triple[1]));
-    pPositonWorld->set_h(std::stod(sAltitudeEnd));
+    pPositonWorld->set_z(std::stod(sAltitudeEnd));
   }
   std::string theta = GetNodeText(GetChildNode(node_plan, "theta"), "theta");
   if (pInitialEgo->mutable_common()->waypoints_size() > 0) {

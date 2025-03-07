@@ -100,16 +100,8 @@ void txSimulationTemplate::PublishMessage(tx_sim::StepHelper& helper, const txSt
                                           const txString& groupName,
                                           const sim_msg::EgoMapData& egoMapData) TX_NOEXCEPT {
   static txString egoMapDataPB;
-  static txString egoUnionPB;
-  sim_msg::Union unionData;
   egoMapData.SerializeToString(&egoMapDataPB);
-
-  auto mapData = unionData.add_messages();
-  mapData->set_groupname(groupName);
-  mapData->set_content(egoMapDataPB);
-
-  unionData.SerializeToString(&egoUnionPB);
-  helper.PublishMessage(strTopics, egoUnionPB);
+  helper.PublishMessage(strTopics, egoMapDataPB);
 }
 
 void txSimulationTemplate::GetSubscribedMessage(tx_sim::StepHelper& helper, const txString& strTopics,

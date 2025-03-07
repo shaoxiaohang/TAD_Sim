@@ -255,51 +255,51 @@ struct RoutingMap::RoutingMapData {
       }
     }
     if (routingReqPtr->routingSync(newpoiLocs, ++routingId, route)) {
-      dtPtr->setRoute(route, newpoiLocs.front());
-      dtPtr->markPassedCenter(UPDATE_CENTER);
-      dtPtr->markPassedCenter(LOADING_CENTER);
-      mapProxyPtr->updateCenter(newpoiLocs.front());
-      mapLoadPtr->setRouteInfo(route);
-      {
-        std::vector<roadpkid> rids;
-        for (const auto& node : route) {
-          if (node.getRouteType() == txRouteNode::ROAD_ROUTE) {
-            rids.push_back(node.getId());
-          }
-        }
-        if (mapLoadPtr->loadData(rids)) {
-          txRoads addedRoads;
-          txLaneLinks addedLinks;
-          txObjects addedObjs;
-          if (mapLoadPtr->getAddedMapData(addedRoads, addedLinks, addedObjs)) {
-            mapProxyPtr->insertRoads(addedRoads);
-            mapProxyPtr->insertLaneLinks(addedLinks);
-            mapProxyPtr->insertObjects(addedObjs);
-          }
-          txJunctions addedJunctions;
-          if (mapLoadPtr->getAddedJuncData(addedJunctions)) mapProxyPtr->insertJunctions(addedJunctions);
-        }
-      }
-      {
-#ifdef AREA_LOADING
-        loadingQueue.push(std::make_shared<CoordInfo>(newpoiLocs.front()));
-#else
-        LoadingInfoPtr loading_ptr;
-        if (generateRoadLoadingList(loading_ptr)) loadingQueue.push(loading_ptr);
-#endif
-        loadingQueue.push(std::make_shared<PauseInfo>(0));
-        // searchPosAry.push_back( std::make_shared< PauseInfo >( 0 ) );
-      }
-      /*
-      size_t size = 2;
+//       dtPtr->setRoute(route, newpoiLocs.front());
+//       dtPtr->markPassedCenter(UPDATE_CENTER);
+//       dtPtr->markPassedCenter(LOADING_CENTER);
+//       mapProxyPtr->updateCenter(newpoiLocs.front());
+//       mapLoadPtr->setRouteInfo(route);
+//       {
+//         std::vector<roadpkid> rids;
+//         for (const auto& node : route) {
+//           if (node.getRouteType() == txRouteNode::ROAD_ROUTE) {
+//             rids.push_back(node.getId());
+//           }
+//         }
+//         if (mapLoadPtr->loadData(rids)) {
+//           txRoads addedRoads;
+//           txLaneLinks addedLinks;
+//           txObjects addedObjs;
+//           if (mapLoadPtr->getAddedMapData(addedRoads, addedLinks, addedObjs)) {
+//             mapProxyPtr->insertRoads(addedRoads);
+//             mapProxyPtr->insertLaneLinks(addedLinks);
+//             mapProxyPtr->insertObjects(addedObjs);
+//           }
+//           txJunctions addedJunctions;
+//           if (mapLoadPtr->getAddedJuncData(addedJunctions)) mapProxyPtr->insertJunctions(addedJunctions);
+//         }
+//       }
+//       {
+// #ifdef AREA_LOADING
+//         loadingQueue.push(std::make_shared<CoordInfo>(newpoiLocs.front()));
+// #else
+//         LoadingInfoPtr loading_ptr;
+//         if (generateRoadLoadingList(loading_ptr)) loadingQueue.push(loading_ptr);
+// #endif
+//         loadingQueue.push(std::make_shared<PauseInfo>(0));
+//         // searchPosAry.push_back( std::make_shared< PauseInfo >( 0 ) );
+//       }
+//       /*
+//       size_t size = 2;
 
-      while ( size > 0 )
-      {
-              std::unique_lock< std::mutex > lck( searchPosAryMutex );
-              size = searchPosAry.size();
-      }
-      */
-      // while (loadingQueue.size() > 0);
+//       while ( size > 0 )
+//       {
+//               std::unique_lock< std::mutex > lck( searchPosAryMutex );
+//               size = searchPosAry.size();
+//       }
+//       */
+//       // while (loadingQueue.size() > 0);
 
       routingOn = true;
       return true;

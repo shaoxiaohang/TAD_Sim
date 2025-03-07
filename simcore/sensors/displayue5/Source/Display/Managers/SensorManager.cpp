@@ -287,12 +287,14 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
     }
 
     bool bUseCalibrationFile = false;
+    bool bAddBirdEyeCamera = false;
     FString CalibrationPath;
     GConfig->GetBool(TEXT("Sensor"), TEXT("bUseCalibrationFile"), bUseCalibrationFile, GGameIni);
     if (bUseCalibrationFile)
     {
         GConfig->GetString(TEXT("Sensor"), TEXT("CalibrationPath"), CalibrationPath, GGameIni);
     }
+    GConfig->GetBool(TEXT("Sensor"), TEXT("bAddBirdEyeCamera"), bAddBirdEyeCamera, GGameIni);
 
     sim_msg::SensorGroup SensorGroup = scene.egos(FindEgoIndex).sensor_group();
     if (!CalibrationPath.IsEmpty())
@@ -303,6 +305,31 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
             SensorGroup = *sensors;
             UE_LOG(LogTemp, Log, TEXT("SensorManger: Use Sensor Calibration : %s"), *CalibrationPath);
         }
+    }
+
+    if (bAddBirdEyeCamera)
+    {
+        auto camera_proto = SensorGroup.add_sensors();
+        camera_proto->set_type(sim_msg::SensorType::SENSOR_TYPE_CAMERA);
+        camera_proto->mutable_extrinsic()->set_id(100);
+        sim_msg::Sensor_Intrinsic* intrinsic = camera_proto->mutable_intrinsic();
+        auto intri_map_params = intrinsic->mutable_params();
+        std::string intri = "1945.1674168728503,0,946.1188960408923,0,1938.137228006907,619.7048547473978,0,0,1";
+        (*intri_map_params)["Intrinsic_Matrix"] = intri;
+        (*intri_map_params)["Res_Horizontal"] = "3840";
+        (*intri_map_params)["Res_Vertical"] = "2160";
+        (*intri_map_params)["Name"] = "birdeye";
+        (*intri_map_params)["IntrinsicParamType"] = "0";
+        (*intri_map_params)["Frequency"] = "10";
+        sim_msg::Sensor_Extrinsic* extrinsic = camera_proto->mutable_extrinsic();
+        extrinsic->set_locationx(0);
+        extrinsic->set_locationy(0);
+        extrinsic->set_locationz(30 * 100);
+        extrinsic->set_rotationx(0.0);
+        extrinsic->set_rotationy(90.0);
+        extrinsic->set_rotationz(0.0);
+        extrinsic->set_installslot("C0");
+        extrinsic->set_device(".0");
     }
 
     UE_LOG(LogTemp, Log, TEXT("SensorManger: SensorGroup: %s"), UTF8_TO_TCHAR(SensorGroup.DebugString().c_str()));
@@ -578,7 +605,7 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
             GConfig->GetString(TEXT("Sensor"), TEXT("LidarSaved"), savestring, GGameIni);
             if (!BaseSavePath.IsEmpty() && savestring == TEXT("true"))
                 NewConfig.savePath =
-                    BaseSavePath + TEXT("LidarhData/") + TEXT("Lidar_") + FString::FromInt(NewConfig.id) + TEXT("/");
+                    BaseSavePath + TEXT("LidarData/") + TEXT("Lidar_") + FString::FromInt(NewConfig.id) + TEXT("/");
             SensormanagerConfig.lidarArry.Add(NewConfig);
         }
     }

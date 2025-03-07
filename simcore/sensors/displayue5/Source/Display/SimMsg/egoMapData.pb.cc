@@ -15,11 +15,16 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
-extern PROTOBUF_INTERNAL_EXPORT_egoMapData_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_EgoMapData_Lane_egoMapData_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_egoMapData_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_EgoMapData_Link_egoMapData_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_egoMapData_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_EgoMapData_Lane_egoMapData_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_egoMapData_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_EgoMapData_Link_egoMapData_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_egoMapData_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_EgoMapData_RouteNode_egoMapData_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_egoMapData_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_EgoMapData_WayPoint_egoMapData_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_header_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Header_header_2eproto;
 namespace sim_msg {
+class EgoMapData_WayPointDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<EgoMapData_WayPoint> _instance;
+} _EgoMapData_WayPoint_default_instance_;
 class EgoMapData_LaneDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<EgoMapData_Lane> _instance;
@@ -31,8 +36,6 @@ class EgoMapData_LinkDefaultTypeInternal {
 class EgoMapData_RouteNodeDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<EgoMapData_RouteNode> _instance;
-  const ::sim_msg::EgoMapData_Lane* lane_;
-  const ::sim_msg::EgoMapData_Link* link_;
 } _EgoMapData_RouteNode_default_instance_;
 class EgoMapDataDefaultTypeInternal {
  public:
@@ -66,8 +69,9 @@ static void InitDefaultsscc_info_EgoMapData_Lane_egoMapData_2eproto() {
   ::sim_msg::EgoMapData_Lane::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_EgoMapData_Lane_egoMapData_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsscc_info_EgoMapData_Lane_egoMapData_2eproto}, {}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_EgoMapData_Lane_egoMapData_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsscc_info_EgoMapData_Lane_egoMapData_2eproto}, {
+      &scc_info_EgoMapData_WayPoint_egoMapData_2eproto.base,}};
 
 static void InitDefaultsscc_info_EgoMapData_Link_egoMapData_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -80,8 +84,9 @@ static void InitDefaultsscc_info_EgoMapData_Link_egoMapData_2eproto() {
   ::sim_msg::EgoMapData_Link::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_EgoMapData_Link_egoMapData_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsscc_info_EgoMapData_Link_egoMapData_2eproto}, {}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_EgoMapData_Link_egoMapData_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsscc_info_EgoMapData_Link_egoMapData_2eproto}, {
+      &scc_info_EgoMapData_WayPoint_egoMapData_2eproto.base,}};
 
 static void InitDefaultsscc_info_EgoMapData_RouteNode_egoMapData_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -99,11 +104,32 @@ static void InitDefaultsscc_info_EgoMapData_RouteNode_egoMapData_2eproto() {
       &scc_info_EgoMapData_Lane_egoMapData_2eproto.base,
       &scc_info_EgoMapData_Link_egoMapData_2eproto.base,}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_egoMapData_2eproto[4];
+static void InitDefaultsscc_info_EgoMapData_WayPoint_egoMapData_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::sim_msg::_EgoMapData_WayPoint_default_instance_;
+    new (ptr) ::sim_msg::EgoMapData_WayPoint();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::sim_msg::EgoMapData_WayPoint::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_EgoMapData_WayPoint_egoMapData_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsscc_info_EgoMapData_WayPoint_egoMapData_2eproto}, {}};
+
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_egoMapData_2eproto[5];
 static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_egoMapData_2eproto[2];
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_egoMapData_2eproto = nullptr;
 
 const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_egoMapData_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_WayPoint, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_WayPoint, lon_),
+  PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_WayPoint, lat_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_Lane, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -113,6 +139,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_egoMapData_2eproto::offsets[] 
   PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_Lane, lane_id_),
   PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_Lane, arrow_),
   PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_Lane, length_),
+  PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_Lane, waypoints_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_Link, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -127,14 +154,15 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_egoMapData_2eproto::offsets[] 
   PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_Link, to_lane_id_),
   PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_Link, junction_id_),
   PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_Link, length_),
+  PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_Link, waypoints_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_RouteNode, _internal_metadata_),
   ~0u,  // no _extensions_
-  PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_RouteNode, _oneof_case_[0]),
+  ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  offsetof(::sim_msg::EgoMapData_RouteNodeDefaultTypeInternal, lane_),
-  offsetof(::sim_msg::EgoMapData_RouteNodeDefaultTypeInternal, link_),
-  PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_RouteNode, node_),
+  PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_RouteNode, type_),
+  PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_RouteNode, lane_),
+  PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData_RouteNode, link_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -150,13 +178,15 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_egoMapData_2eproto::offsets[] 
   PROTOBUF_FIELD_OFFSET(::sim_msg::EgoMapData, dis_to_end_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, -1, sizeof(::sim_msg::EgoMapData_Lane)},
-  { 9, -1, sizeof(::sim_msg::EgoMapData_Link)},
-  { 23, -1, sizeof(::sim_msg::EgoMapData_RouteNode)},
-  { 31, -1, sizeof(::sim_msg::EgoMapData)},
+  { 0, -1, sizeof(::sim_msg::EgoMapData_WayPoint)},
+  { 7, -1, sizeof(::sim_msg::EgoMapData_Lane)},
+  { 17, -1, sizeof(::sim_msg::EgoMapData_Link)},
+  { 32, -1, sizeof(::sim_msg::EgoMapData_RouteNode)},
+  { 40, -1, sizeof(::sim_msg::EgoMapData)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::sim_msg::_EgoMapData_WayPoint_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::sim_msg::_EgoMapData_Lane_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::sim_msg::_EgoMapData_Link_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::sim_msg::_EgoMapData_RouteNode_default_instance_),
@@ -165,48 +195,53 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 
 const char descriptor_table_protodef_egoMapData_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\020egoMapData.proto\022\007sim_msg\032\014header.prot"
-  "o\"\306\007\n\nEgoMapData\022\037\n\006header\030\001 \001(\0132\017.sim_m"
+  "o\"\365\010\n\nEgoMapData\022\037\n\006header\030\001 \001(\0132\017.sim_m"
   "sg.Header\0222\n\013route_nodes\030\002 \003(\0132\035.sim_msg"
   ".EgoMapData.RouteNode\022\017\n\007on_lane\030\003 \001(\010\022\017"
   "\n\007on_link\030\004 \001(\010\022\t\n\001s\030\005 \001(\001\022\t\n\001l\030\006 \001(\001\022\013\n"
-  "\003yaw\030\007 \001(\001\022\022\n\ndis_to_end\030\010 \001(\001\032g\n\004Lane\022\017"
-  "\n\007road_id\030\001 \001(\004\022\017\n\007lane_id\030\002 \001(\003\022-\n\005arro"
-  "w\030\003 \001(\0162\036.sim_msg.EgoMapData.LANE_ARROW\022"
-  "\016\n\006length\030\004 \001(\001\032\300\001\n\004Link\022\017\n\007link_id\030\001 \001("
-  "\004\022\024\n\014from_road_id\030\002 \001(\004\022\027\n\017from_section_"
-  "id\030\003 \001(\004\022\024\n\014from_lane_id\030\004 \001(\003\022\022\n\nto_roa"
-  "d_id\030\005 \001(\004\022\025\n\rto_section_id\030\006 \001(\004\022\022\n\nto_"
-  "lane_id\030\007 \001(\003\022\023\n\013junction_id\030\010 \001(\004\022\016\n\006le"
-  "ngth\030\t \001(\001\032\237\001\n\tRouteNode\022(\n\004lane\030\001 \001(\0132\030"
-  ".sim_msg.EgoMapData.LaneH\000\022(\n\004link\030\002 \001(\013"
-  "2\030.sim_msg.EgoMapData.LinkH\000\"6\n\004Type\022\020\n\014"
-  "TYPE_UNKNOWN\020\000\022\r\n\tTYPE_LANE\020\001\022\r\n\tTYPE_LI"
-  "NK\020\002B\006\n\004node\"\273\002\n\nLANE_ARROW\022\023\n\017LANE_ARRO"
-  "W_None\020\000\022\027\n\023LANE_ARROW_Straight\020\001\022\023\n\017LAN"
-  "E_ARROW_Left\020\002\022\024\n\020LANE_ARROW_Right\020\003\022\024\n\020"
-  "LANE_ARROW_Uturn\020\004\022\027\n\023LANE_ARROW_SkewLef"
-  "t\020\005\022\030\n\024LANE_ARROW_SkewRight\020\006\022\033\n\027LANE_AR"
-  "ROW_StraightLeft\020\007\022\034\n\030LANE_ARROW_Straigh"
-  "tRight\020\010\022\030\n\024LANE_ARROW_LeftRight\020\t\022\030\n\024LA"
-  "NE_ARROW_LeftUturn\020\n\022\034\n\030LANE_ARROW_Strai"
-  "ghtUturn\020\013b\006proto3"
+  "\003yaw\030\007 \001(\001\022\022\n\ndis_to_end\030\010 \001(\001\032$\n\010WayPoi"
+  "nt\022\013\n\003lon\030\001 \001(\001\022\013\n\003lat\030\002 \001(\001\032\230\001\n\004Lane\022\017\n"
+  "\007road_id\030\001 \001(\004\022\017\n\007lane_id\030\002 \001(\003\022-\n\005arrow"
+  "\030\003 \001(\0162\036.sim_msg.EgoMapData.LANE_ARROW\022\016"
+  "\n\006length\030\004 \001(\001\022/\n\twaypoints\030\005 \003(\0132\034.sim_"
+  "msg.EgoMapData.WayPoint\032\361\001\n\004Link\022\017\n\007link"
+  "_id\030\001 \001(\004\022\024\n\014from_road_id\030\002 \001(\004\022\027\n\017from_"
+  "section_id\030\003 \001(\004\022\024\n\014from_lane_id\030\004 \001(\003\022\022"
+  "\n\nto_road_id\030\005 \001(\004\022\025\n\rto_section_id\030\006 \001("
+  "\004\022\022\n\nto_lane_id\030\007 \001(\003\022\023\n\013junction_id\030\010 \001"
+  "(\004\022\016\n\006length\030\t \001(\001\022/\n\twaypoints\030\n \003(\0132\034."
+  "sim_msg.EgoMapData.WayPoint\032\305\001\n\tRouteNod"
+  "e\0220\n\004type\030\001 \001(\0162\".sim_msg.EgoMapData.Rou"
+  "teNode.Type\022&\n\004lane\030\002 \001(\0132\030.sim_msg.EgoM"
+  "apData.Lane\022&\n\004link\030\003 \001(\0132\030.sim_msg.EgoM"
+  "apData.Link\"6\n\004Type\022\020\n\014TYPE_UNKNOWN\020\000\022\r\n"
+  "\tTYPE_LANE\020\001\022\r\n\tTYPE_LINK\020\002\"\273\002\n\nLANE_ARR"
+  "OW\022\023\n\017LANE_ARROW_None\020\000\022\027\n\023LANE_ARROW_St"
+  "raight\020\001\022\023\n\017LANE_ARROW_Left\020\002\022\024\n\020LANE_AR"
+  "ROW_Right\020\003\022\024\n\020LANE_ARROW_Uturn\020\004\022\027\n\023LAN"
+  "E_ARROW_SkewLeft\020\005\022\030\n\024LANE_ARROW_SkewRig"
+  "ht\020\006\022\033\n\027LANE_ARROW_StraightLeft\020\007\022\034\n\030LAN"
+  "E_ARROW_StraightRight\020\010\022\030\n\024LANE_ARROW_Le"
+  "ftRight\020\t\022\030\n\024LANE_ARROW_LeftUturn\020\n\022\034\n\030L"
+  "ANE_ARROW_StraightUturn\020\013b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_egoMapData_2eproto_deps[1] = {
   &::descriptor_table_header_2eproto,
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_egoMapData_2eproto_sccs[4] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_egoMapData_2eproto_sccs[5] = {
   &scc_info_EgoMapData_egoMapData_2eproto.base,
   &scc_info_EgoMapData_Lane_egoMapData_2eproto.base,
   &scc_info_EgoMapData_Link_egoMapData_2eproto.base,
   &scc_info_EgoMapData_RouteNode_egoMapData_2eproto.base,
+  &scc_info_EgoMapData_WayPoint_egoMapData_2eproto.base,
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_egoMapData_2eproto_once;
 static bool descriptor_table_egoMapData_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_egoMapData_2eproto = {
-  &descriptor_table_egoMapData_2eproto_initialized, descriptor_table_protodef_egoMapData_2eproto, "egoMapData.proto", 1018,
-  &descriptor_table_egoMapData_2eproto_once, descriptor_table_egoMapData_2eproto_sccs, descriptor_table_egoMapData_2eproto_deps, 4, 1,
+  &descriptor_table_egoMapData_2eproto_initialized, descriptor_table_protodef_egoMapData_2eproto, "egoMapData.proto", 1193,
+  &descriptor_table_egoMapData_2eproto_once, descriptor_table_egoMapData_2eproto_sccs, descriptor_table_egoMapData_2eproto_deps, 5, 1,
   schemas, file_default_instances, TableStruct_egoMapData_2eproto::offsets,
-  file_level_metadata_egoMapData_2eproto, 4, file_level_enum_descriptors_egoMapData_2eproto, file_level_service_descriptors_egoMapData_2eproto,
+  file_level_metadata_egoMapData_2eproto, 5, file_level_enum_descriptors_egoMapData_2eproto, file_level_service_descriptors_egoMapData_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -279,6 +314,298 @@ constexpr int EgoMapData::LANE_ARROW_ARRAYSIZE;
 
 // ===================================================================
 
+void EgoMapData_WayPoint::InitAsDefaultInstance() {
+}
+class EgoMapData_WayPoint::_Internal {
+ public:
+};
+
+EgoMapData_WayPoint::EgoMapData_WayPoint()
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:sim_msg.EgoMapData.WayPoint)
+}
+EgoMapData_WayPoint::EgoMapData_WayPoint(const EgoMapData_WayPoint& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      _internal_metadata_(nullptr) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::memcpy(&lon_, &from.lon_,
+    static_cast<size_t>(reinterpret_cast<char*>(&lat_) -
+    reinterpret_cast<char*>(&lon_)) + sizeof(lat_));
+  // @@protoc_insertion_point(copy_constructor:sim_msg.EgoMapData.WayPoint)
+}
+
+void EgoMapData_WayPoint::SharedCtor() {
+  ::memset(&lon_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&lat_) -
+      reinterpret_cast<char*>(&lon_)) + sizeof(lat_));
+}
+
+EgoMapData_WayPoint::~EgoMapData_WayPoint() {
+  // @@protoc_insertion_point(destructor:sim_msg.EgoMapData.WayPoint)
+  SharedDtor();
+}
+
+void EgoMapData_WayPoint::SharedDtor() {
+}
+
+void EgoMapData_WayPoint::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const EgoMapData_WayPoint& EgoMapData_WayPoint::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_EgoMapData_WayPoint_egoMapData_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void EgoMapData_WayPoint::Clear() {
+// @@protoc_insertion_point(message_clear_start:sim_msg.EgoMapData.WayPoint)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  ::memset(&lon_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&lat_) -
+      reinterpret_cast<char*>(&lon_)) + sizeof(lat_));
+  _internal_metadata_.Clear();
+}
+
+#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+const char* EgoMapData_WayPoint::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // double lon = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 9)) {
+          lon_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
+          ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      // double lat = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 17)) {
+          lat_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
+          ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+bool EgoMapData_WayPoint::MergePartialFromCodedStream(
+    ::PROTOBUF_NAMESPACE_ID::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+  // @@protoc_insertion_point(parse_start:sim_msg.EgoMapData.WayPoint)
+  for (;;) {
+    ::std::pair<::PROTOBUF_NAMESPACE_ID::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // double lon = 1;
+      case 1: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (9 & 0xFF)) {
+
+          DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
+                   double, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &lon_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // double lat = 2;
+      case 2: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (17 & 0xFF)) {
+
+          DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
+                   double, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &lat_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:sim_msg.EgoMapData.WayPoint)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:sim_msg.EgoMapData.WayPoint)
+  return false;
+#undef DO_
+}
+#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
+
+void EgoMapData_WayPoint::SerializeWithCachedSizes(
+    ::PROTOBUF_NAMESPACE_ID::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:sim_msg.EgoMapData.WayPoint)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // double lon = 1;
+  if (!(this->lon() <= 0 && this->lon() >= 0)) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDouble(1, this->lon(), output);
+  }
+
+  // double lat = 2;
+  if (!(this->lat() <= 0 && this->lat() >= 0)) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDouble(2, this->lat(), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:sim_msg.EgoMapData.WayPoint)
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* EgoMapData_WayPoint::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:sim_msg.EgoMapData.WayPoint)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // double lon = 1;
+  if (!(this->lon() <= 0 && this->lon() >= 0)) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDoubleToArray(1, this->lon(), target);
+  }
+
+  // double lat = 2;
+  if (!(this->lat() <= 0 && this->lat() >= 0)) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDoubleToArray(2, this->lat(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:sim_msg.EgoMapData.WayPoint)
+  return target;
+}
+
+size_t EgoMapData_WayPoint::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:sim_msg.EgoMapData.WayPoint)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // double lon = 1;
+  if (!(this->lon() <= 0 && this->lon() >= 0)) {
+    total_size += 1 + 8;
+  }
+
+  // double lat = 2;
+  if (!(this->lat() <= 0 && this->lat() >= 0)) {
+    total_size += 1 + 8;
+  }
+
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void EgoMapData_WayPoint::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:sim_msg.EgoMapData.WayPoint)
+  GOOGLE_DCHECK_NE(&from, this);
+  const EgoMapData_WayPoint* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<EgoMapData_WayPoint>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:sim_msg.EgoMapData.WayPoint)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:sim_msg.EgoMapData.WayPoint)
+    MergeFrom(*source);
+  }
+}
+
+void EgoMapData_WayPoint::MergeFrom(const EgoMapData_WayPoint& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:sim_msg.EgoMapData.WayPoint)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (!(from.lon() <= 0 && from.lon() >= 0)) {
+    set_lon(from.lon());
+  }
+  if (!(from.lat() <= 0 && from.lat() >= 0)) {
+    set_lat(from.lat());
+  }
+}
+
+void EgoMapData_WayPoint::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:sim_msg.EgoMapData.WayPoint)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void EgoMapData_WayPoint::CopyFrom(const EgoMapData_WayPoint& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:sim_msg.EgoMapData.WayPoint)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool EgoMapData_WayPoint::IsInitialized() const {
+  return true;
+}
+
+void EgoMapData_WayPoint::InternalSwap(EgoMapData_WayPoint* other) {
+  using std::swap;
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  swap(lon_, other->lon_);
+  swap(lat_, other->lat_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata EgoMapData_WayPoint::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
 void EgoMapData_Lane::InitAsDefaultInstance() {
 }
 class EgoMapData_Lane::_Internal {
@@ -292,7 +619,8 @@ EgoMapData_Lane::EgoMapData_Lane()
 }
 EgoMapData_Lane::EgoMapData_Lane(const EgoMapData_Lane& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
-      _internal_metadata_(nullptr) {
+      _internal_metadata_(nullptr),
+      waypoints_(from.waypoints_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&road_id_, &from.road_id_,
     static_cast<size_t>(reinterpret_cast<char*>(&arrow_) -
@@ -301,6 +629,7 @@ EgoMapData_Lane::EgoMapData_Lane(const EgoMapData_Lane& from)
 }
 
 void EgoMapData_Lane::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_EgoMapData_Lane_egoMapData_2eproto.base);
   ::memset(&road_id_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&arrow_) -
       reinterpret_cast<char*>(&road_id_)) + sizeof(arrow_));
@@ -329,6 +658,7 @@ void EgoMapData_Lane::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  waypoints_.Clear();
   ::memset(&road_id_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&arrow_) -
       reinterpret_cast<char*>(&road_id_)) + sizeof(arrow_));
@@ -370,6 +700,18 @@ const char* EgoMapData_Lane::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPAC
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 33)) {
           length_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
           ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      // repeated .sim_msg.EgoMapData.WayPoint waypoints = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 42)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_waypoints(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 42);
         } else goto handle_unusual;
         continue;
       default: {
@@ -455,6 +797,17 @@ bool EgoMapData_Lane::MergePartialFromCodedStream(
         break;
       }
 
+      // repeated .sim_msg.EgoMapData.WayPoint waypoints = 5;
+      case 5: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (42 & 0xFF)) {
+          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadMessage(
+                input, add_waypoints()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -503,6 +856,15 @@ void EgoMapData_Lane::SerializeWithCachedSizes(
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDouble(4, this->length(), output);
   }
 
+  // repeated .sim_msg.EgoMapData.WayPoint waypoints = 5;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->waypoints_size()); i < n; i++) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
+      5,
+      this->waypoints(static_cast<int>(i)),
+      output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -537,6 +899,14 @@ void EgoMapData_Lane::SerializeWithCachedSizes(
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDoubleToArray(4, this->length(), target);
   }
 
+  // repeated .sim_msg.EgoMapData.WayPoint waypoints = 5;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->waypoints_size()); i < n; i++) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        5, this->waypoints(static_cast<int>(i)), target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -557,6 +927,17 @@ size_t EgoMapData_Lane::ByteSizeLong() const {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
+
+  // repeated .sim_msg.EgoMapData.WayPoint waypoints = 5;
+  {
+    unsigned int count = static_cast<unsigned int>(this->waypoints_size());
+    total_size += 1UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+          this->waypoints(static_cast<int>(i)));
+    }
+  }
 
   // uint64 road_id = 1;
   if (this->road_id() != 0) {
@@ -610,6 +991,7 @@ void EgoMapData_Lane::MergeFrom(const EgoMapData_Lane& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
+  waypoints_.MergeFrom(from.waypoints_);
   if (from.road_id() != 0) {
     set_road_id(from.road_id());
   }
@@ -645,6 +1027,7 @@ bool EgoMapData_Lane::IsInitialized() const {
 void EgoMapData_Lane::InternalSwap(EgoMapData_Lane* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
+  CastToBase(&waypoints_)->InternalSwap(CastToBase(&other->waypoints_));
   swap(road_id_, other->road_id_);
   swap(lane_id_, other->lane_id_);
   swap(length_, other->length_);
@@ -671,7 +1054,8 @@ EgoMapData_Link::EgoMapData_Link()
 }
 EgoMapData_Link::EgoMapData_Link(const EgoMapData_Link& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
-      _internal_metadata_(nullptr) {
+      _internal_metadata_(nullptr),
+      waypoints_(from.waypoints_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&link_id_, &from.link_id_,
     static_cast<size_t>(reinterpret_cast<char*>(&length_) -
@@ -680,6 +1064,7 @@ EgoMapData_Link::EgoMapData_Link(const EgoMapData_Link& from)
 }
 
 void EgoMapData_Link::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_EgoMapData_Link_egoMapData_2eproto.base);
   ::memset(&link_id_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&length_) -
       reinterpret_cast<char*>(&link_id_)) + sizeof(length_));
@@ -708,6 +1093,7 @@ void EgoMapData_Link::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  waypoints_.Clear();
   ::memset(&link_id_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&length_) -
       reinterpret_cast<char*>(&link_id_)) + sizeof(length_));
@@ -783,6 +1169,18 @@ const char* EgoMapData_Link::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPAC
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 73)) {
           length_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
           ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
+      // repeated .sim_msg.EgoMapData.WayPoint waypoints = 10;
+      case 10:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 82)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(add_waypoints(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<::PROTOBUF_NAMESPACE_ID::uint8>(ptr) == 82);
         } else goto handle_unusual;
         continue;
       default: {
@@ -932,6 +1330,17 @@ bool EgoMapData_Link::MergePartialFromCodedStream(
         break;
       }
 
+      // repeated .sim_msg.EgoMapData.WayPoint waypoints = 10;
+      case 10: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (82 & 0xFF)) {
+          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadMessage(
+                input, add_waypoints()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -1004,6 +1413,15 @@ void EgoMapData_Link::SerializeWithCachedSizes(
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDouble(9, this->length(), output);
   }
 
+  // repeated .sim_msg.EgoMapData.WayPoint waypoints = 10;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->waypoints_size()); i < n; i++) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
+      10,
+      this->waypoints(static_cast<int>(i)),
+      output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -1062,6 +1480,14 @@ void EgoMapData_Link::SerializeWithCachedSizes(
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDoubleToArray(9, this->length(), target);
   }
 
+  // repeated .sim_msg.EgoMapData.WayPoint waypoints = 10;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->waypoints_size()); i < n; i++) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        10, this->waypoints(static_cast<int>(i)), target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -1082,6 +1508,17 @@ size_t EgoMapData_Link::ByteSizeLong() const {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
+
+  // repeated .sim_msg.EgoMapData.WayPoint waypoints = 10;
+  {
+    unsigned int count = static_cast<unsigned int>(this->waypoints_size());
+    total_size += 1UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+          this->waypoints(static_cast<int>(i)));
+    }
+  }
 
   // uint64 link_id = 1;
   if (this->link_id() != 0) {
@@ -1171,6 +1608,7 @@ void EgoMapData_Link::MergeFrom(const EgoMapData_Link& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
+  waypoints_.MergeFrom(from.waypoints_);
   if (from.link_id() != 0) {
     set_link_id(from.link_id());
   }
@@ -1221,6 +1659,7 @@ bool EgoMapData_Link::IsInitialized() const {
 void EgoMapData_Link::InternalSwap(EgoMapData_Link* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
+  CastToBase(&waypoints_)->InternalSwap(CastToBase(&other->waypoints_));
   swap(link_id_, other->link_id_);
   swap(from_road_id_, other->from_road_id_);
   swap(from_section_id_, other->from_section_id_);
@@ -1240,9 +1679,9 @@ void EgoMapData_Link::InternalSwap(EgoMapData_Link* other) {
 // ===================================================================
 
 void EgoMapData_RouteNode::InitAsDefaultInstance() {
-  ::sim_msg::_EgoMapData_RouteNode_default_instance_.lane_ = const_cast< ::sim_msg::EgoMapData_Lane*>(
+  ::sim_msg::_EgoMapData_RouteNode_default_instance_._instance.get_mutable()->lane_ = const_cast< ::sim_msg::EgoMapData_Lane*>(
       ::sim_msg::EgoMapData_Lane::internal_default_instance());
-  ::sim_msg::_EgoMapData_RouteNode_default_instance_.link_ = const_cast< ::sim_msg::EgoMapData_Link*>(
+  ::sim_msg::_EgoMapData_RouteNode_default_instance_._instance.get_mutable()->link_ = const_cast< ::sim_msg::EgoMapData_Link*>(
       ::sim_msg::EgoMapData_Link::internal_default_instance());
 }
 class EgoMapData_RouteNode::_Internal {
@@ -1253,39 +1692,11 @@ class EgoMapData_RouteNode::_Internal {
 
 const ::sim_msg::EgoMapData_Lane&
 EgoMapData_RouteNode::_Internal::lane(const EgoMapData_RouteNode* msg) {
-  return *msg->node_.lane_;
+  return *msg->lane_;
 }
 const ::sim_msg::EgoMapData_Link&
 EgoMapData_RouteNode::_Internal::link(const EgoMapData_RouteNode* msg) {
-  return *msg->node_.link_;
-}
-void EgoMapData_RouteNode::set_allocated_lane(::sim_msg::EgoMapData_Lane* lane) {
-  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
-  clear_node();
-  if (lane) {
-    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
-    if (message_arena != submessage_arena) {
-      lane = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
-          message_arena, lane, submessage_arena);
-    }
-    set_has_lane();
-    node_.lane_ = lane;
-  }
-  // @@protoc_insertion_point(field_set_allocated:sim_msg.EgoMapData.RouteNode.lane)
-}
-void EgoMapData_RouteNode::set_allocated_link(::sim_msg::EgoMapData_Link* link) {
-  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
-  clear_node();
-  if (link) {
-    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
-    if (message_arena != submessage_arena) {
-      link = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
-          message_arena, link, submessage_arena);
-    }
-    set_has_link();
-    node_.link_ = link;
-  }
-  // @@protoc_insertion_point(field_set_allocated:sim_msg.EgoMapData.RouteNode.link)
+  return *msg->link_;
 }
 EgoMapData_RouteNode::EgoMapData_RouteNode()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -1296,26 +1707,25 @@ EgoMapData_RouteNode::EgoMapData_RouteNode(const EgoMapData_RouteNode& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  clear_has_node();
-  switch (from.node_case()) {
-    case kLane: {
-      mutable_lane()->::sim_msg::EgoMapData_Lane::MergeFrom(from.lane());
-      break;
-    }
-    case kLink: {
-      mutable_link()->::sim_msg::EgoMapData_Link::MergeFrom(from.link());
-      break;
-    }
-    case NODE_NOT_SET: {
-      break;
-    }
+  if (from.has_lane()) {
+    lane_ = new ::sim_msg::EgoMapData_Lane(*from.lane_);
+  } else {
+    lane_ = nullptr;
   }
+  if (from.has_link()) {
+    link_ = new ::sim_msg::EgoMapData_Link(*from.link_);
+  } else {
+    link_ = nullptr;
+  }
+  type_ = from.type_;
   // @@protoc_insertion_point(copy_constructor:sim_msg.EgoMapData.RouteNode)
 }
 
 void EgoMapData_RouteNode::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_EgoMapData_RouteNode_egoMapData_2eproto.base);
-  clear_has_node();
+  ::memset(&lane_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&type_) -
+      reinterpret_cast<char*>(&lane_)) + sizeof(type_));
 }
 
 EgoMapData_RouteNode::~EgoMapData_RouteNode() {
@@ -1324,9 +1734,8 @@ EgoMapData_RouteNode::~EgoMapData_RouteNode() {
 }
 
 void EgoMapData_RouteNode::SharedDtor() {
-  if (has_node()) {
-    clear_node();
-  }
+  if (this != internal_default_instance()) delete lane_;
+  if (this != internal_default_instance()) delete link_;
 }
 
 void EgoMapData_RouteNode::SetCachedSize(int size) const {
@@ -1338,32 +1747,21 @@ const EgoMapData_RouteNode& EgoMapData_RouteNode::default_instance() {
 }
 
 
-void EgoMapData_RouteNode::clear_node() {
-// @@protoc_insertion_point(one_of_clear_start:sim_msg.EgoMapData.RouteNode)
-  switch (node_case()) {
-    case kLane: {
-      delete node_.lane_;
-      break;
-    }
-    case kLink: {
-      delete node_.link_;
-      break;
-    }
-    case NODE_NOT_SET: {
-      break;
-    }
-  }
-  _oneof_case_[0] = NODE_NOT_SET;
-}
-
-
 void EgoMapData_RouteNode::Clear() {
 // @@protoc_insertion_point(message_clear_start:sim_msg.EgoMapData.RouteNode)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  clear_node();
+  if (GetArenaNoVirtual() == nullptr && lane_ != nullptr) {
+    delete lane_;
+  }
+  lane_ = nullptr;
+  if (GetArenaNoVirtual() == nullptr && link_ != nullptr) {
+    delete link_;
+  }
+  link_ = nullptr;
+  type_ = 0;
   _internal_metadata_.Clear();
 }
 
@@ -1375,16 +1773,24 @@ const char* EgoMapData_RouteNode::_InternalParse(const char* ptr, ::PROTOBUF_NAM
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     CHK_(ptr);
     switch (tag >> 3) {
-      // .sim_msg.EgoMapData.Lane lane = 1;
+      // .sim_msg.EgoMapData.RouteNode.Type type = 1;
       case 1:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+          set_type(static_cast<::sim_msg::EgoMapData_RouteNode_Type>(val));
+        } else goto handle_unusual;
+        continue;
+      // .sim_msg.EgoMapData.Lane lane = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
           ptr = ctx->ParseMessage(mutable_lane(), ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // .sim_msg.EgoMapData.Link link = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+      // .sim_msg.EgoMapData.Link link = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
           ptr = ctx->ParseMessage(mutable_link(), ptr);
           CHK_(ptr);
         } else goto handle_unusual;
@@ -1419,9 +1825,23 @@ bool EgoMapData_RouteNode::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // .sim_msg.EgoMapData.Lane lane = 1;
+      // .sim_msg.EgoMapData.RouteNode.Type type = 1;
       case 1: {
-        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (10 & 0xFF)) {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (8 & 0xFF)) {
+          int value = 0;
+          DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
+                   int, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          set_type(static_cast< ::sim_msg::EgoMapData_RouteNode_Type >(value));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // .sim_msg.EgoMapData.Lane lane = 2;
+      case 2: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (18 & 0xFF)) {
           DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadMessage(
                input, mutable_lane()));
         } else {
@@ -1430,9 +1850,9 @@ bool EgoMapData_RouteNode::MergePartialFromCodedStream(
         break;
       }
 
-      // .sim_msg.EgoMapData.Link link = 2;
-      case 2: {
-        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (18 & 0xFF)) {
+      // .sim_msg.EgoMapData.Link link = 3;
+      case 3: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (26 & 0xFF)) {
           DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadMessage(
                input, mutable_link()));
         } else {
@@ -1468,16 +1888,22 @@ void EgoMapData_RouteNode::SerializeWithCachedSizes(
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // .sim_msg.EgoMapData.Lane lane = 1;
-  if (has_lane()) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      1, _Internal::lane(this), output);
+  // .sim_msg.EgoMapData.RouteNode.Type type = 1;
+  if (this->type() != 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnum(
+      1, this->type(), output);
   }
 
-  // .sim_msg.EgoMapData.Link link = 2;
-  if (has_link()) {
+  // .sim_msg.EgoMapData.Lane lane = 2;
+  if (this->has_lane()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
-      2, _Internal::link(this), output);
+      2, _Internal::lane(this), output);
+  }
+
+  // .sim_msg.EgoMapData.Link link = 3;
+  if (this->has_link()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
+      3, _Internal::link(this), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1493,18 +1919,24 @@ void EgoMapData_RouteNode::SerializeWithCachedSizes(
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // .sim_msg.EgoMapData.Lane lane = 1;
-  if (has_lane()) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessageToArray(
-        1, _Internal::lane(this), target);
+  // .sim_msg.EgoMapData.RouteNode.Type type = 1;
+  if (this->type() != 0) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
+      1, this->type(), target);
   }
 
-  // .sim_msg.EgoMapData.Link link = 2;
-  if (has_link()) {
+  // .sim_msg.EgoMapData.Lane lane = 2;
+  if (this->has_lane()) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        2, _Internal::link(this), target);
+        2, _Internal::lane(this), target);
+  }
+
+  // .sim_msg.EgoMapData.Link link = 3;
+  if (this->has_link()) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        3, _Internal::link(this), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1528,25 +1960,26 @@ size_t EgoMapData_RouteNode::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  switch (node_case()) {
-    // .sim_msg.EgoMapData.Lane lane = 1;
-    case kLane: {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          *node_.lane_);
-      break;
-    }
-    // .sim_msg.EgoMapData.Link link = 2;
-    case kLink: {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-          *node_.link_);
-      break;
-    }
-    case NODE_NOT_SET: {
-      break;
-    }
+  // .sim_msg.EgoMapData.Lane lane = 2;
+  if (this->has_lane()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *lane_);
   }
+
+  // .sim_msg.EgoMapData.Link link = 3;
+  if (this->has_link()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *link_);
+  }
+
+  // .sim_msg.EgoMapData.RouteNode.Type type = 1;
+  if (this->type() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->type());
+  }
+
   int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
@@ -1574,18 +2007,14 @@ void EgoMapData_RouteNode::MergeFrom(const EgoMapData_RouteNode& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  switch (from.node_case()) {
-    case kLane: {
-      mutable_lane()->::sim_msg::EgoMapData_Lane::MergeFrom(from.lane());
-      break;
-    }
-    case kLink: {
-      mutable_link()->::sim_msg::EgoMapData_Link::MergeFrom(from.link());
-      break;
-    }
-    case NODE_NOT_SET: {
-      break;
-    }
+  if (from.has_lane()) {
+    mutable_lane()->::sim_msg::EgoMapData_Lane::MergeFrom(from.lane());
+  }
+  if (from.has_link()) {
+    mutable_link()->::sim_msg::EgoMapData_Link::MergeFrom(from.link());
+  }
+  if (from.type() != 0) {
+    set_type(from.type());
   }
 }
 
@@ -1610,8 +2039,9 @@ bool EgoMapData_RouteNode::IsInitialized() const {
 void EgoMapData_RouteNode::InternalSwap(EgoMapData_RouteNode* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  swap(node_, other->node_);
-  swap(_oneof_case_[0], other->_oneof_case_[0]);
+  swap(lane_, other->lane_);
+  swap(link_, other->link_);
+  swap(type_, other->type_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EgoMapData_RouteNode::GetMetadata() const {
@@ -2191,6 +2621,9 @@ void EgoMapData::InternalSwap(EgoMapData* other) {
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace sim_msg
 PROTOBUF_NAMESPACE_OPEN
+template<> PROTOBUF_NOINLINE ::sim_msg::EgoMapData_WayPoint* Arena::CreateMaybeMessage< ::sim_msg::EgoMapData_WayPoint >(Arena* arena) {
+  return Arena::CreateInternal< ::sim_msg::EgoMapData_WayPoint >(arena);
+}
 template<> PROTOBUF_NOINLINE ::sim_msg::EgoMapData_Lane* Arena::CreateMaybeMessage< ::sim_msg::EgoMapData_Lane >(Arena* arena) {
   return Arena::CreateInternal< ::sim_msg::EgoMapData_Lane >(arena);
 }

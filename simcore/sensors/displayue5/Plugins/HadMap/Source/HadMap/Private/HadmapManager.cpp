@@ -130,22 +130,6 @@ bool hadmapue4::HadmapManager::CreateHadmapHandle(const TArray<FVector>& _EgoPat
             {
                 bCreateSuccess = true;
             }
-            hadmap::PointVec StartEnd;
-            for (auto Point : _EgoPath)
-            {
-                StartEnd.push_back(hadmap::txPoint(Point.X, Point.Y, Point.Z));
-            }
-            hadmap::txLanes lanes;
-            // hadmap::getLanes(mapengineHandle, StartEnd[0], 10.0, lanes);
-            hadmap::txPoint point(121.174780,31.288912,0.000000);
-            hadmap::getLanes(mapengineHandle, point, 10.0, lanes);
-            UE_LOG(LogTemp, Warning, TEXT("mapengine lanes size: %d %f %f %f"), lanes.size(), StartEnd[0].x,
-                StartEnd[0].y, StartEnd[0].z);
-
-            hadmap::txRoads _roads;
-            hadmap::getRoads(mapengineHandle, true, _roads);
-            UE_LOG(LogTemp, Warning, TEXT("mapengine road size: %d"), _roads.size());
-
             break;
         }
         default:
@@ -433,17 +417,8 @@ hadmap::txMapHandle* HadmapManager::GetMapHandle() const
 
 void hadmapue4::HadmapManager::LocalToLonLat(double& _X, double& _Y, double& _Z)
 {
-    _X = -_X;
-    _Y = -_Y;
-
-    UE_LOG(
-        LogTemp, Log, TEXT("LocalToLonLat1 %f %f %f %f %f %f"), _X, _Y, _Z, mapOriginLon, mapOriginLat, mapOriginAlt);
     coord_trans_api::local2global(_X, _Y, _Z, mapOriginLon, mapOriginLat, mapOriginAlt);
-    UE_LOG(
-        LogTemp, Log, TEXT("LocalToLonLat2 %f %f %f %f %f %f"), _X, _Y, _Z, mapOriginLon, mapOriginLat, mapOriginAlt);
     coord_trans_api::global2lonlat(_X, _Y, _Z);
-    UE_LOG(
-        LogTemp, Log, TEXT("LocalToLonLat3 %f %f %f %f %f %f"), _X, _Y, _Z, mapOriginLon, mapOriginLat, mapOriginAlt);
 }
 
 void hadmapue4::HadmapManager::LocalToLonLat(const FVector& _Loc, double& _X, double& _Y, double& _Z)

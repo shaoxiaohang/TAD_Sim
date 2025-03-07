@@ -23,6 +23,8 @@
 
 #./build.sh > log.txt 2>&1
 
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
 
 build_project() {
   project="$1"

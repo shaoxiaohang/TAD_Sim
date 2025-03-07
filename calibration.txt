@@ -314,7 +314,7 @@ sensors {
     LocationY: 3.7617
     LocationZ: 156.3792
     RotationX: 0.36673051894170766
-    RotationY: 4.0097084382910158
+    RotationY: 0.056299651888335078
     RotationZ: 0.57707608955030154
   }
   intrinsic {
@@ -344,7 +344,7 @@ sensors {
     }
     params {
       key: "Model"
-      value: "HS128"
+      value: "HS128AT"
     }
   }
 }

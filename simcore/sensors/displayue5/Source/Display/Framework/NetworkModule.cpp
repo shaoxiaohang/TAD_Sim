@@ -29,6 +29,7 @@ void NetworkModule::Init(tx_sim::InitHelper& helper)
     FString UnionTrafficTopic = UnionPrefixStr + LocationTopic;
     helper.Subscribe(TCHAR_TO_ANSI(*UnionTrafficTopic));
 
+
     if (!helper.GetParameter("time0").empty())
     {
         time0 = std::atof(helper.GetParameter("time0").c_str());
@@ -193,6 +194,28 @@ void NetworkModule::Step(tx_sim::StepHelper& helper)
         NewInPtr->name = TEXT("UPDATE");
         NewInPtr->timeStamp = timestamp;
 
+        // std::string mapdata_layload;
+        // helper.GetSubscribedMessage("EgoUnion/MapData", mapdata_layload);
+        // sim_msg::Union union_mapdata;
+        // // if (union_mapdata.ParseFromString(mapdata_layload))
+        // // {
+        // //     UE_LOG(SimLogNet, Log, TEXT("LOCATION group %s"), UTF8_TO_TCHAR(union_mapdata.DebugString().c_str()));
+        // // }
+        // if (union_mapdata.ParseFromString(mapdata_layload))
+        // {
+        //     sim_msg::EgoMapData mapdata;
+        //     for (int i = 0; i < union_mapdata.messages_size(); ++i)
+        //     {
+        //         const auto& msg = union_mapdata.messages(i);
+        //         std::string groupname = msg.groupname();
+        //         std::string content = msg.content();
+        //         if (mapdata.ParseFromString(content))
+        //         {
+        //             UE_LOG(SimLogNet, Log, TEXT("LOCATION group %s"), UTF8_TO_TCHAR(mapdata.DebugString().c_str()));
+        //         }
+        //     }
+        // }
+
         sim_msg::Union UnionLocation;
         UnionLocation.ParseFromString(strUnionLocation);
 
@@ -207,9 +230,9 @@ void NetworkModule::Step(tx_sim::StepHelper& helper)
             {
                 NewInPtr->egoData.Emplace(UTF8_TO_TCHAR(groupname.c_str()), locationMsg);
             }
-            UE_LOG(SimLogNet, Log, TEXT("LOCATION group %s time %f x %.8f y %.8f z %.8f"),
+            UE_LOG(SimLogNet, Log, TEXT("LOCATION %s time %f x %.8f y %.8f z %.8f %s"),
                 UTF8_TO_TCHAR(groupname.c_str()), timestamp, locationMsg.position().x(), locationMsg.position().y(),
-                locationMsg.position().z());
+                locationMsg.position().z(), UTF8_TO_TCHAR(locationMsg.DebugString().c_str()));
         }
         NewInPtr->trafficData.ParseFromString(strTraffic);
         // UE_LOG(SimLogNet, Log, TEXT("TRAFFIC %f %s"), timestamp,

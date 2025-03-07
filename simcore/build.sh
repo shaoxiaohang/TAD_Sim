@@ -16,7 +16,7 @@ build_project() {
 }
 
 # Start compiling
-# build_project "framework" "build.sh"
+build_project "framework" "build.sh"
 # build_project "arbitrary" "build.sh"
 # build_project "envpb" "build.sh"
 # build_project "excel2asam" "build.sh"

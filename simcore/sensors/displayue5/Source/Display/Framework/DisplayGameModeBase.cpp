@@ -540,12 +540,6 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
     }
 }
 
-void ADisplayGameModeBase::FillEgoMapData(FSimUpdateOut& _OutData, double lon, double lat, double alt)
-{
-    auto& EgoMapData = _OutData.egoMapData;
-    // hadmapue4::HadmapManager::Get()->FillEgoMapData(EgoMapData);
-}
-
 void ADisplayGameModeBase::ConvertData_LocalToSim(const FLocalData& _LocalData, FSimData& _SimData)
 {
     if (_LocalData.name == TEXT("RESET"))
@@ -572,7 +566,6 @@ void ADisplayGameModeBase::ConvertData_LocalToSim(const FLocalData& _LocalData, 
                     hadmapue4::HadmapManager::Get()->LocalToLonLat(out.locPose, Px, Py, Pz);
                     UE_LOG(LogTemp, Warning, TEXT("SEND POSE: %f %f %f %f %f %f"), out.locPose.X, out.locPose.Y,
                         out.locPose.Z, Px, Py, Pz);
-                    FillEgoMapData(*SimUpdateInPtr, Px, Py, Pz);
                     auto* object = SimUpdateInPtr->trafficPose.add_egos();
                     object->set_id(out.id + 1);
                     object->set_timestamp(out.timeStamp0);

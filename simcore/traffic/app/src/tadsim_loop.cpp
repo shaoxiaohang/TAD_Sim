@@ -62,8 +62,10 @@ void Communicate(tx_sim::InitHelper& helper) TX_NOEXCEPT {
     helper.Subscribe(FLAGS_Location_TopicName /*LOCATION*/);
 #if USE_EgoGroup
     helper.Subscribe(FLAGS_EgoUnion_TopicName /*EgoUnion/LOCATION*/);
+    LogWarn << "SUB UNION " << FLAGS_EgoUnion_TopicName;
     helper.Subscribe(FLAGS_EgoUnion_Trailer_TopicName /*EgoUnion/LOCATION_TRAILER*/);
     helper.Subscribe(FLAGS_EgoUnion_Specified_TopicName /*.hightlight_group*/);
+    helper.Publish(FLAGS_EgoUnion_MapData_TopicName);
 #endif
     // publish our topics with messages we produced in Step callback.
     helper.Publish(FLAGS_Traffic_TopicName /*TRAFFIC*/);

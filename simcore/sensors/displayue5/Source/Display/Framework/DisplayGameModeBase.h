@@ -209,8 +209,6 @@ protected:
     FString GetTypeIdDef(int32 _Id, FString _Type);
     FString GetTypeIdDef(const FString& _TypeName);
 
-    void FillEgoMapData(FSimUpdateOut& _OutData, double lon, double lat, double alt);
-
 protected:
                                                                 
     TMap<FUniqueNetIdRepl, TSharedPtr<FSimOut>> clientOutputMap;

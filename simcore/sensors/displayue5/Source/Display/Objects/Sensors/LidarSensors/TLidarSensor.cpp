@@ -535,7 +535,7 @@ void ATLidarSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
                         tp.x = p.x;
                         tp.y = -p.y;    // left to right
                     }
-                    FVector point(tp.x, tp.y, tp.z);
+                    FVector point(tp.x, tp.y, p.z);
                     point = tf.TransformPosition(point);
                     tp.x = point.X;
                     tp.y = point.Y;
