@@ -10,6 +10,8 @@ echo $TADSIM
 OPENVR_LIBRARY_PATH=$UE5_ROOT/Engine/Source/ThirdParty/OpenVR/OpenVRv1_5_17/lib/linux64
 DISPLAY_LIBRARY_PATH=$DISPLAY_UNREAL_ROOT/Binaries/Linux/ubuntu18_20
 
+OPENCV_LIBRARY_PATH=$UE5_ROOT/Engine/Plugins/Runtime/OpenCV/Binaries/ThirdParty/Linux/
+
 BOLD='\033[1m'
 RED='\033[0;31m'
 GREEN='\033[32m'

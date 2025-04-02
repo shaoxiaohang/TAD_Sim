@@ -35,17 +35,28 @@ int main(int argn, char** argv) {
     return -1;
   }
 
-  txRoads _roads;
-  getRoads(pHandle, true, _roads);
-  std::cout << " road " << _roads.size() << std::endl;
+  // txRoads _roads;
+  // getRoads(pHandle, true, _roads);
+  // std::cout << " road " << _roads.size() << std::endl;
 
-  // if(hadmap::hadmapOutput("/saturnv/test.xodr", hadmap::MAP_DATA_TYPE::OPENDRIVE, pHandle)){
-  //   std::cout << "faild to save \n";
-  //   return -1;
+  // for (auto it : _roads) {
+  //   hadmap::txLaneLinks links;
+  //   getLaneLinks(pHandle, it->getId(), ROAD_PKID_INVALID, links);
+  //   std::cout << " road id " << it->getId() <<  " links size " << links.size() << std::endl;
+  //   for (auto link : links) {
+  //     std::cout << " link id " << link->getId() << " from " << link->fromRoadId() << " to " << link->toRoadId()
+  //               << std::endl;
+  //   }
   // }
 
-  return 0;
+  if (hadmap::hadmapOutput("/saturnv/SH1_Small.xodr", hadmap::MAP_DATA_TYPE::OPENDRIVE, pHandle)) {
+    std::cout << "faild to save \n";
+    return -1;
+  }
 
+  // std::cout << "saved" << std::endl;
+
+  return 0;
 
   // auto routing_map = new hadmap::RoutingMap(hadmap::CoordType::COORD_WGS84, fname);
 
@@ -73,7 +84,8 @@ int main(int argn, char** argv) {
   // if (routing_map->routingSync(start_end, route)) {
   //   std::cout << "route size " << route.size() << std::endl;
   //   for (auto& route_node : route)
-  //     std::cout << " route id " << route_node.getId() << " node type " << (int)route_node.getRouteType() << " pre id "
+  //     std::cout << " route id " << route_node.getId() << " node type " << (int)route_node.getRouteType() << " pre id
+  //     "
   //               << route_node.getPreId() << " next id " << route_node.getNextId() << " length "
   //               << route_node.getLength() << std::endl;
   // } else {

@@ -17,6 +17,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <opencv2/opencv.hpp>
 #include <regex>
 #include "camera_sensor.h"
 #include "catalog.h"
@@ -143,6 +144,8 @@ void sim_label::Reset(tx_sim::ResetHelper &helper) {
   FS_TRY(boost::filesystem::create_directories(savePath + "/camera/jpg"));
   FS_TRY(boost::filesystem::create_directories(savePath + "/semantic/png"));
   FS_TRY(boost::filesystem::create_directories(savePath + "/fisheye/jpg"));
+  FS_TRY(boost::filesystem::create_directories(savePath + "/depth/png"));
+  FS_TRY(boost::filesystem::create_directories(savePath + "/normal/png"));
 
   // Output the savePath
   std::cout << "savePath=" << savePath << std::endl;
@@ -151,6 +154,8 @@ void sim_label::Reset(tx_sim::ResetHelper &helper) {
   threads = std::make_shared<ThreadPool>(8);
   queues = std::make_shared<DataQueue>();
   queues->setImageCallback(std::bind(&sim_label::saveImageLabel, this, std::placeholders::_1));
+  queues->setDepthImageCallback(std::bind(&sim_label::saveDepthImageLabel, this, std::placeholders::_1));
+
 
   queues->setPcdCallback(std::bind(&sim_label::savePcdLabel, this, std::placeholders::_1));
 
@@ -269,42 +274,60 @@ void sim_label::Step(tx_sim::StepHelper &helper) {
     }
     display_timstamp[i] = sensorraw.timestamp();
 
+    std::cout << "sensor size " << sensorraw.sensor().size() << std::endl;
+
+    if(sensorraw.timestamp() <= BeginTime) {
+      std::cout << " skip frames before " << BeginTime << "ms" << std::endl;
+      return;
+    }
+
     // Output channel index and timestamp
-    std::cout << "[" << i << ", " << sensorraw.timestamp() << ": ";
+    std::cout << "display id " << i << ", time stamp " << sensorraw.timestamp() << std::endl;
     // Process raw sensor data
     for (const auto &sensor : sensorraw.sensor()) {
-      std::cout << "sensor size " << sensorraw.sensor().size() << std::endl;
+      std::cout << "sensor id " << sensor.id() << std::endl;
+      std::cout << "sensor type " << sensor.type() << std::endl;
       // Add parsed image information to queue
       if (sensor.type() == sim_msg::SensorRaw::TYPE_CAMERA) {
         ImageInfo info;
         if (parseImage(sensor.raw(), info)) {
-          std::cout << "camera(" << info.id << "," << info.timestamp << ")=" << info.size;
+          std::cout << "camera(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
           queues->addCamera(info);
+        }
+      } else if (sensor.type() == sim_msg::SensorRaw::TYPE_DEPTH) {
+        ImageInfo info;
+        if (parseImage(sensor.raw(), info)) {
+          std::cout << "depth(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
+          queues->addDepth(info);
         }
       } else if (sensor.type() == sim_msg::SensorRaw::TYPE_SEMANTIC) {
         ImageInfo info;
         if (parseImage(sensor.raw(), info)) {
-          std::cout << "semantic(" << info.id << "," << info.timestamp << ")=" << info.size;
+          std::cout << "semantic(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
           queues->addSenmantic(info);
+        }
+      } else if (sensor.type() == sim_msg::SensorRaw::TYPE_ULTRASONIC) {
+        ImageInfo info;
+        if (parseImage(sensor.raw(), info)) {
+          std::cout << "normal(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
+          queues->addNormal(info);
         }
       } else if (sensor.type() == sim_msg::SensorRaw::TYPE_FISHEYE) {
         ImageInfo info;
         if (parseImage(sensor.raw(), info)) {
-          std::cout << "fisheye(" << info.id << "," << info.timestamp << ")=" << info.size;
+          std::cout << "fisheye(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
           queues->addFisheye(info);
         }
       } else if (sensor.type() == sim_msg::SensorRaw::TYPE_LIDAR) {
         PcInfo info;
         if (parseLidar(sensor.raw(), info)) {
           std::cout << "ADD LIDAR " << std::endl;
-          std::cout << "lidar(" << info.id << "," << info.timestamp << ")=" << info.size;
+          std::cout << "lidar(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
           queues->addLidar(info);
         }
       }
-      std::cout << ", ";
     }
     // Close square brackets and comma after processing sensors
-    std::cout << "], ";
   }
   queues->update();
   // Clear the output buffer and print newline character
@@ -513,6 +536,32 @@ bool sim_label::saveFile(const std::string &fname, const std::string &buf) {
 }
 
 /**
+ * @brief Save opencv image method implementation for SimLabel class
+ *
+ * @param fname The name of the file to be saved
+ * @param buf The binary data of cv::Mat image to be saved
+ * @return true
+ * @return false
+ */
+bool sim_label::saveOpenCVImage(const std::string &fname, const std::string &buf, int width, int height,
+                                sim_msg::SensorRaw_Type type) {
+  int cv_type = 0;
+  if (type == sim_msg::SensorRaw_Type_TYPE_DEPTH) {
+    cv_type = CV_16UC1;
+  }
+  auto file_path = savePath + "/" + fname;
+
+  cv::Mat mat(height, width , cv_type, const_cast<void *>(reinterpret_cast<const void *>(buf.data())));
+  static std::vector<int> params = {cv::IMWRITE_PNG_COMPRESSION, 4};
+  if (!cv::imwrite(file_path, mat, params)) {
+    std::cout << "save depth image error " << file_path << std::endl;
+    return false;
+  }
+  std::cout << "save depth image " << file_path << std::endl;
+  return true;
+}
+
+/**
  * @brief This code snippet demonstrates how to use C++ Boost libraries to
  * extract relevant information from an image package, generate necessary
  * metadata, and enqueue tasks to save both JPEG and PNG files alongside their
@@ -585,14 +634,33 @@ void sim_label::saveImageLabel(const ImagePackage &info) {
   }
 }
 
+void sim_label::saveDepthImageLabel(const ImagePackage &info){
+  // Get timestamp string and UTC date/time string from image package
+  std::string tss = timeStarmString(info.image.timestamp);
+  std::string utc = getUTC();
+  auto save_opencv_fun = std::bind(&sim_label::saveOpenCVImage, this, std::placeholders::_1, std::placeholders::_2,
+                                   std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
+
+
+  ImageLabel label(info);
+  label.init(minArea, maxDistance, completeness, fullBox);
+
+  std::string dir0, dir1;
+  // Construct JSON source object
+  Json::Value source = label.label(dir0, dir1);
+
+  const auto &pnginfo = info.image;
+  threads->enqueue(save_opencv_fun, dir1 + "/" + pnginfo.fpath, pnginfo.buffer, pnginfo.width, pnginfo.height,
+                   info.type);
+}
+
 /**
  * @brief save pcd label
  *
  * @param info pcd info
  */
 void sim_label::savePcdLabel(const PcdPackage &info) {
-  std::cout << "savePcdLabel obj " << info.obj.timestamp()
-  << " lidar "   <<  info.lidar.timestamp << std::endl;
+  std::cout << "savePcdLabel obj " << info.obj.timestamp() << " lidar " << info.lidar.timestamp << std::endl;
   // Get timestamp string and UTC date/time string from lidar package
   std::string tss = timeStarmString(info.lidar.timestamp);
   std::string utc = getUTC();
@@ -671,9 +739,6 @@ void sim_label::savePcdLabel(const PcdPackage &info) {
       tobj.pitch = dobj.second.pose().pitch();
       tobj.yaw = dobj.second.pose().yaw();
 
-
-
-
       lidar->FovRotator(tobj.roll, tobj.pitch, tobj.yaw);
 
       Eigen::Quaterniond q(Eigen::AngleAxisd(tobj.yaw, Eigen::Vector3d::UnitZ()));
@@ -685,8 +750,8 @@ void sim_label::savePcdLabel(const PcdPackage &info) {
       tobj.y = pos.y() + offset.y();
       tobj.z = pos.z() + offset.z();
 
-      std::cout << "OFFSET " << offset.x() << " " << offset.y() << " " << offset.z() << " " << tobj.roll << " " << tobj.pitch
-                << " " << tobj.yaw << std::endl;  
+      std::cout << "OFFSET " << offset.x() << " " << offset.y() << " " << offset.z() << " " << tobj.roll << " "
+                << tobj.pitch << " " << tobj.yaw << std::endl;
 
       detect_objects.push_back(tobj);
     }

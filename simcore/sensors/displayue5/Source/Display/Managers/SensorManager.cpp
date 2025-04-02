@@ -2,6 +2,9 @@
 
 #include "Kismet/KismetMathLibrary.h"
 #include "Objects/Sensors/CameraSensors/CameraSensor.h"
+#include "Objects/Sensors/CameraSensors/DepthSensor.h"
+#include "Objects/Sensors/CameraSensors/SemanticCamera.h"
+#include "Objects/Sensors/CameraSensors/NormalCamera.h"
 #include "Objects/Sensors/LidarSensors/TLidarSensor.h"
 #include "Objects/Sensors/SensorFactory.h"
 #include "Utils/ProtoUtil.h"
@@ -143,6 +146,132 @@ void ASensorManager::Init(const FManagerConfig& Config)
         }
     }
 
+    // semantic
+    for (auto& Elem : SensorConfig->semanticArry)
+    {
+        ASemanticCamera* SemanticCameraSensor =
+            ASensorFactory::SpawnSensor<ASemanticCamera>(GetWorld(), ASemanticCamera::StaticClass(), Elem);
+        if (SemanticCameraSensor)
+        {
+            ISimActorInterface* InstalledSimActor = SemanticCameraSensor->Install(Elem);
+            if (InstalledSimActor)
+            {
+                TMap<FString, ISensorInterface*>* ExistSenorMap = sensorMap.Find(InstalledSimActor);
+                if (ExistSenorMap)
+                {
+                    FString SensorName;
+                    SensorName = Elem.typeName;
+                    SensorName += FString("_") + FString::FromInt(Elem.id);
+                    if (!ExistSenorMap->Find(SensorName))
+                    {
+                        ExistSenorMap->Add(SensorName, SemanticCameraSensor);
+                    }
+                    else
+                    {
+                        SemanticCameraSensor->Destroy(TEXT("Already Exist!"));
+                    }
+                }
+                else
+                {
+                    TMap<FString, ISensorInterface*> NewSenorMap;
+                    FString SensorName;
+                    SensorName = Elem.typeName;
+                    SensorName += FString("_") + FString::FromInt(Elem.id);
+                    NewSenorMap.Add(SensorName, SemanticCameraSensor);
+                    sensorMap.Add(InstalledSimActor, NewSenorMap);
+                }
+            }
+            else
+            {
+                SemanticCameraSensor->Destroy(TEXT("Cant Find Target!"));
+            }
+        }
+    }
+
+    // normal
+    for (auto& Elem : SensorConfig->normalArry)
+    {
+        ANormalCamera* NormalCameraSensor =
+            ASensorFactory::SpawnSensor<ANormalCamera>(GetWorld(), ANormalCamera::StaticClass(), Elem);
+        if (NormalCameraSensor)
+        {
+            ISimActorInterface* InstalledSimActor = NormalCameraSensor->Install(Elem);
+            if (InstalledSimActor)
+            {
+                TMap<FString, ISensorInterface*>* ExistSenorMap = sensorMap.Find(InstalledSimActor);
+                if (ExistSenorMap)
+                {
+                    FString SensorName;
+                    SensorName = Elem.typeName;
+                    SensorName += FString("_") + FString::FromInt(Elem.id);
+                    if (!ExistSenorMap->Find(SensorName))
+                    {
+                        ExistSenorMap->Add(SensorName, NormalCameraSensor);
+                    }
+                    else
+                    {
+                        NormalCameraSensor->Destroy(TEXT("Already Exist!"));
+                    }
+                }
+                else
+                {
+                    TMap<FString, ISensorInterface*> NewSenorMap;
+                    FString SensorName;
+                    SensorName = Elem.typeName;
+                    SensorName += FString("_") + FString::FromInt(Elem.id);
+                    NewSenorMap.Add(SensorName, NormalCameraSensor);
+                    sensorMap.Add(InstalledSimActor, NewSenorMap);
+                }
+            }
+            else
+            {
+                NormalCameraSensor->Destroy(TEXT("Cant Find Target!"));
+            }
+        }
+    }
+
+    // depth
+    for (auto& Elem : SensorConfig->depthArry)
+    {
+        ADepthSensor* CameraSensor =
+            ASensorFactory::SpawnSensor<ADepthSensor>(GetWorld(), ADepthSensor::StaticClass(), Elem);
+        if (CameraSensor)
+        {
+            ISimActorInterface* InstalledSimActor = CameraSensor->Install(Elem);
+            if (InstalledSimActor)
+            {
+                TMap<FString, ISensorInterface*>* ExistSenorMap = sensorMap.Find(InstalledSimActor);
+                if (ExistSenorMap)
+                {
+                    FString SensorName;
+                    SensorName = Elem.typeName;
+                    SensorName += FString("_") + FString::FromInt(Elem.id);
+                    if (!ExistSenorMap->Find(SensorName))
+                    {
+                        ExistSenorMap->Add(SensorName, CameraSensor);
+                    }
+                    else
+                    {
+                        CameraSensor->Destroy(TEXT("Already Exist!"));
+                    }
+                }
+                else
+                {
+                    TMap<FString, ISensorInterface*> NewSenorMap;
+                    FString SensorName;
+                    SensorName = Elem.typeName;
+                    SensorName += FString("_") + FString::FromInt(Elem.id);
+                    NewSenorMap.Add(SensorName, CameraSensor);
+                    sensorMap.Add(InstalledSimActor, NewSenorMap);
+                }
+            }
+            else
+            {
+                CameraSensor->Destroy(TEXT("Cant Find Target!"));
+            }
+        }
+    }
+
     // Fisheye
     for (auto& Elem : SensorConfig->fisheyeArry)
     {
@@ -210,7 +339,8 @@ void ASensorManager::Update(const FManagerIn& _Input, FManagerOut& _Output)
             SensorOut.id = Sensor.Value->configBase.id;
             SensorOut.type = Sensor.Value->configBase.typeName;
             SensorOut.timeStamp = SensorIn.timeStamp;
-            UE_LOG(SimLogSensorManager, Log, TEXT("SensorManger: update %s"), *Sensor.Key);
+            UE_LOG(SimLogSensorManager, Log, TEXT("SensorManger: update %s type %s"), *Sensor.Key,
+                *Sensor.Value->configBase.typeName);
             Sensor.Value->Update(SensorIn, SensorOut);
             SensorManagerOut->outArray.Add(SensorOut);
         }
@@ -330,6 +460,47 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
         extrinsic->set_rotationz(0.0);
         extrinsic->set_installslot("C0");
         extrinsic->set_device(".0");
+    }
+
+    std::vector<sim_msg::Sensor> NewAddedSensors;
+    bool DrawDepthCamera = false;
+    bool DrawSemanticCamera = false;
+    bool DrawNormalCamera = false;
+    GConfig->GetBool(TEXT("Sensor"), TEXT("DrawDepthCamera"), DrawDepthCamera, GGameIni);
+    GConfig->GetBool(TEXT("Sensor"), TEXT("DrawSemanticCamera"), DrawSemanticCamera, GGameIni);
+    GConfig->GetBool(TEXT("Sensor"), TEXT("DrawNormalCamera"), DrawNormalCamera, GGameIni);
+
+    for (const auto& Sensor : SensorGroup.sensors())
+    {
+        if (Sensor.type() == sim_msg::SENSOR_TYPE_CAMERA)
+        {
+            if (DrawDepthCamera)
+            {
+                auto DepthCamera = Sensor;
+                DepthCamera.set_type(sim_msg::SENSOR_TYPE_DEPTH);
+                UE_LOG(LogTemp, Log, TEXT("SensorManger: Add Depth Camera %d"), DepthCamera.extrinsic().id());
+                NewAddedSensors.push_back(DepthCamera);
+            }
+            if (DrawSemanticCamera)
+            {
+                auto SemanticCamera = Sensor;
+                SemanticCamera.set_type(sim_msg::SENSOR_TYPE_SEMANTIC);
+                UE_LOG(LogTemp, Log, TEXT("SensorManger: Add Semantic Camera %d"), SemanticCamera.extrinsic().id());
+                NewAddedSensors.push_back(SemanticCamera);
+            }
+            if (DrawNormalCamera)
+            {
+                auto NormalCamera = Sensor;
+                NormalCamera.set_type(sim_msg::SENSOR_TYPE_ULTRASONIC);
+                UE_LOG(LogTemp, Log, TEXT("SensorManger: Add Normal Camera %d"), NormalCamera.extrinsic().id());
+                NewAddedSensors.push_back(NormalCamera);
+            }
+        }
+    }
+
+    for (const auto& Sensor : NewAddedSensors)
+    {
+        SensorGroup.add_sensors()->CopyFrom(Sensor);
     }
 
     UE_LOG(LogTemp, Log, TEXT("SensorManger: SensorGroup: %s"), UTF8_TO_TCHAR(SensorGroup.DebugString().c_str()));
@@ -467,6 +638,204 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
                                      FString::FromInt(NewConfig.id) +
                                      TEXT("/");    // TODO: set save path in a standardized way
             SensormanagerConfig.cameraArry.Add(NewConfig);
+        }
+        else if (sensor.type() == sim_msg::SENSOR_TYPE_DEPTH)
+        {
+            FCameraConfig NewConfig;
+            *(FSensorConfig*) &NewConfig = Base;
+            NewConfig.typeName = TEXT("Depth");
+            NewConfig.targetId = EgoId;
+            FString Intrinsic_Matrix = TEXT("");
+            FString distortion_Parameters = TEXT("");
+
+            // old
+            GetPropValue(Config, FString(TEXT("CCD_Width")), NewConfig.ccd_Width);              ////---
+            GetPropValue(Config, FString(TEXT("CCD_Height")), NewConfig.ccd_Height);            ////---
+            GetPropValue(Config, FString(TEXT("Focal_Length")), NewConfig.focal_Length);        ////---
+            GetPropValue(Config, FString(TEXT("FOV_Horizontal")), NewConfig.fov_Horizontal);    ////---
+            GetPropValue(Config, FString(TEXT("FOV_Vertical")), NewConfig.fov_Vertical);        ////---
+            GetPropValue(Config, FString(TEXT("Res_Horizontal")), NewConfig.res_Horizontal);    ////---
+            GetPropValue(Config, FString(TEXT("Res_Vertical")), NewConfig.res_Vertical);        ////---
+            GetPropValue(Config, FString(TEXT("IntrinsicParamType")), NewConfig.paraType);
+            GetPropValue(Config, FString(TEXT("Intrinsic_Matrix")), Intrinsic_Matrix);              ////---
+            GetPropValue(Config, FString(TEXT("Distortion_Parameters")), distortion_Parameters);    /////----
+
+            GetPropValue(Config, FString(TEXT("Frequency")), NewConfig.frequency);
+            GetPropValue(Config, FString(TEXT("CcdWidth")), NewConfig.ccd_Width);
+            GetPropValue(Config, FString(TEXT("CcdHeight")), NewConfig.ccd_Height);
+            GetPropValue(Config, FString(TEXT("CcdFocal")), NewConfig.focal_Length);
+            GetPropValue(Config, FString(TEXT("FovHorizonal")), NewConfig.fov_Horizontal);
+            GetPropValue(Config, FString(TEXT("FovVertial")), NewConfig.fov_Vertical);
+            GetPropValue(Config, FString(TEXT("ResHorizonal")), NewConfig.res_Horizontal);
+            GetPropValue(Config, FString(TEXT("ResVertial")), NewConfig.res_Vertical);
+            GetPropValue(Config, FString(TEXT("IntrinsicType")), NewConfig.paraType);
+            GetPropValue(Config, FString(TEXT("IntrinsicMat")), Intrinsic_Matrix);
+            GetPropValue(Config, FString(TEXT("Distortion")), distortion_Parameters);
+
+            if (!Intrinsic_Matrix.IsEmpty())
+            {
+                Intrinsic_Matrix = Intrinsic_Matrix.Replace(*FString(" "), *FString(""));    // Remove space
+                FString LeftStr;
+                FString RightStr;
+                while (Intrinsic_Matrix.Split(",", &LeftStr, &RightStr))
+                {
+                    NewConfig.intrinsic_Matrix.Add(FCString::Atof(*LeftStr));
+                    Intrinsic_Matrix = RightStr;
+                }
+                NewConfig.intrinsic_Matrix.Add(FCString::Atof(*Intrinsic_Matrix));
+            }
+            if (!distortion_Parameters.IsEmpty())
+            {
+                distortion_Parameters = distortion_Parameters.Replace(*FString(" "), *FString(""));    // Remove space
+                FString LeftStr;
+                FString RightStr;
+                while (distortion_Parameters.Split(",", &LeftStr, &RightStr))
+                {
+                    NewConfig.distortion_Parameters.Add(FCString::Atof(*LeftStr));
+                    distortion_Parameters = RightStr;
+                }
+                NewConfig.distortion_Parameters.Add(FCString::Atof(*distortion_Parameters));
+            }
+
+            FString savestring;
+            GConfig->GetString(TEXT("Sensor"), TEXT("CameraSaved"), savestring, GGameIni);
+            if (!BaseSavePath.IsEmpty() && savestring == TEXT("true"))
+                NewConfig.savePath = BaseSavePath + TEXT("DepthData/") + TEXT("Depth_") +
+                                     FString::FromInt(NewConfig.id) +
+                                     TEXT("/");    // TODO: set save path in a standardized way
+            SensormanagerConfig.depthArry.Add(NewConfig);
+        }
+        else if (sensor.type() == sim_msg::SENSOR_TYPE_SEMANTIC)
+        {
+            FCameraConfig NewConfig;
+            *(FSensorConfig*) &NewConfig = Base;
+            NewConfig.typeName = TEXT("Semantic");
+            NewConfig.targetId = EgoId;
+            FString Intrinsic_Matrix = TEXT("");
+            FString distortion_Parameters = TEXT("");
+
+            // old
+            GetPropValue(Config, FString(TEXT("CCD_Width")), NewConfig.ccd_Width);              ////---
+            GetPropValue(Config, FString(TEXT("CCD_Height")), NewConfig.ccd_Height);            ////---
+            GetPropValue(Config, FString(TEXT("Focal_Length")), NewConfig.focal_Length);        ////---
+            GetPropValue(Config, FString(TEXT("FOV_Horizontal")), NewConfig.fov_Horizontal);    ////---
+            GetPropValue(Config, FString(TEXT("FOV_Vertical")), NewConfig.fov_Vertical);        ////---
+            GetPropValue(Config, FString(TEXT("Res_Horizontal")), NewConfig.res_Horizontal);    ////---
+            GetPropValue(Config, FString(TEXT("Res_Vertical")), NewConfig.res_Vertical);        ////---
+            GetPropValue(Config, FString(TEXT("IntrinsicParamType")), NewConfig.paraType);
+            GetPropValue(Config, FString(TEXT("Intrinsic_Matrix")), Intrinsic_Matrix);              ////---
+            GetPropValue(Config, FString(TEXT("Distortion_Parameters")), distortion_Parameters);    /////----
+
+            GetPropValue(Config, FString(TEXT("Frequency")), NewConfig.frequency);
+            GetPropValue(Config, FString(TEXT("CcdWidth")), NewConfig.ccd_Width);
+            GetPropValue(Config, FString(TEXT("CcdHeight")), NewConfig.ccd_Height);
+            GetPropValue(Config, FString(TEXT("CcdFocal")), NewConfig.focal_Length);
+            GetPropValue(Config, FString(TEXT("FovHorizonal")), NewConfig.fov_Horizontal);
+            GetPropValue(Config, FString(TEXT("FovVertial")), NewConfig.fov_Vertical);
+            GetPropValue(Config, FString(TEXT("ResHorizonal")), NewConfig.res_Horizontal);
+            GetPropValue(Config, FString(TEXT("ResVertial")), NewConfig.res_Vertical);
+            GetPropValue(Config, FString(TEXT("IntrinsicType")), NewConfig.paraType);
+            GetPropValue(Config, FString(TEXT("IntrinsicMat")), Intrinsic_Matrix);
+            GetPropValue(Config, FString(TEXT("Distortion")), distortion_Parameters);
+
+            if (!Intrinsic_Matrix.IsEmpty())
+            {
+                Intrinsic_Matrix = Intrinsic_Matrix.Replace(*FString(" "), *FString(""));    // Remove space
+                FString LeftStr;
+                FString RightStr;
+                while (Intrinsic_Matrix.Split(",", &LeftStr, &RightStr))
+                {
+                    NewConfig.intrinsic_Matrix.Add(FCString::Atof(*LeftStr));
+                    Intrinsic_Matrix = RightStr;
+                }
+                NewConfig.intrinsic_Matrix.Add(FCString::Atof(*Intrinsic_Matrix));
+            }
+            if (!distortion_Parameters.IsEmpty())
+            {
+                distortion_Parameters = distortion_Parameters.Replace(*FString(" "), *FString(""));    // Remove space
+                FString LeftStr;
+                FString RightStr;
+                while (distortion_Parameters.Split(",", &LeftStr, &RightStr))
+                {
+                    NewConfig.distortion_Parameters.Add(FCString::Atof(*LeftStr));
+                    distortion_Parameters = RightStr;
+                }
+                NewConfig.distortion_Parameters.Add(FCString::Atof(*distortion_Parameters));
+            }
+
+            FString savestring;
+            GConfig->GetString(TEXT("Sensor"), TEXT("CameraSaved"), savestring, GGameIni);
+            if (!BaseSavePath.IsEmpty() && savestring == TEXT("true"))
+                NewConfig.savePath = BaseSavePath + TEXT("SemanticData/") + TEXT("Semantic_") +
+                                     FString::FromInt(NewConfig.id) +
+                                     TEXT("/");    // TODO: set save path in a standardized way
+            SensormanagerConfig.semanticArry.Add(NewConfig);
+        }
+        else if (sensor.type() == sim_msg::SENSOR_TYPE_ULTRASONIC)
+        {
+            FCameraConfig NewConfig;
+            *(FSensorConfig*) &NewConfig = Base;
+            NewConfig.typeName = TEXT("Normal");
+            NewConfig.targetId = EgoId;
+            FString Intrinsic_Matrix = TEXT("");
+            FString distortion_Parameters = TEXT("");
+
+            // old
+            GetPropValue(Config, FString(TEXT("CCD_Width")), NewConfig.ccd_Width);              ////---
+            GetPropValue(Config, FString(TEXT("CCD_Height")), NewConfig.ccd_Height);            ////---
+            GetPropValue(Config, FString(TEXT("Focal_Length")), NewConfig.focal_Length);        ////---
+            GetPropValue(Config, FString(TEXT("FOV_Horizontal")), NewConfig.fov_Horizontal);    ////---
+            GetPropValue(Config, FString(TEXT("FOV_Vertical")), NewConfig.fov_Vertical);        ////---
+            GetPropValue(Config, FString(TEXT("Res_Horizontal")), NewConfig.res_Horizontal);    ////---
+            GetPropValue(Config, FString(TEXT("Res_Vertical")), NewConfig.res_Vertical);        ////---
+            GetPropValue(Config, FString(TEXT("IntrinsicParamType")), NewConfig.paraType);
+            GetPropValue(Config, FString(TEXT("Intrinsic_Matrix")), Intrinsic_Matrix);              ////---
+            GetPropValue(Config, FString(TEXT("Distortion_Parameters")), distortion_Parameters);    /////----
+
+            GetPropValue(Config, FString(TEXT("Frequency")), NewConfig.frequency);
+            GetPropValue(Config, FString(TEXT("CcdWidth")), NewConfig.ccd_Width);
+            GetPropValue(Config, FString(TEXT("CcdHeight")), NewConfig.ccd_Height);
+            GetPropValue(Config, FString(TEXT("CcdFocal")), NewConfig.focal_Length);
+            GetPropValue(Config, FString(TEXT("FovHorizonal")), NewConfig.fov_Horizontal);
+            GetPropValue(Config, FString(TEXT("FovVertial")), NewConfig.fov_Vertical);
+            GetPropValue(Config, FString(TEXT("ResHorizonal")), NewConfig.res_Horizontal);
+            GetPropValue(Config, FString(TEXT("ResVertial")), NewConfig.res_Vertical);
+            GetPropValue(Config, FString(TEXT("IntrinsicType")), NewConfig.paraType);
+            GetPropValue(Config, FString(TEXT("IntrinsicMat")), Intrinsic_Matrix);
+            GetPropValue(Config, FString(TEXT("Distortion")), distortion_Parameters);
+
+            if (!Intrinsic_Matrix.IsEmpty())
+            {
+                Intrinsic_Matrix = Intrinsic_Matrix.Replace(*FString(" "), *FString(""));    // Remove space
+                FString LeftStr;
+                FString RightStr;
+                while (Intrinsic_Matrix.Split(",", &LeftStr, &RightStr))
+                {
+                    NewConfig.intrinsic_Matrix.Add(FCString::Atof(*LeftStr));
+                    Intrinsic_Matrix = RightStr;
+                }
+                NewConfig.intrinsic_Matrix.Add(FCString::Atof(*Intrinsic_Matrix));
+            }
+            if (!distortion_Parameters.IsEmpty())
+            {
+                distortion_Parameters = distortion_Parameters.Replace(*FString(" "), *FString(""));    // Remove space
+                FString LeftStr;
+                FString RightStr;
+                while (distortion_Parameters.Split(",", &LeftStr, &RightStr))
+                {
+                    NewConfig.distortion_Parameters.Add(FCString::Atof(*LeftStr));
+                    distortion_Parameters = RightStr;
+                }
+                NewConfig.distortion_Parameters.Add(FCString::Atof(*distortion_Parameters));
+            }
+
+            FString savestring;
+            GConfig->GetString(TEXT("Sensor"), TEXT("CameraSaved"), savestring, GGameIni);
+            if (!BaseSavePath.IsEmpty() && savestring == TEXT("true"))
+                NewConfig.savePath = BaseSavePath + TEXT("NormalData/") + TEXT("Normal_") +
+                                     FString::FromInt(NewConfig.id) +
+                                     TEXT("/");    // TODO: set save path in a standardized way
+            SensormanagerConfig.normalArry.Add(NewConfig);
         }
         else if (sensor.type() == sim_msg::SENSOR_TYPE_FISHEYE)
         {

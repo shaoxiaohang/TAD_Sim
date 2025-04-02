@@ -336,8 +336,18 @@ bool OpenDriveOutput::insertHeader(const hadmap::txPoint refPoint) {
   _header->SetAttribute("west", std::to_string(refPoint.x).c_str());
   _header->SetAttribute("east", std::to_string(refPoint.x).c_str());
   _header->SetAttribute("vendor", "");
-  // _header->InsertNewText("<![CDATA[+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0
-  // +units=m +nadgrids=@null +wktext +no_defs]]>");
+
+
+  tinyxml2::XMLElement* geo_ref = doc->NewElement("geoReference");
+  const char* proj_params =
+      "+proj=tmerc +ellps=WGS84 +datum=WGS84 +k_0=1 +lon_0=121.12873077392578 +lat_0=31.26028060913086 +x_0=0 +y_0=0 "
+      "+units=m";
+  tinyxml2::XMLText* cdata = doc->NewText(proj_params);
+  cdata->SetCData(true);  // 关键步骤：标记为CDATA内容
+  geo_ref->InsertEndChild(cdata);
+  // geo_ref->SetText(proj_params);
+  // geo_ref->SetCData(true);  // 标记为CDATA内容
+  _header->InsertEndChild(geo_ref);
   doc->FirstChildElement("OpenDRIVE")->InsertFirstChild(_header);
   return true;
 }
@@ -680,6 +690,8 @@ bool OpenDriveOutput::insertLaneLinks(const hadmap::txLaneLinks& lanelinks) {
       doc->FirstChildElement("OpenDRIVE")->InsertEndChild(_road);
     }
   }
+
+  return true;
 
   for (auto itJuc : id2lanelinks) {
     tinyxml2::XMLElement* junction = doc->FirstChildElement("OpenDRIVE")->FirstChildElement("junction");
@@ -1181,7 +1193,7 @@ tinyxml2::XMLElement* OpenDriveOutput::insertOneRoad(const hadmap::txRoadPtr& it
 tinyxml2::XMLElement* OpenDriveOutput::insertOneLaneLink(const hadmap::txLaneLinkPtr& itLink) {
   tinyxml2::XMLElement* _road = doc->NewElement("road");
   _road->SetAttribute("name", "");
-  _road->SetAttribute("id", static_cast<int64_t>(itLink->getOdrRoadId()));
+  _road->SetAttribute("id", static_cast<int64_t>(itLink->getId()));
   _road->SetAttribute("junction", static_cast<int64_t>(itLink->getJunctionId()));
   // link
   roadpkid fromRoadId = itLink->fromRoadId();
@@ -1274,7 +1286,6 @@ tinyxml2::XMLElement* OpenDriveOutput::insertOneLaneLink(const hadmap::txLaneLin
   _lane->SetAttribute("id", 0);
   _lane->SetAttribute("level", false);
   _lane->SetAttribute("type", "none");
-  _lane = doc->NewElement("lane");
   tinyxml2::XMLElement* _roadMark = doc->NewElement("roadMark");
   _roadMark->SetAttribute("sOffset", 0);
   _roadMark->SetAttribute("weight", "standard");
@@ -1409,7 +1420,7 @@ double OpenDriveOutput::GetLaneWidth(const hadmap::txLanePtr& lane) {
     PointVec _rightPoints;
     rightCurve->getPoints(_rightPoints);
     if (_leftPoints.size() != _rightPoints.size()) {
-      std::cout << "left point size is not equal right point" << std::endl;
+      //std::cout << "left point size is not equal right point" << std::endl;
       hadmap::txPoint left = _leftPoints.at(0);
       lonlat2xy(left.x, left.y);
       hadmap::txPoint right = _rightPoints.at(0);
@@ -1424,7 +1435,7 @@ double OpenDriveOutput::GetLaneWidth(const hadmap::txLanePtr& lane) {
       lanewidth += distanceTwoPoint(left, right);
     }
     lanewidth /= _leftPoints.size();
-    std::cout << "lanewidth = " << lanewidth << std::endl;
+    //std::cout << "lanewidth = " << lanewidth << std::endl;
     return lanewidth;
   }
   return 3.5;
@@ -1551,8 +1562,8 @@ double OpenDriveOutput::getEle(const PointVec vec, std::vector<ele>& elevec) {
     int startIndex = std::get<0>(start2end.at(i));
     int endIndex = std::get<0>(start2end.at(i));
     if (startIndex + 2 >= points.size() || startIndex < 0) continue;
-    std::cout << "startIndex = " << startIndex << std::endl;
-    std::cout << "points = " << points.size() << std::endl;
+    //std::cout << "startIndex = " << startIndex << std::endl;
+    //std::cout << "points = " << points.size() << std::endl;
     double starts = points.at(startIndex).x;
     double starth = points.at(startIndex).y;
     double ends = points.at(startIndex + 2).x;

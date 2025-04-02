@@ -96,6 +96,8 @@ else()
   find_package(Eigen3)
   find_package(TBB)
   find_package(Protobuf REQUIRED)
+  find_package(jsoncpp CONFIG REQUIRED)
+  set(LIB_JSON jsoncpp)
 endif()
 
 if(WIN32)
@@ -165,17 +167,24 @@ SET(project_HEADERS
   "./tx_dummy_drive_control.h"
 )
 
+
 add_executable(txPlanning ${project_SOURCES} ${project_HEADERS})
 
 add_library(tx_perfect_planning SHARED ${project_SOURCES} ${project_HEADERS})
 
+add_library(tx_follow_trajectory SHARED "./tx_follow_trajectory.cpp" "./tx_follow_trajectory.h")
+
+
 target_compile_definitions(txPlanning PRIVATE _ENABLE_EXTENDED_ALIGNED_STORAGE)
 target_compile_definitions(tx_perfect_planning PRIVATE _ENABLE_EXTENDED_ALIGNED_STORAGE)
+target_compile_definitions(tx_follow_trajectory PRIVATE _ENABLE_EXTENDED_ALIGNED_STORAGE)
+
 
 if(WIN32)
 else()
   target_compile_options(txPlanning PRIVATE -fPIC)
   target_compile_options(tx_perfect_planning PRIVATE -fPIC)
+  target_compile_options(tx_follow_trajectory PRIVATE -fPIC)
 endif()
 
 if(WIN32)
@@ -237,6 +246,29 @@ else()
     txSceneLoader
     ${MAPSDK_LIBRARYS}
     ${FRAMEWORK_LIBRARY_SERVICE}
+    tbb
+    protobuf
+    spatialite
+    sqlite3
+    curl
+    proj
+    glog
+    gflags
+    boost_regex
+    boost_filesystem
+    boost_system
+    boost_thread
+    dl
+    pthread
+    rt)
+
+    target_link_libraries(tx_follow_trajectory
+    txTrafficFramework
+    txProtoBuf
+    txSceneLoader
+    ${MAPSDK_LIBRARYS}
+    ${FRAMEWORK_LIBRARY_SERVICE}
+    ${LIB_JSON}
     tbb
     protobuf
     spatialite

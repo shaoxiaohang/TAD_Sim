@@ -156,6 +156,8 @@ SET(project_SOURCES
   "../log2world/log2world_traj_manager.cpp"
   "../log2world/l2w_vehicle_element.cpp"
   "../log2world/l2w_linear_element_manager.cpp"
+
+  #"./sumo/sumo_traffic_element_system.cpp"
 )
 
 SET(project_HEADERS
@@ -220,6 +222,8 @@ SET(project_HEADERS
   "../log2world/log2world_traj_manager.h"
   "../log2world/l2w_vehicle_element.h"
   "../log2world/l2w_linear_element_manager.h"
+
+  #"./sumo/sumo_traffic_element_system.h"
 )
 
 file(GLOB ElementWrap_SOURCES ../element_impl/*.cpp)
@@ -285,3 +289,6 @@ if(WIN32)
     copy_framework_deps(${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_BUILD_TYPE})
   endif()
 endif()
+
+
+#add_subdirectory(sumo)

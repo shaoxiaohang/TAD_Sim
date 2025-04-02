@@ -61,9 +61,13 @@ class DataQueue {
   ~DataQueue();
 
   void setImageCallback(const std::function<void(const ImagePackage &)> &callback);
+  void setDepthImageCallback(const std::function<void(const ImagePackage &)> &callback);
+
   void setPcdCallback(const std::function<void(const PcdPackage &)> &callback);
 
   void addCamera(const ImageInfo &info);
+  void addDepth(const ImageInfo &info);
+  void addNormal(const ImageInfo &info);
   void addFisheye(const ImageInfo &info);
   void addSenmantic(const ImageInfo &info);
   void addLidar(const PcInfo &info);
@@ -75,11 +79,14 @@ class DataQueue {
 
  private:
   std::map<std::int64_t, std::map<std::int64_t, ImageInfo>> _cameras;    // id - [timestmp - info]
+  std::map<std::int64_t, std::map<std::int64_t, ImageInfo>> _depths;     // id - [timestmp - info]
+  std::map<std::int64_t, std::map<std::int64_t, ImageInfo>> _normals;    // id - [timestmp - info]
   std::map<std::int64_t, std::map<std::int64_t, ImageInfo>> _semantics;  // id - [timestmp - info]
   std::map<std::int64_t, std::map<std::int64_t, ImageInfo>> _fisheyes;   // id - [timestmp - info]
   std::map<std::int64_t, std::map<std::int64_t, PcInfo>> _lidars;        // id - [timestmp - info]
   std::map<std::int64_t, sim_msg::DisplayPose> _objects;                 // timestmp - info
   std::function<void(const ImagePackage &)> _callback_image;
+  std::function<void(const ImagePackage &)> _callback_depth_image;
   std::function<void(const PcdPackage &)> _callback_pcd;
   bool _stop = false;
   std::mutex _mutex;

@@ -116,3 +116,8 @@ log
 simcore/sensors/display/Content
 simcore/sensors/display/Plugins/BoostLib/deps/boost
 simcore/sensors/displayue5/Content
+release
+asam
+protoc-3.9.1-linux-x86_64
+third_party
+protobuf

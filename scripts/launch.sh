@@ -10,6 +10,7 @@ if [ $# -gt 1 ];then
 fi
 
 function launch_map_test() {
+  echo $LD_LIBRARY_PATH
   pushd $TADSIM_ROOT/common/map_sdk/test/build > /dev/null
   info "start running hadmap test $params"
   ./hadmap_test "$params" 
@@ -23,7 +24,14 @@ function launch_mapcache_test() {
   popd > /dev/null
 }
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/saturnv/common/map_sdk/hadmap/lib
+function launch_excel2asam() {
+  pushd $TADSIM_ROOT/simcore/excel2asam/build/bin > /dev/null
+  info "start running excel2asam test $params"
+  ./excel2asam $params
+  popd > /dev/null
+}
+
+export LD_LIBRARY_PATH=$TADSIM_ROOT/common/map_sdk/hadmap/lib
 
 
 while [[ $# -gt 0 ]]; do
@@ -38,6 +46,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     mapcache)
       launch_mapcache_test
+      exit 0
+      ;;
+    excel2asam)
+      launch_excel2asam
       exit 0
       ;;
     *)

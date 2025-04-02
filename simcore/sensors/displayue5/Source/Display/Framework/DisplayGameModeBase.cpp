@@ -657,6 +657,18 @@ void ADisplayGameModeBase::ConvertData_LocalToSim(const FLocalData& _LocalData, 
             {
                 sensor->set_type(sim_msg::SensorRaw_Type_TYPE_CAMERA);
             }
+            else if (senbuf.type == "Depth")
+            {
+                sensor->set_type(sim_msg::SensorRaw_Type_TYPE_DEPTH);
+            }
+            else if (senbuf.type == "Normal")
+            {
+                sensor->set_type(sim_msg::SensorRaw_Type_TYPE_ULTRASONIC);
+            }
+            else if (senbuf.type == "Semantic")
+            {
+                sensor->set_type(sim_msg::SensorRaw_Type_TYPE_SEMANTIC);
+            }
             else if (senbuf.type == "Fisheye")
             {
                 sensor->set_type(sim_msg::SensorRaw_Type_TYPE_FISHEYE);

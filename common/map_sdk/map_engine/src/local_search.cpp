@@ -65,13 +65,14 @@ bool LocalSearch::saveMap(const int type, std::string filePath) {
     hadmap::txRoads _roads;
     getRoads(true, _roads);
     if (_roads.size() > 0) {
-      outPut.initFilePath(filePath.c_str());
+      outPut.initFilePath(filePath.c_str(), true);
       outPut.insertHeader(hadmap::txPoint());
       for (auto it : _roads) {
         // get fromroads and to roads
         hadmap::txLaneLinks links;
         getLaneLinks(it->getId(), ROAD_PKID_INVALID, links);
         if (links.size() > 0) {
+          //std::cout <<"FROM ROAD " << it->getId() <<" LINK NUM " << links.size() << std::endl;
           hadmap::txLaneLinkPtr lanelink = links.at(0);
           int junctionId = lanelink->getJunctionId();
           hadmap::txRoadLink _suclink;
@@ -82,6 +83,7 @@ bool LocalSearch::saveMap(const int type, std::string filePath) {
         links.clear();
         getLaneLinks(ROAD_PKID_INVALID, it->getId(), links);
         if (links.size() > 0) {
+          //std::cout <<"TO ROAD " << it->getId() <<" LINK NUM " << links.size() << std::endl;
           hadmap::txLaneLinkPtr lanelink = links.at(0);
           int junctionId = lanelink->getJunctionId();
           hadmap::txRoadLink _suclink;
@@ -104,9 +106,14 @@ bool LocalSearch::saveMap(const int type, std::string filePath) {
     std::vector<OBJECT_TYPE> types;
     hadmap::txObjects objects;
     getObjects(laneids, types, objects);
+    std::cout << "objAD size " << objects.size() << std::endl;
     outPut.insertObjects(objects, _roads);
+    if (0 == outPut.saveFile(filePath.c_str())) {
+      return true;
+    }
+    return false;
   }
-  return true;
+  return false;
 }
 
 std::string LocalSearch::getLastOptInfo() { return optInfo; }

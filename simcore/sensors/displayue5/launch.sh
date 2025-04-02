@@ -4,15 +4,27 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 source "${DIR}/base.sh"
 
 function launch_editor(){
+
+  export LD_LIBRARY_PATH="$DISPLAY_LIBRARY_PATH:$OPENCV_LIBRARY_PATH:$LD_LIBRARY_PATH"
+
+  # export VULKAN_SDK=/opt/vulkan/1.3.280.0/x86_64
+  # export PATH=$VULKAN_SDK/bin:$PATH
+  # export LD_LIBRARY_PATH=$VULKAN_SDK/lib:$LD_LIBRARY_PATH
+
   export LD_LIBRARY_PATH="$OPENVR_LIBRARY_PATH:$DISPLAY_LIBRARY_PATH:$LD_LIBRARY_PATH"
   $UE5_ROOT/Engine/Binaries/Linux/UnrealEditor "${DISPLAY_UNREAL_ROOT}/Display.uproject" -vulkan -nosound
 }
 
 function launch_game(){
-  export LD_LIBRARY_PATH="$DISPLAY_LIBRARY_PATH:$LD_LIBRARY_PATH"
+  export LD_LIBRARY_PATH="$DISPLAY_LIBRARY_PATH:$OPENCV_LIBRARY_PATH:$LD_LIBRARY_PATH"
+
+  # export VULKAN_SDK=/opt/vulkan/1.3.280.0/x86_64
+  # export PATH=$VULKAN_SDK/bin:$PATH
+  # export LD_LIBRARY_PATH=$VULKAN_SDK/lib:$LD_LIBRARY_PATH
+
   #echo $LD_LIBRARY_PATH
   #${DISPLAY_UNREAL_ROOT}/Binaries/Linux/Display -game -windowed -NoLoadingScreen WinX=400 WinY=100 ResX=800 ResY=600 -novsync -nosound
-  bash ${DISPLAY_UNREAL_ROOT}/Saved/Linux/Display.sh UserDir=/saturnv/log -game -windowed -NoLoadingScreen  WinX=400 WinY=100 ResX=800 ResY=600 -mode=FrameSync -novsync -nosound -log -abslog=/saturnv/log/dev/ue5.log
+  bash ${DISPLAY_UNREAL_ROOT}/Saved/Linux/Display.sh Parking -UserDir=/saturnv/log -game -windowed -NoLoadingScreen  WinX=400 WinY=100 ResX=800 ResY=600 -mode=FrameSync -novsync -nosound -log -abslog=/saturnv/log/dev/ue5.log
 }
 
 while [[ $# -gt 0 ]]; do

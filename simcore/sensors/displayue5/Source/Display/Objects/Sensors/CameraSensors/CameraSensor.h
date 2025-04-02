@@ -74,6 +74,8 @@ public:
     double WhiteHint = 0;
     UPROPERTY()
     double Transmittance = 98;
+    UPROPERTY()
+    bool addPreview = false;
 };
 
 USTRUCT()
@@ -110,6 +112,8 @@ public:
 
 protected:
     void PostActorCreated() override;
+
+    void IgnoreActor(AActor* actor);
 
     FString str_PostProcess;
 

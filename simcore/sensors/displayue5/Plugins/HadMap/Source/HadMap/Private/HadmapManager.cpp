@@ -198,7 +198,8 @@ bool HadmapManager::Init(MapMode _Mode, FString _DBPath, double _OriginLon, doub
     return bInitSuccess;
 }
 
-bool HadmapManager::Init(double _OriginLon, double _OriginLat, double _OriginAlt, const FString& _GPSFilePath)
+bool HadmapManager::Init(double _OriginLon, double _OriginLat, double _OriginAlt,
+    const FString& _GPSFilePath)
 {
     bool IsSuccess = false;
     // Set origin coordinate
@@ -218,7 +219,8 @@ bool HadmapManager::Init(double _OriginLon, double _OriginLat, double _OriginAlt
         IsSuccess = bUseDecrypt;
     }
 
-    UE_LOG(LogTemp, Display, TEXT("HadmapManager Init lon %.6f lat %.6f alt %.6f"), _OriginLon, _OriginLat, _OriginAlt);
+    UE_LOG(LogTemp, Display, TEXT("HadmapManager Init lon %.6f lat %.6f alt %.6f"),
+     _OriginLon, _OriginLat, _OriginAlt);
 
     bInitSuccess = IsSuccess;
     return bInitSuccess;
@@ -448,7 +450,7 @@ void hadmapue4::HadmapManager::LonLatToLocal(double& _Lon, double& _Lat, double&
     coord_trans_api::lonlat2local(_Lon, _Lat, _Alt, mapOriginLon, mapOriginLat, mapOriginAlt);
     _Lon = _Lon * 100.f;
     _Lat = -(_Lat * 100.f);
-    _Alt = 0 * 100.f;
+    _Alt = _Alt * 100.f;
 }
 
 void hadmapue4::HadmapManager::LonLatToLocal(double _X, double _Y, double _Z, FVector& _Loc)
@@ -457,7 +459,14 @@ void hadmapue4::HadmapManager::LonLatToLocal(double _X, double _Y, double _Z, FV
     double Y = _Y;
     double Z = _Z;
     LonLatToLocal(X, Y, Z);
-    _Loc = FVector(-X, -Y, Z);
+    if(bRevertedXY)
+    {
+        _Loc = FVector(-Y, -X, Z);
+
+    }else
+    {
+        _Loc = FVector(-X, -Y, Z);
+    }
 }
 
 void hadmapue4::HadmapManager::LocalToLonLat(const FVector& _Loc, double& _X, double& _Y, double& _Z,

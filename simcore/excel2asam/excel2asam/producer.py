@@ -12,6 +12,7 @@
 # /*============================================================================
 from __future__ import annotations
 
+import os
 import argparse
 import sys
 import traceback
@@ -22,6 +23,8 @@ from multiprocessing.dummy import Pool as ThreadPool
 from pathlib import Path
 from time import sleep
 from typing import Any, List, Set, Tuple
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pandas as pd
 from loguru import logger
@@ -87,7 +90,7 @@ class ProducerFactory(ABC):
         logger.opt(lazy=True).info(f"{' Check user choose map: ':=^55}")
 
         # 初始化 mapfiles 为空集合, 并添加类型注解
-        mapfiles: Set[str] = set()
+        mapfiles: Set[str] = set()         
 
         # 检查 hadmap (如使用)路径的合法性
         logger.opt(lazy=True).info(f"Input map pathdir: {self.pathdir_hadmap}")
@@ -95,6 +98,9 @@ class ProducerFactory(ABC):
         if not self.pathdir_hadmap.exists():
             logger.opt(lazy=True).warning("Input map pathdir: is illegal")
             return True, mapfiles
+
+        for ext in settings.sys.map.support:
+            logger.opt(lazy=True).info(f"Input map fullpath: {ext}")
 
         # 查找支持格式的地图文件的名称
         mapfiles = {
@@ -233,6 +239,12 @@ class ProducerFactory(ABC):
     def step1_get_logic_param(self) -> Set[pd.DataFrame, dict]:
         # 检查数据源路径合法性, 并解析
         parser = Parser(self.parser_factory, self.virtual_real_is_virtual)
+        
+        # logger.opt(lazy=True).info(f"{f' define: {parser.define} ':-^55}")
+        # logger.opt(lazy=True).info(f"{f' param: {parser.param} ':-^55}")
+        # logger.opt(lazy=True).info(f"{f' settings: {parser.settings_user} ':-^55}")
+        # logger.opt(lazy=True).info(f"{f' classify: {parser.classify_user} ':-^55}")
+        
 
         # 实例化 Formater, 并格式化 scenes 场景描述 和 param 地图参数 和 用户设置
         formater = Formater(parser.define, parser.param, parser.settings_user, parser.classify_user, self.scene_filter)
@@ -256,6 +268,7 @@ class ProducerFactory(ABC):
 
     def step2_get_mapfiles_define(self, logic: pd.DataFrame, param: dict) -> Set:
         # deal virtual map
+        logger.opt(lazy=True).info(f"{f' step2_get_mapfiles_define: {param} ':-^55}")
         if self.virtual_real_is_virtual:
             mapfiles_define = {""}
             logger.opt(lazy=True).info("Base on Virtual map creat scene")
@@ -363,15 +376,15 @@ class ProducerFactory(ABC):
             logic, param = self.step1_get_logic_param()
             # 获取 mapfiles_define
             mapfiles_define = self.step2_get_mapfiles_define(logic, param)
-            # 获取全部 concrete 场景
-            concrete = self.step3_get_concrete(logic, param, mapfiles_define)
-            # 等待确认
-            self.step4_ready_and_waiting(wait_time_sec=0.5)
-            # 生成虚拟地图, 如果需要
-            if self.virtual_real_is_virtual:
-                self.step5_generate_file_xodr(concrete)
-            # 生成场景文件
-            self.step6_generate_file_xosc(concrete)
+            # # 获取全部 concrete 场景
+            # concrete = self.step3_get_concrete(logic, param, mapfiles_define)
+            # # 等待确认
+            # self.step4_ready_and_waiting(wait_time_sec=0.5)
+            # # 生成虚拟地图, 如果需要
+            # if self.virtual_real_is_virtual:
+            #     self.step5_generate_file_xodr(concrete)
+            # # 生成场景文件
+            # self.step6_generate_file_xosc(concrete)
 
         # 处理未定义测试用例为空的情况
         except exp.TestcaseEmptyError:
@@ -527,6 +540,8 @@ def parse_arguments() -> argparse.Namespace:
 def main():
     # 获取命令行参数
     args = parse_arguments()
+
+
     # 获取配置文件
     input_mode = args.input_mode
     input_data = args.input_data

@@ -18,7 +18,7 @@
 #include "Framework/DisplayGameInstance.h"
 #include "Framework/SaveDataThread.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Runtime/ImageWrapper/Public/IImageWrapperModule.h"
 #include "lidar/LidarModel.h"
 

@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "43E0473A-712F-44B1-B0E0-85B47E94F765",
+	"EngineAssociation": "AEE6DE7C-A8EE-470E-8D80-98CBAC9095A1",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -21,6 +21,18 @@
 		},
 		{
 			"Name": "ChaosVehiclesPlugin",
+			"Enabled": true
+		},
+		{
+			"Name": "ThumbnailToTextureTool",
+			"Enabled": true
+		},
+		{
+			"Name": "CustomMeshComponent",
+			"Enabled": true
+		},
+		{
+			"Name": "OpenCV",
 			"Enabled": true
 		}
 	],

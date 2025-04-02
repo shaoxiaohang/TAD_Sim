@@ -33,12 +33,15 @@ function build_sim_planning() {
   pushd $TADSIM_ROOT/simcore > /dev/null
   build_project perfect_planning build.sh
   cp ./perfect_planning/build/bin/libtx_perfect_planning.so $TADSIM_DEV_SERVICE_DIR/perfect_planning
+  cp ./perfect_planning/build/bin/libtx_follow_trajectory.so $TADSIM_DEV_SERVICE_DIR/perfect_planning
   popd > /dev/null
 }
 
 function build_map_sdk {
   pushd $TADSIM_ROOT/common > /dev/null
   build_project map_sdk build.sh
+  cp $TADSIM_ROOT/common/map_sdk/map_engine/libmapengine.so $TADSIM_ROOT/common/map_sdk/hadmap/lib
+  cp $TADSIM_ROOT/common/map_sdk/map_import/libmapimport.so $TADSIM_ROOT/common/map_sdk/hadmap/lib
   popd > /dev/null
 }
 
@@ -74,6 +77,11 @@ function build_map_server() {
   cp ./map_server/build/bin/libscene_wrapper.so $TADSIM_DEV_SIM_DEP_DIR
   cp ./map_server/build/bin/txSimService $TADSIM_DEV_SERVICE_DIR
   popd > /dev/null
+}
+
+function build_excel2asam() {
+  pushd $TADSIM_ROOT/simcore > /dev/null
+  build_project excel2asam build.sh 
 }
 
 while [[ $# -gt 0 ]]; do
@@ -112,6 +120,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     map_sdk)
       build_map_sdk
+      shift
+      ;;
+    excel2asam)
+      build_excel2asam
       shift
       ;;
     *)

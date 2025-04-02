@@ -110,6 +110,8 @@ protected:
 
     void SwitchCamera(const FName& CameraName);
 
+    void IgnoreActor(AActor* actor);
+
 public:
     UMaterialInstanceDynamic* cameraPostProcess;
     UPROPERTY(/*BlueprintReadOnly*/)

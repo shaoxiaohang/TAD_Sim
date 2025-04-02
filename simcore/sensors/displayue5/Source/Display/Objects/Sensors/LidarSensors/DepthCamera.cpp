@@ -13,7 +13,7 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Runtime/ImageWrapper/Public/IImageWrapperModule.h"
-#include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include <thread>
 #include "TexJpeg.h"
 #include "CudaUtils.h"

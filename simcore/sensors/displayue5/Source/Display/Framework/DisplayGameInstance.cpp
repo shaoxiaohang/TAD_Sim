@@ -176,11 +176,11 @@ void UDisplayGameInstance::OutputData()
         FSimIn SensorInData;
         SensorInData.name = TEXT("OUTPUT_SENSOR");
         SensorInData.timeStamp = currentSimInData->timeStamp;
-        UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.OUTPUT_SENSOR = %f"), SensorInData.timeStamp);
         FSimUpdateIn* UpdateIn = StaticCast<FSimUpdateIn*>(currentSimInData.Get());
         if (sim_msg::Location* Location = UpdateIn->egoData.Find(ModuleGroupName))
         {
             SensorInData.timeStamp_ego = Location->t() * 1000;
+            UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.OUTPUT_SENSOR = %f"), SensorInData.timeStamp_ego);
         }
         if (sim_msg::Location* LocationContainer = UpdateIn->egoContainerData.Find(ModuleGroupName))
         {
@@ -586,6 +586,10 @@ void UDisplayGameInstance::Sim_ResetBeginLoadWorld()
 
     // Reset HadMap
     hadmapHandle = SHadmap;
+    if(ResetIn->mapIndex == 3){
+        hadmapHandle->bRevertedXY = true;
+        UE_LOG(LogSimSystem, Log, TEXT("Hadmap reverted XY!"));
+    }
     if (bNeedToLoadHadmap)
     {
         UE_LOG(LogSimSystem, Log, TEXT("Loading hadmap data file."));
@@ -620,7 +624,8 @@ void UDisplayGameInstance::Sim_ResetBeginLoadWorld()
         if (hadmapHandle)
         {
             if (hadmapHandle->Init(
-                    ResetIn->mapOriginLon, ResetIn->mapOriginLat, ResetIn->mapOriginAlt, ResetIn->decryptFilePath))
+                    ResetIn->mapOriginLon, ResetIn->mapOriginLat, ResetIn->mapOriginAlt,
+                     ResetIn->decryptFilePath))
             {
                 UE_LOG(LogSimSystem, Log, TEXT("Init hadmap success!"));
             }
@@ -753,8 +758,8 @@ int32 UDisplayGameInstance::getMapIndex(const FString& mapname)
     }
     for (FConfigSection::TIterator It(*Sec); It; ++It)
     {
-        UE_LOG(LogSimGameInstance, Log, TEXT("getMapIndex key: %s value : %s"), *It.Key().ToString(),
-            *It.Value().GetValue());
+        //UE_LOG(LogSimGameInstance, Log, TEXT("getMapIndex key: %s value : %s"), *It.Key().ToString(),
+            //*It.Value().GetValue());
         FRegexPattern pattern(It.Key().ToString());
         FRegexMatcher matcher(pattern, mapname);
         if (matcher.FindNext() && !It.Value().GetValue().IsEmpty())
@@ -769,7 +774,7 @@ int32 UDisplayGameInstance::getMapIndex(const FString& mapname)
 bool UDisplayGameInstance::GetMapInfo(
     int32 MapIndex, const FString& MapFileName, FMapInfo& MapInfo, FString& ErrorMessage)
 {
-    MapIndex = getMapIndex(MapFileName);
+    //MapIndex = getMapIndex(MapFileName);
     if (!GConfig->GetString(TEXT("MapName"), *FString::FromInt(MapIndex), MapInfo.mapName, GGameIni))
     {
         // UScriptStruct* Struct = MapInfo.StaticStruct();

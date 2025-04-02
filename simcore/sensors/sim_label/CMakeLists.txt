@@ -35,6 +35,9 @@ elseif(UNIX)
   find_package(Protobuf REQUIRED)
   find_package(Boost REQUIRED COMPONENTS system filesystem)
   find_package(GTest REQUIRED)
+  # 查找OpenCV包
+  find_package(OpenCV REQUIRED)
+  include_directories(${OpenCV_INCLUDE_DIRS})
   add_definitions(-fPIC)
   include_directories(
     ${BOOST_INCLUDE_DIR}
@@ -102,7 +105,9 @@ target_link_libraries(sim_label
   ${LIB_PROTOBUF}
   ${MAPSDK_LIBRARYS}
   ${LIB_BOOST_FS}
-  ${LIB_JSON})
+  ${LIB_JSON}
+  ${OpenCV_LIBS}
+  )
 
 if(WIN32)
   if(NOT CMAKE_BUILD_TYPE)

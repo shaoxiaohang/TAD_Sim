@@ -13,7 +13,7 @@ sensors {
   intrinsic {
     params {
       key: "Distortion_Parameters"
-      value: "0.763032,0.0985419,-1.97878e-05,5.11288e-06,0.0009585"
+      value: "0.763032,0.0985419,-1.97878e-05,5.11288e-06"
     }
     params {
       key: "Frequency"
@@ -57,7 +57,7 @@ sensors {
   intrinsic {
     params {
       key: "Distortion_Parameters"
-      value: "-0.169742,-1.76094,-0.000696736,0.000770681,6.77934"
+      value: "-0.169742,-1.76094,-0.000696736,0.000770681"
     }
     params {
       key: "Frequency"
@@ -101,7 +101,7 @@ sensors {
   intrinsic {
     params {
       key: "Distortion_Parameters"
-      value: "13.1897,8.10255,2.86297e-05,-7.07011e-05,0.453359"
+      value: "13.1897,8.10255,2.86297e-05,-7.07011e-05"
     }
     params {
       key: "Frequency"
@@ -145,7 +145,7 @@ sensors {
   intrinsic {
     params {
       key: "Distortion_Parameters"
-      value: "4.32784,2.17106,0.000185161,-8.6523e-05,0.107364"
+      value: "4.32784,2.17106,0.000185161,-8.6523e-05"
     }
     params {
       key: "Frequency"
@@ -189,7 +189,7 @@ sensors {
   intrinsic {
     params {
       key: "Distortion_Parameters"
-      value: "10.5554,6.0624,3.1606e-05,-5.60436e-05,0.31637"
+      value: "10.5554,6.0624,3.1606e-05,-5.60436e-05"
     }
     params {
       key: "Frequency"
@@ -233,7 +233,7 @@ sensors {
   intrinsic {
     params {
       key: "Distortion_Parameters"
-      value: "25.5194,16.2616,0.000109423,-9.34953e-05,0.906388"
+      value: "25.5194,16.2616,0.000109423,-9.34953e-05"
     }
     params {
       key: "Frequency"
@@ -277,7 +277,7 @@ sensors {
   intrinsic {
     params {
       key: "Distortion_Parameters"
-      value: "-0.502379,0.28224,0.000523741,-0.000382835,-0.112845"
+      value: "-0.502379,0.28224,0.000523741,-0.000382835"
     }
     params {
       key: "Frequency"
@@ -302,49 +302,6 @@ sensors {
     params {
       key: "Res_Vertical"
       value: "1280"
-    }
-  }
-}
-sensors {
-  type: SENSOR_TYPE_TRADITIONAL_LIDAR
-  extrinsic {
-    InstallSlot: "C0"
-    Device: ".0"
-    LocationX: 175.9077
-    LocationY: 3.7617
-    LocationZ: 156.3792
-    RotationX: 0.36673051894170766
-    RotationY: 0.056299651888335078
-    RotationZ: 0.57707608955030154
-  }
-  intrinsic {
-    params {
-      key: "DrawPoint"
-      value: "false"
-    }
-    params {
-      key: "DrawRay"
-      value: "false"
-    }
-    params {
-      key: "ExtinctionCoe"
-      value: "0"
-    }
-    params {
-      key: "FovEnd"
-      value: "360"
-    }
-    params {
-      key: "FovStart"
-      value: "0"
-    }
-    params {
-      key: "Frequency"
-      value: "10"
-    }
-    params {
-      key: "Model"
-      value: "HS128AT"
     }
   }
 }

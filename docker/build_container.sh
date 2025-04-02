@@ -6,8 +6,10 @@ REGISTRY="hub.hobot.cc"
 DESKTOP_TAG=$(get_desktop_tag)
 DISPLAY_TAG=$(get_display_tag)
 
-DESKTOP_IMAGE_TAG="$REGISTRY/$DESKTOP_TAG"
+#DESKTOP_IMAGE_TAG="$REGISTRY/$DESKTOP_TAG"
 DISPLAY_IMAGE_TAG="$REGISTRY/$DISPLAY_TAG"
+
+DESKTOP_IMAGE_TAG="$REGISTRY/imagesys/4dlabel:tadsim-desktop-ubuntu20.04"
 REMOTE_IMAGE_TAG="$REGISTRY/imagesys/4dlabel:tadsim-display-runtime"
 
 #UBUNTU_IMAGE=ubuntu:18.04
@@ -19,6 +21,12 @@ docker build --build-arg BASE_IMAGE="$UBUNTU_IMAGE" \
                                  -t "$DESKTOP_IMAGE_TAG" \
                                  -f $DOCKER_DIR/Dockerfile \
                                  "$SATURNV_ROOT_DIR/docker"
+}
+
+function build_new_desktop_image() {
+docker build -t "$DESKTOP_IMAGE_TAG" \
+             -f $DOCKER_DIR/DockerfileNew \
+             "$SATURNV_ROOT_DIR/docker"
 }
 
 function build_display_image() {
@@ -51,6 +59,7 @@ Usage: build_main_container.sh <action>
 BUILD_DESKTOP_IMAGE=false
 BUILD_DISPLAY_IMAGE=false
 BUILD_REMOTE_IMAGE=false
+BUILD_NEW_DESKTOP_IMAGE=false
 PUSH_DESKTOP_IMAGE=false
 PUSH_DISPLAY_IMAGE=false
 PUSH_REMOTE_IMAGE=false
@@ -60,6 +69,10 @@ do
   case "$1" in
     --build-desktop)
       BUILD_DESKTOP_IMAGE=true
+      shift
+      ;;
+    --build-new-desktop)
+      BUILD_NEW_DESKTOP_IMAGE=true
       shift
       ;;
     --build-display)
@@ -102,6 +115,10 @@ fi
 
 if [ "$BUILD_REMOTE_IMAGE" == "true" ]; then
   build_remote_image
+fi
+
+if [ "$BUILD_NEW_DESKTOP_IMAGE" == "true" ]; then
+  build_new_desktop_image
 fi
 
 if [ "$PUSH_DESKTOP_IMAGE" == "true" ]; then

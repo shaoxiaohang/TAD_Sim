@@ -77,7 +77,7 @@ void ADisplayPlayerController::Server_SimResetOutput_Implementation(FLocalResetO
     PossessVehicleExec(GetGameInstance<UDisplayGameInstance>()->GetEgoIDByGroupName());
 
     GetWorld()->GetAuthGameMode<ADisplayGameModeBase>()->SimOutput(
-        _ReturnData, GetPlayerState<ADisplayPlayerState>()->UniqueId);
+        _ReturnData, GetPlayerState<ADisplayPlayerState>()->GetUniqueId());
 }
 
 bool ADisplayPlayerController::Server_SimResetOutput_Validate(FLocalResetOut _ReturnData)
@@ -88,7 +88,7 @@ bool ADisplayPlayerController::Server_SimResetOutput_Validate(FLocalResetOut _Re
 void ADisplayPlayerController::Server_SimUpdateOutput_Implementation(FLocalUpdateOut _OutData)
 {
     GetWorld()->GetAuthGameMode<ADisplayGameModeBase>()->SimOutput(
-        _OutData, GetPlayerState<ADisplayPlayerState>()->UniqueId);
+        _OutData, GetPlayerState<ADisplayPlayerState>()->GetUniqueId());
 }
 
 bool ADisplayPlayerController::Server_SimUpdateOutput_Validate(FLocalUpdateOut _OutData)
@@ -129,13 +129,13 @@ void ADisplayPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
     if (driving_widget)
     {
         driving_widget->SetVisibility(ESlateVisibility::Collapsed);
-        driving_widget->RemoveFromViewport();
+        driving_widget->RemoveFromParent();
         driving_widget = nullptr;
     }
     if (SwitchEgoWidget)
     {
         SwitchEgoWidget->SetVisibility(ESlateVisibility::Collapsed);
-        SwitchEgoWidget->RemoveFromViewport();
+        SwitchEgoWidget->RemoveFromParent();
         SwitchEgoWidget = nullptr;
     }
     // CollectGarbage(EObjectFlags::RF_NoFlags);

@@ -1306,13 +1306,13 @@ void Coordinator::LoadModuleStepRequest(ModuleStepRequest& req, const std::strin
   }
   // loading message of each topic.
   for (const TopicMeta& tm : hdl.sub_topics) {
-    LOG(INFO) << module_name << " sub topic " << tm.topic.name;
+    //LOG(INFO) << module_name << " sub topic " << tm.topic.name;
     if (tm.message_loading_handler) {
       (this->*(tm.message_loading_handler))(tm.topic, hdl, req);
     }
     const auto& messages = req.messages;
     for (auto& [name, msg] : messages) {
-      LOG(INFO) << module_name << " actual topic " << name;
+      //LOG(INFO) << module_name << " actual topic " << name;
     }
   }
 }
@@ -1433,29 +1433,29 @@ void Coordinator::UnloadModuleStopResult(ModuleStopResponse& resp, const std::st
 void Coordinator::HandleMessageLoading(const SimTopic& topic, ModulePlayContext& module, ModuleStepRequest& req) {
   auto it = messages_.find(EgoTopic(module.config.module_group_name, topic.sim_name));
 
-  for (const auto& [topic, msg] : messages_) {
-    LOG(INFO) << "TOPIC " << topic.sEgoGroup << " " << topic.sTopic;
-  }
-  for (const auto& [topic, msg_map] : union_messages_) {
-    LOG(INFO) << "UNION TOPIC " << topic;
-    for (const auto& [group, msg] : msg_map) {
-      LOG(INFO) << "UNION GROUP " << group;
-    }
-  }
+  // for (const auto& [topic, msg] : messages_) {
+  //   LOG(INFO) << "TOPIC " << topic.sEgoGroup << " " << topic.sTopic;
+  // }
+  // for (const auto& [topic, msg_map] : union_messages_) {
+  //   LOG(INFO) << "UNION TOPIC " << topic;
+  //   for (const auto& [group, msg] : msg_map) {
+  //     LOG(INFO) << "UNION GROUP " << group;
+  //   }
+  // }
 
   if (it != messages_.cend()) {
     if (topic.name == kTopicPlayConfig && sim_time_ > 0) return;
     req.messages[topic.name].copy(it->second);
     if (TXSIM_UNLIKELY(current_config_.log_perf)) module.perf_stats.sent_bytes += it->second.size();
-    LOG(INFO) << "module " << module.config.name << " loading message: " << topic.name << "(" << it->second.size()
-              << " bytes)";
+    // LOG(INFO) << "module " << module.config.name << " loading message: " << topic.name << "(" << it->second.size()
+    //           << " bytes)";
   } else {
     it = messages_.find(EgoTopic("", topic.sim_name));
     if (it != messages_.cend()) {
       req.messages[topic.name].copy(it->second);
       if (TXSIM_UNLIKELY(current_config_.log_perf)) module.perf_stats.sent_bytes += it->second.size();
-      LOG(INFO) << "module " << module.config.name << " loading message: " << topic.name << "(" << it->second.size()
-                << " bytes)";
+      // LOG(INFO) << "module " << module.config.name << " loading message: " << topic.name << "(" << it->second.size()
+      //           << " bytes)";
     }
   }
 
@@ -1562,10 +1562,10 @@ void Coordinator::HandleMessageUnloading(const SimTopic& topic, ModulePlayContex
     if (!topic.sim_name.empty()) {
       messages_[EgoTopic(ego_group_name, topic_name)].copy(it->second);
       if (1 == m_unionTopic.count(topic_name)) {
-        LOG(INFO) << "add union " << module.config.name << " " << topic_name;
+        //LOG(INFO) << "add union " << module.config.name << " " << topic_name;
         union_messages_[kUnionFlag + topic_name][ego_group_name].copy(it->second);
       } else {
-        LOG(INFO) << "not add union " << module.config.name << " " << topic_name;
+        //LOG(INFO) << "not add union " << module.config.name << " " << topic_name;
       }
 
       // add mesages_
@@ -1577,8 +1577,8 @@ void Coordinator::HandleMessageUnloading(const SimTopic& topic, ModulePlayContex
         }
       }
       // GetCurrentControllerName(topic.name, it->second.data(), it->second.size());
-      LOG(INFO) << "module " << module.config.name << " unloading message: " << topic.name << "(" << it->second.size()
-                << " bytes)";
+      //LOG(INFO) << "module " << module.config.name << " unloading message: " << topic.name << "(" << it->second.size()
+        //        << " bytes)";
     }
 
     // add status_msgs add LOCATION and TRAJECTORY;

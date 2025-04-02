@@ -236,7 +236,7 @@ bool UCatalogDataSource::LoadSceneBuffer(const std::string& Buffer)
 
     std::string DebugStr = scene.DebugString();
 
-    UE_LOG(SimLogCatalog, Log, TEXT("sceneBuffer %s "), UTF8_TO_TCHAR(DebugStr.c_str()));
+    //UE_LOG(SimLogCatalog, Log, TEXT("sceneBuffer %s "), UTF8_TO_TCHAR(DebugStr.c_str()));
 
     FString ModelRootDir = UTF8_TO_TCHAR(scene.setting().model3d_pathdir().c_str());
     ModelRootDir.Append(TEXT("/"));

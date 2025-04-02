@@ -49,6 +49,8 @@ public:
     double mapOriginLat = 0;
     double mapOriginAlt = 0;
 
+    bool bRevertedXY = false;
+
 private:
     // static HadmapManager* instance;
 
@@ -170,7 +172,6 @@ private:
         nullptr
     };
     bool bUseDecrypt = false;
-
 public:
     hadmap::MAP_DATA_TYPE GetMapDataType(const FString& _FilePath) const;
 

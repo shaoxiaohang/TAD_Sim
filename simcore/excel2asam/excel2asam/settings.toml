@@ -1,7 +1,7 @@
 # ==============================================================================
 [sys]
     naming = "numerical"                 # can be [numerical, parameter]
-    link_symbol = "_"
+    link_symbol = "-"
     split_symbol = ";|,|-"
     output_xosc = "data/scenario/scene/semantic_scene"
     output_xodr = "data/scenario/hadmap"
@@ -117,7 +117,7 @@
     percentage = 0.15
 # ======================================= 高精地图 =======================================
 [sys.map]
-    support = ["xodr", "xml", "sqlit"]
+    support = ["xodr", "xml", "sqlite"]
 [sys.map.virtual]
     base_len = 2000
     start_road_id = 1

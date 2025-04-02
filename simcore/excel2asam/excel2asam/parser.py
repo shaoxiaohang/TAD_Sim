@@ -40,7 +40,6 @@ class ParserFactory(ABC):
         return df
 
     def get_dataframe_define(self) -> pd.DataFrame:
-        logger.opt(lazy=True).info(f"{' get_dataframe_define: ':-^35}")
 
         # 检查文档的名字中是否包含 settings.sys.sheet.define 的字段
         name_list = [x for x in self.names if settings.sys.sheet.define in x]
@@ -56,10 +55,10 @@ class ParserFactory(ABC):
         return pd.concat(df_list, ignore_index=True)
 
     def get_dataframe_param(self) -> pd.DataFrame:
-        logger.opt(lazy=True).info(f"{' get_dataframe_param: ':-^35}")
 
         # 检查文档的名字中是否包含 settings.sys.sheet.param 的字段
         param_names = [x for x in self.names if settings.sys.sheet.param in x]
+        
 
         # 只处理第一个 sheet_param 的信息, 如果没有则返回空的 dataframe
         return self.to_dataframe(param_names[0]) if param_names else pd.DataFrame()

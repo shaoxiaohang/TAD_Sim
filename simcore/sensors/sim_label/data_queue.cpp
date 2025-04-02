@@ -26,19 +26,21 @@
 DataQueue::DataQueue() {
   _job_worker = std::thread([this] {
     std::uint64_t frameID_image = 0;
+    std::uint64_t frameID_depth = 0;
     std::uint64_t frameID_pcd = 0;
     for (;;) {
       std::vector<ImagePackage> img_pkg;
+      std::vector<ImagePackage> depth_pkg;
       std::vector<PcdPackage> pcd_pkg;
       // mutex lock
       {
         std::unique_lock<std::mutex> lock(this->_mutex);
         this->_job_condition.wait(lock, [this] {
           return this->_stop || !this->_semantics.empty() || !this->_cameras.empty() || !this->_fisheyes.empty() ||
-                 !this->_lidars.empty();
+                 !this->_lidars.empty() || !this->_depths.empty() || !this->_normals.empty();
         });
-        if (this->_stop && this->_semantics.empty() && _cameras.empty() && this->_fisheyes.empty() &&
-            this->_lidars.empty())
+        if (this->_stop && this->_semantics.empty() && this->_cameras.empty() && this->_fisheyes.empty() &&
+            this->_lidars.empty() && this->_depths.empty() && this->_normals.empty())
           return;
         EARSE_TO(this->_objects);
         // handle semantic
@@ -57,6 +59,24 @@ DataQueue::DataQueue() {
           }
         }
         this->_semantics.clear();
+
+        // handle normal
+        for (auto &normals : this->_normals) {
+          for (auto &normal : normals.second) {
+            ImagePackage pkg;
+            pkg.frame_c = frameID_image;
+            pkg.image = std::move(normal.second);
+            pkg.type = sim_msg::SensorRaw_Type_TYPE_ULTRASONIC;
+            auto timestamp = pkg.image.timestamp;
+            if (this->_objects.find(timestamp) == this->_objects.end()) {
+              continue;
+            }
+            pkg.obj = this->_objects.at(timestamp);
+            img_pkg.emplace_back(std::move(pkg));
+          }
+        }
+        this->_normals.clear();
+
         // handle camera
         for (auto &cams : this->_cameras) {
           for (auto &sem : cams.second) {
@@ -73,6 +93,22 @@ DataQueue::DataQueue() {
           }
         }
         this->_cameras.clear();
+        // handle depth camera
+        for (auto &depths : this->_depths) {
+          for (auto &sem : depths.second) {
+            ImagePackage pkg;
+            pkg.frame_c = frameID_image;
+            pkg.image = std::move(sem.second);
+            pkg.type = sim_msg::SensorRaw_Type_TYPE_DEPTH;
+            auto timestamp = pkg.image.timestamp;
+            if (this->_objects.find(timestamp) == this->_objects.end()) {
+              continue;
+            }
+            pkg.obj = this->_objects.at(timestamp);
+            depth_pkg.emplace_back(std::move(pkg));
+          }
+        }
+        this->_depths.clear();
         // handle fisheye
         for (auto &cams : this->_fisheyes) {
           for (auto &sem : cams.second) {
@@ -133,6 +169,13 @@ DataQueue::DataQueue() {
         }
         frameID_image++;
       }
+      // package to callback
+      if (this->_callback_depth_image && !depth_pkg.empty()) {
+        for (const auto &pkg : depth_pkg) {
+          this->_callback_depth_image(pkg);
+        }
+        frameID_depth++;
+      }
       if (this->_callback_pcd && !pcd_pkg.empty()) {
         for (const auto &pkg : pcd_pkg) {
           this->_callback_pcd(pkg);
@@ -167,6 +210,16 @@ void DataQueue::setImageCallback(const std::function<void(const ImagePackage &)>
 }
 
 /**
+ * @brief set the callback function for depth image package
+ *
+ * @param callback the callback function
+ */
+void DataQueue::setDepthImageCallback(const std::function<void(const ImagePackage &)> &callback){
+  std::unique_lock<std::mutex> lock(_mutex);
+  _callback_depth_image = callback;
+}
+
+/**
  * @brief set the callback function for pcd package
  *
  * @param callback the callback function
@@ -185,6 +238,17 @@ void DataQueue::addCamera(const ImageInfo &info) {
   std::unique_lock<std::mutex> lock(_mutex);
   _cameras[info.id][info.timestamp] = std::move(info);
 }
+
+/**
+ * @brief add depth camera info
+ *
+ * @param info the depth camera information
+ */
+void DataQueue::addDepth(const ImageInfo &info){
+  std::unique_lock<std::mutex> lock(_mutex);
+  _depths[info.id][info.timestamp] = std::move(info);
+}
+
 
 /**
  * @brief add fisheye info
@@ -206,6 +270,15 @@ void DataQueue::addSenmantic(const ImageInfo &info) {
   _semantics[info.id][info.timestamp] = std::move(info);
 }
 
+/**
+ * @brief add normal info
+ *
+ * @param info the normal information
+ */
+void DataQueue::addNormal(const ImageInfo &info) {
+  std::unique_lock<std::mutex> lock(_mutex);
+  _normals[info.id][info.timestamp] = std::move(info);
+}
 /**
  * @brief add lidar info
  *

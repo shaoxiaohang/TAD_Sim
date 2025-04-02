@@ -275,7 +275,8 @@ class txSimulationLoop : public tx_sim::SimModule {
     eDriverUserDefined,
     eDriverTrajFollow,
     eCloudStandAlone,
-    eCoSim_Vissim
+    eCoSim_Vissim,
+    eSumoSim
   };
 
  public:

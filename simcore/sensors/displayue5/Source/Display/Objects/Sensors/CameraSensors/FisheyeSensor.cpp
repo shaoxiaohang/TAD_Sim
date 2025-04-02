@@ -10,11 +10,11 @@
 #include "HAL/PlatformFileManager.h"
 #include "HighResScreenshot.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/FileHelper.h"
 #include "Objects/Transports/TransportPawn.h"
 #include "Runtime/Engine/Classes/Components/SceneCaptureComponent2D.h"
 #include "Runtime/Engine/Classes/Components/SceneCaptureComponentCube.h"
-#include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
 #include "Runtime/ImageWrapper/Public/IImageWrapperModule.h"
 #include "SimMsg/sensor_raw.pb.h"
 #include "TexJpeg.h"
@@ -206,8 +206,8 @@ bool AFisheyeSensor::Init(const FSensorConfig& _Config)
         // Calculate the sensor dimensions based on the new field-of-view (FOV), focallength, and aspect ratio
         previewComponent->Filmback.SensorWidth = FMath::Tan(FMath::DegreesToRadians(NewFov_H) / 2) * 2 * flen;
         previewComponent->Filmback.SensorHeight = FMath::Tan(FMath::DegreesToRadians(NewFov_V) / 2) * 2 * flen;
-            // Set the post process settings to match the newly calculated FOV
-            SetPostProcessSettings(previewComponent->PostProcessSettings);
+        // Set the post process settings to match the newly calculated FOV
+        SetPostProcessSettings(previewComponent->PostProcessSettings);
         // Add the mid-camera postprocess effect with an opacity value of 1.0 to the list of blendables in the post
         // process settings
         previewComponent->PostProcessSettings.AddBlendable(cameraPostProcess, 1);
@@ -598,6 +598,8 @@ ISimActorInterface* AFisheyeSensor::Install(const FSensorConfig& _Config)
     {
         // TODO: All simActors support install camera
         ATransportPawn* Transport = Cast<ATransportPawn>(SimActor);
+        AActor* Ego = Cast<AActor>(SimActor);
+        IgnoreActor(Ego);
         if (Transport)
         {
             if (Transport->InstallCamera(_Config.typeName + FString::FromInt(_Config.id), previewComponent))
@@ -623,6 +625,17 @@ ISimActorInterface* AFisheyeSensor::Install(const FSensorConfig& _Config)
         }
     }
     return nullptr;
+}
+
+void AFisheyeSensor::IgnoreActor(AActor* actor)
+{
+    if (actor)
+    {
+        if (captureComponentCube)
+        {
+            captureComponentCube->HiddenActors.Add(actor);
+        }
+    }
 }
 
 void AFisheyeSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)

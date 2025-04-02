@@ -11,7 +11,7 @@ public class Display : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "RenderCore", "CoreUObject", "RHI",
-		 "InputCore", "EnhancedInput","ProceduralMeshComponent","CinematicCamera","Networking", "Sockets", "AutoRoad","RuntimeMeshLoader"});
+		 "InputCore", "EnhancedInput","ImageWrapper","ProceduralMeshComponent", "OpenCV","OpenCVHelper","CinematicCamera","Networking", "Sockets", "AutoRoad","RuntimeMeshLoader"});
 
 			PrivateIncludePaths.AddRange(
 				new string[]
@@ -46,7 +46,14 @@ public class Display : ModuleRules
     PublicIncludePaths.Add(ModuleDirectory);
 
     RuntimeDependencies.Add(Path.Combine(ModuleDirectory, "../../Config", "DefaultAutoRoad.ini"));
+
+	string UE_ROOT = Environment.GetEnvironmentVariable("UE5_ROOT");
+
+	string OPENCV_PATH = Path.Combine(UE_ROOT, "Engine/Plugins/Runtime/OpenCV/Binaries/ThirdParty/Linux");
 	
+	RuntimeDependencies.Add(Path.Combine("$(TargetOutputDir)/ubuntu18_20/", "libopencv_world.so.405"),
+		Path.Combine(OPENCV_PATH, "libopencv_world.so.405"));
+
     if (Target.Platform == UnrealTargetPlatform.Win64){
         PublicDependencyModuleNames.AddRange(new string[] { "RTXLidar" });
 		}

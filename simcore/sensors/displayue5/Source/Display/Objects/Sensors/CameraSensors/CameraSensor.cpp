@@ -20,7 +20,7 @@ ACameraSensor::ACameraSensor()
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if
     // you don't need it.
     PrimaryActorTick.bCanEverTick = false;
-    str_PostProcess = TEXT("Material'/Game/SensorSim/Camera/Material/Mat_Camera_Capture.Mat_Camera_Capture'");
+    // str_PostProcess = TEXT("Material'/Game/SensorSim/Camera/Material/Mat_Camera_Capture.Mat_Camera_Capture'");
 
     RootComponent = CreateDefaultSubobject<USceneComponent>(FName(TEXT("Root")));
 
@@ -30,10 +30,10 @@ ACameraSensor::ACameraSensor()
     // Mesh->CastShadow = false;
     // RootComponent = Mesh;
 
-    previewComponent = CreateDefaultSubobject<UCineCameraComponent>(FName(TEXT("PreviewCamera")));
-    previewComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-    previewComponent->SetUseFieldOfViewForLOD(true);
-    previewComponent->SetActive(false);
+    // previewComponent = CreateDefaultSubobject<UCineCameraComponent>(FName(TEXT("PreviewCamera")));
+    // previewComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+    // previewComponent->SetUseFieldOfViewForLOD(true);
+    // previewComponent->SetActive(false);
 
     captureComponent = CreateDefaultSubobject<USceneCaptureComponent2D>(FName(TEXT("CaptureCamera")));
     captureComponent->SetActive(false);
@@ -77,35 +77,46 @@ void ACameraSensor::PostActorCreated()
     //   }
 }
 
+void ACameraSensor::IgnoreActor(AActor* actor)
+{
+    if (actor)
+    {
+        captureComponent->HiddenActors.Add(actor);
+    }
+}
+
 ISimActorInterface* ACameraSensor::Install(const FSensorConfig& _Config)
 {
     ISimActorInterface* SimActor = Super::Install(_Config);
     /* Install previewCamera */
     if (SimActor)
     {
+        AActor* Ego = Cast<AActor>(SimActor);
+        UE_LOG(LogTemp, Log, TEXT("ACameraSensor: Ignore Ego %s"), *Ego->GetName());
+        IgnoreActor(Ego);
         // TODO: All simActors support install camera
         ATransportPawn* Transport = Cast<ATransportPawn>(SimActor);
         if (Transport)
         {
-            if (Transport->InstallCamera(_Config.typeName + FString::FromInt(_Config.id), previewComponent))
-            {
-                // previewComponent->SetActive(true);
-                // auto hilpos = GetDisplayInstance()->nHILpos;
-                // if (hilpos.X >= 0 && hilpos.Y >= 0)
-                // {
-                //     Transport->SetDefaultCamera(_Config.typeName + FString::FromInt(_Config.id));
+            // if (Transport->InstallCamera(_Config.typeName + FString::FromInt(_Config.id), previewComponent))
+            // {
+            //     // previewComponent->SetActive(true);
+            //     // auto hilpos = GetDisplayInstance()->nHILpos;
+            //     // if (hilpos.X >= 0 && hilpos.Y >= 0)
+            //     // {
+            //     //     Transport->SetDefaultCamera(_Config.typeName + FString::FromInt(_Config.id));
 
-                //     if (GEngine && GEngine->GameViewport)
-                //     {
-                //         if (GEngine->GameViewport->Viewport->IsFullscreen())
-                //         {
-                //             GEngine->GameViewport->HandleToggleFullscreenCommand();
-                //         }
-                //         GEngine->GameViewport->GetWindow()->MoveWindowTo(hilpos);
-                //         GEngine->GameViewport->HandleToggleFullscreenCommand();
-                //     }
-                // }
-            }
+            //     //     if (GEngine && GEngine->GameViewport)
+            //     //     {
+            //     //         if (GEngine->GameViewport->Viewport->IsFullscreen())
+            //     //         {
+            //     //             GEngine->GameViewport->HandleToggleFullscreenCommand();
+            //     //         }
+            //     //         GEngine->GameViewport->GetWindow()->MoveWindowTo(hilpos);
+            //     //         GEngine->GameViewport->HandleToggleFullscreenCommand();
+            //     //     }
+            //     // }
+            // }
             return Transport;
         }
     }
@@ -151,6 +162,8 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
         return false;
     }
 
+    bool enable_preview = sensorConfig.addPreview;
+
     // ID
     id = NewCameraSensorConfig->id;
     // frequency
@@ -168,6 +181,7 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
     imageRes0.Y = NewCameraSensorConfig->res_Vertical;
     imageRes = imageRes0;
 
+    if (!str_PostProcess.IsEmpty())
     {
         // 加载材质
         UMaterial* NewMat = LoadObject<UMaterial>(NULL, *str_PostProcess);
@@ -177,13 +191,12 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
             return false;
         }
         // 创建材质实例动态
-        // mid_CameraPostProcess = UMaterialInstanceDynamic::Create(NewMat, this);
-        // if (!mid_CameraPostProcess)
-        // {
-        //     UE_LOG(
-        //         LogTemp, Warning, TEXT("CameraSensorComponent: Cant get MaterialInstanceDynamic!"));
-        //     return false;
-        // }
+        mid_CameraPostProcess = UMaterialInstanceDynamic::Create(NewMat, this);
+        if (!mid_CameraPostProcess)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("CameraSensorComponent: Cant get MaterialInstanceDynamic!"));
+            return false;
+        }
     }
 
     double NewFov_H = 0;
@@ -245,91 +258,29 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
         return false;
     }
 
-    // // 计算了相机传感器的最大水平和垂直视野角度
-    // {
-    //     TArray<FVector2D> bounds;
-    //     for (int i = 0; i < 11; i++)
-    //     {
-    //         double y = sensorConfig.res_Vertical * i * 0.1;
-    //         for (int j = 0; j < 11; j++)
-    //         {
-    //             // Calculate bounding box points and add them to an array
-    //             double x = sensorConfig.res_Horizontal * j * 0.1;
-    //             bounds.Add(FVector2D(x, y));
-    //         }
-    //     }
-    //     for (const auto& bd : bounds)
-    //     {
-    //         double tX = bd.X;
-    //         double tY = bd.Y;
-    //         double y = (tY - cy) / fy;
-    //         double x = (tX - cx - skew * y) / fx;
-    //         double x0 = x;
-    //         double y0 = y;
-    //         for (int j = 0; j < 10; j++)
-    //         {
-    //             double r2 = x * x + y * y;
-
-    //             double distRadialA = 1.f / (1.f + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
-
-    //             double deltaX = 2.f * p1 * x * y + p2 * (r2 + 2.f * x * x);
-    //             double deltaY = p1 * (r2 + 2.f * y * y) + 2.f * p2 * x * y;
-
-    //             x = (x0 - deltaX) * distRadialA;
-    //             y = (y0 - deltaY) * distRadialA;
-    //         }
-
-    //         maxxfov = FMath::Max(maxxfov, (double) FMath::Abs(FMath::Atan(x)));
-    //         maxyfov = FMath::Max(maxyfov, (double) FMath::Abs(FMath::Atan(y)));
-    //     }
-    //     // Calculate new camera's field-of-view based on maximum horizontal and vertical angles
-    //     ofx = 0.5 * NewCameraSensorConfig->res_Horizontal / FMath::Tan(maxxfov);
-    //     ofy = 0.5 * NewCameraSensorConfig->res_Vertical / FMath::Tan(maxyfov);
-    //     double of = fmin(ofx, ofy);
-    //     ofx = of;
-    //     ofy = of;
-    //     maxxfov = FMath::Atan(0.5 * NewCameraSensorConfig->res_Horizontal / of);
-    //     maxyfov = FMath::Atan(0.5 * NewCameraSensorConfig->res_Vertical / of);
-    //     // Update the FOV parameters in the Camera Sensor Config object
-    //     // NewCameraSensorConfig->fov_Horizontal = FMath::RadiansToDegrees(maxxfov) * 2;
-    //     // NewCameraSensorConfig->fov_Vertical = FMath::RadiansToDegrees(maxyfov) * 2;
-    //     NewFov_H = FMath::RadiansToDegrees(maxxfov) * 2;
-    //     NewFov_V = FMath::RadiansToDegrees(maxyfov) * 2;
-    //     // Calculate the scale factor used to adjust the FOV when using a smaller image size
-    //     fov_scale = FMath::Max(fx / ofx, fy / ofy);
-    // }
-
-    // 设置pp处理参数
-    // UE_LOG(LogTemp, Log,
-    //     TEXT("CameraSensor: cx=%f, cy=%f, fx=%f, fy=%f, skew=%f, k1=%f, k2=%f, k3=%f, p1=%f, "
-    //          "p2=%f, ofx=%f, ofy=%f, "
-    //          "w=%f, h=%f"),
-    //     cx, cy, fx, fy, skew, k1, k2, k3, p1, p2, ofx, ofy, NewCameraSensorConfig->res_Horizontal,
-    //     NewCameraSensorConfig->res_Vertical);
-    // 内参
-    // mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("cx")), cx);
-    // mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("cy")), cy);
-    // mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("fx")), fx);
-    // mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("fy")), fy);
-    // mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("skew")), skew);
-    // mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("k1")), k1);
-    // mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("k2")), k2);
-    // mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("k3")), k3);
-    // mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("p1")), p1);
-    // mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("p2")), p2);
-    // mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("ofx")), ofx);
-    // mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("ofy")), ofy);
-    // mid_CameraPostProcess->SetScalarParameterValue(
-    //     FName(TEXT("w")), NewCameraSensorConfig->res_Horizontal);
-    // mid_CameraPostProcess->SetScalarParameterValue(
-    //     FName(TEXT("h")), NewCameraSensorConfig->res_Vertical);
-    // // Blur
-    // mid_CameraPostProcess->SetScalarParameterValue(
-    //     FName(TEXT("BlurIntensity")), NewCameraSensorConfig->blur_Intensity);
-    // mid_CameraPostProcess->SetScalarParameterValue(
-    //     FName(TEXT("Res_X")), NewCameraSensorConfig->res_Horizontal);
-    // mid_CameraPostProcess->SetScalarParameterValue(
-    //     FName(TEXT("Res_Y")), NewCameraSensorConfig->res_Vertical);
+    if (mid_CameraPostProcess)
+    {
+        // 内参
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("cx")), cx);
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("cy")), cy);
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("fx")), fx);
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("fy")), fy);
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("skew")), skew);
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("k1")), k1);
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("k2")), k2);
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("k3")), k3);
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("p1")), p1);
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("p2")), p2);
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("ofx")), ofx);
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("ofy")), ofy);
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("w")), NewCameraSensorConfig->res_Horizontal);
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("h")), NewCameraSensorConfig->res_Vertical);
+        // Blur
+        mid_CameraPostProcess->SetScalarParameterValue(
+            FName(TEXT("BlurIntensity")), NewCameraSensorConfig->blur_Intensity);
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("Res_X")), NewCameraSensorConfig->res_Horizontal);
+        mid_CameraPostProcess->SetScalarParameterValue(FName(TEXT("Res_Y")), NewCameraSensorConfig->res_Vertical);
+    }
 
     NewFov_H = 2.0f * FMath::RadiansToDegrees(FMath::Atan2(imageRes.X, 2.0f * fx));
     NewFov_V = 2.0f * FMath::RadiansToDegrees(FMath::Atan2(imageRes.Y, 2.0f * fy));
@@ -337,24 +288,24 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
     UE_LOG(LogTemp, Log, TEXT("CameraSensor: NewFov_H=%f, NewFov_V=%f"), NewFov_H, NewFov_V);
 
     float flen = 100.f;
-    // Set the current focus length of the camera
-    previewComponent->CurrentFocalLength = flen;
-    // Update the minimum and maximum focal lengths for this component's lens settings
-    previewComponent->LensSettings.MinFocalLength = flen;
-    previewComponent->LensSettings.MaxFocalLength = flen;
-    // Set the minimum and maximum aperture values for this component's lens settings
-    previewComponent->LensSettings.MinFStop = 7.0f;
-    previewComponent->LensSettings.MaxFStop = 7.0f;
-    // Calculate the sensor dimensions based on the new field-of-view (FOV), focallength, and aspect
-    // ratio
-    previewComponent->Filmback.SensorWidth = FMath::Tan(FMath::DegreesToRadians(NewFov_H) / 2) * 2 * flen;
-    previewComponent->Filmback.SensorHeight = FMath::Tan(FMath::DegreesToRadians(NewFov_V) / 2) * 2 * flen;
-    // Set the post process settings to match the newly calculated FOV
-    SetPostProcessSettings(
-        *NewCameraSensorConfig, previewComponent->PostProcessSettings, FMath::Max(1.0, fov_scale * 0.9));
-    // Add the mid-camera postprocess effect with an opacity value of 1.0 to the list of blendables
-    // in the post process settings
-    // previewComponent->PostProcessSettings.AddBlendable(mid_CameraPostProcess, 1);
+    // // Set the current focus length of the camera
+    // previewComponent->CurrentFocalLength = flen;
+    // // Update the minimum and maximum focal lengths for this component's lens settings
+    // previewComponent->LensSettings.MinFocalLength = flen;
+    // previewComponent->LensSettings.MaxFocalLength = flen;
+    // // Set the minimum and maximum aperture values for this component's lens settings
+    // previewComponent->LensSettings.MinFStop = 7.0f;
+    // previewComponent->LensSettings.MaxFStop = 7.0f;
+    // // Calculate the sensor dimensions based on the new field-of-view (FOV), focallength, and aspect
+    // // ratio
+    // previewComponent->Filmback.SensorWidth = FMath::Tan(FMath::DegreesToRadians(NewFov_H) / 2) * 2 * flen;
+    // previewComponent->Filmback.SensorHeight = FMath::Tan(FMath::DegreesToRadians(NewFov_V) / 2) * 2 * flen;
+    // // Set the post process settings to match the newly calculated FOV
+    // SetPostProcessSettings(
+    //     *NewCameraSensorConfig, previewComponent->PostProcessSettings, FMath::Max(1.0, fov_scale * 0.9));
+    // // Add the mid-camera postprocess effect with an opacity value of 1.0 to the list of blendables
+    // // in the post process settings
+    // // previewComponent->PostProcessSettings.AddBlendable(mid_CameraPostProcess, 1);
 
     if (GetDisplayInstance() && GetDisplayInstance()->nHILpos.X < 0)
     {
@@ -399,10 +350,11 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
         captureComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
         // 设置场景捕获组件是否每帧进行捕获
         captureComponent->bCaptureEveryFrame = true;
+        //captureComponent->bCaptureOnMovement = false;
         // 设置场景捕获组件自动激活
         captureComponent->bAutoActivate = true;
-        // 设置场景捕获组件为活动状态
         captureComponent->SetActive(true);
+        // 设置场景捕获组件为活动状态
         // 设置场景捕获组件的源类型为最终颜色（线性深度）
         captureComponent->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
         // 设置场景捕获组件的投影模式为透视
@@ -413,6 +365,28 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
         captureComponent->bUseCustomProjectionMatrix = true;
         captureComponent->ShowFlags.SetMotionBlur(true);
         captureComponent->ShowFlags.SetAmbientOcclusion(false);
+
+		// ApplyDefaultPostProcessSetting(Sensor->PostProcessSettings);
+		// Sensor->PostProcessSettings = PPSettings;
+
+		// captureComponent->PostProcessSettings.bOverride_DynamicGlobalIlluminationMethod = true;
+		// captureComponent->PostProcessSettings.DynamicGlobalIlluminationMethod = EDynamicGlobalIlluminationMethod::Lumen;
+		// captureComponent->PostProcessSettings.bOverride_ReflectionMethod = true;
+		// captureComponent->PostProcessSettings.ReflectionMethod = EReflectionMethod::Lumen;
+
+		// captureComponent->PostProcessSettings.bOverride_AutoExposureMethod = true;
+		// captureComponent->PostProcessSettings.AutoExposureMethod = EAutoExposureMethod::AEM_Histogram;
+		// captureComponent->PostProcessSettings.bOverride_AutoExposureBias = true;
+		// captureComponent->PostProcessSettings.AutoExposureBias = 0;
+
+		// captureComponent->PostProcessSettings.bOverride_DynamicGlobalIlluminationMethod = true;
+		// captureComponent->PostProcessSettings.DynamicGlobalIlluminationMethod = EDynamicGlobalIlluminationMethod::Lumen;
+		// captureComponent->PostProcessSettings.bOverride_ReflectionMethod = true;
+		// captureComponent->PostProcessSettings.ReflectionMethod = EReflectionMethod::Lumen;
+
+		// captureComponent->PostProcessSettings.bOverride_LumenSurfaceCacheResolution = true;
+		// captureComponent->PostProcessSettings.LumenSurfaceCacheResolution = 0.001;
+
         // if ((int32) ERHIZBuffer::IsInverted)
         // {
         //     captureComponent->CustomProjectionMatrix =
@@ -435,7 +409,10 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
         // 设置后处理设置
         SetPostProcessSettings(
             *NewCameraSensorConfig, captureComponent->PostProcessSettings, FMath::Max(1.0, fov_scale * 0.9));
-        // captureComponent->PostProcessSettings.AddBlendable(mid_CameraPostProcess, 1);
+        if (mid_CameraPostProcess)
+        {
+            captureComponent->PostProcessSettings.AddBlendable(mid_CameraPostProcess, 1);
+        }
 
         // 内存共享
         if (memshared)
@@ -462,6 +439,9 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
         UE_LOG(LogTemp, Log, TEXT("CameraSensor: renderTarget2D is ok"));
     if (texJpg)
         UE_LOG(LogTemp, Log, TEXT("CameraSensor: texJpg is ok"));
+
+    //UseLitShowFlags(captureComponent->ShowFlags);
+
 
     return true;
 }
@@ -508,9 +488,13 @@ void ACameraSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
         }
         else
         {
+            // captureComponent->CaptureScene();
+            // captureComponent->MarkRenderStateDirty();
+            // FlushRenderingCommands();
+
             FReadSurfaceDataFlags ReadPixelFlags(RCM_UNorm);
             FTextureRenderTarget2DResource* RTResource =
-                (FTextureRenderTarget2DResource*) renderTarget2D->GetResource();
+                (FTextureRenderTarget2DResource*) renderTarget2D->GameThread_GetRenderTargetResource();
             if (RTResource)
             {
                 TArray<FColor> BitMap;
@@ -545,10 +529,10 @@ void ACameraSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
                     imageRes0.Y, ERGBFormat::BGRA, 8))
             {
                 imgbuf = ImageWrapper->GetCompressed(imageQuality);
-            if (!sharedWriter->write(imgbuf, timeStamp_ego))
-            {
-                UE_LOG(LogTemp, Warning, TEXT("CameraSensor: sharedWriter write faild."));
-            }
+                if (!sharedWriter->write(imgbuf, timeStamp_ego))
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("CameraSensor: sharedWriter write faild."));
+                }
             }
             else
             {
@@ -610,17 +594,66 @@ void ACameraSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
                 IImageWrapperModule& ImageWrapperModule =
                     FModuleManager::LoadModuleChecked<IImageWrapperModule>("ImageWrapper");
                 TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(imageFormat);
-                TArray<uint8_t> BitMap;
+
+                if (imageName == TEXT("Normal"))
+                {
+                    if (ImageWrapper->SetRaw(BitData.data(), sizeof(FColor) * imageRes0.X * imageRes0.Y, imageRes0.X,
+                            imageRes0.Y, ERGBFormat::BGRA, 8))
+                    {
+                        imgbuf = ImageWrapper->GetCompressed();
+                    }
+                    else
+                    {
+                        UE_LOG(LogTemp, Warning, TEXT("CameraSensor: encode jpeg faild."));
+                    }
+                }
+                else if (imageName == TEXT("Depth") || imageName == TEXT("Semantic"))
+                {
+                    TArray<uint8_t> BitMap;
+                    BitMap.SetNum(dataBuf.buffer.size() / 4);
+                    for (int i = 0; i < BitMap.Num(); i++)
+                    {
+                        BitMap[i] = dataBuf.buffer[i * 4 + 3];
+                    }
+                    if (ImageWrapper->SetRaw(BitMap.GetData(), sizeof(uint8_t) * imageRes.X * imageRes.Y, imageRes.X,
+                            imageRes.Y, ERGBFormat::Gray, 8))
+                    {
+                        imgbuf = ImageWrapper->GetCompressed();
+                    }
+                }
+                else
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("CameraSensor: imageName is not supported: %s"), *imageName);
+                }
+            }
+        }
+        // exr用自带的编码器
+        else if (imageFormat == EImageFormat::EXR)
+        {
+            getRawBuff();
+            if (BitData.empty())
+            {
+                UE_LOG(LogTemp, Warning, TEXT("CameraSensor: read image buf faild."));
+            }
+            else
+            {
+                IImageWrapperModule& ImageWrapperModule =
+                    FModuleManager::LoadModuleChecked<IImageWrapperModule>("ImageWrapper");
+                TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(imageFormat);
+                TArray<float> BitMap;
                 BitMap.SetNum(dataBuf.buffer.size() / 4);
                 for (int i = 0; i < BitMap.Num(); i++)
                 {
-                    BitMap[i] = dataBuf.buffer[i * 4 + 3];
+                    BitMap[i] = (dataBuf.buffer[i * 4 + 2] * 65536.0 + dataBuf.buffer[i * 4 + 1] * 256.0 +
+                                    dataBuf.buffer[i * 4]) *
+                                0.0001;
                 }
-                if (ImageWrapper->SetRaw(BitMap.GetData(), sizeof(uint8_t) * imageRes.X * imageRes.Y, imageRes.X,
-                        imageRes.Y, ERGBFormat::Gray, 8))
+                if (ImageWrapper->SetRaw(BitMap.GetData(), sizeof(float) * imageRes.X * imageRes.Y, imageRes.X,
+                        imageRes.Y, ERGBFormat::Gray, 32))
                 {
                     imgbuf = ImageWrapper->GetCompressed();
                 }
+                UE_LOG(LogTemp, Display, TEXT("CameraSensor: encode exr"));
             }
         }
         // 落盘

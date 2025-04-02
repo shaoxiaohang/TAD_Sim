@@ -18,7 +18,7 @@ class TAD_StandAlone_TrafficElementSystem : public Base::TrafficElementSystem {
   virtual ~TAD_StandAlone_TrafficElementSystem() { Release(); }
 
   /**
-   * @brief 系统初始化
+   * @brief 系统初始化  
    *
    * @return Base::txBool
    */

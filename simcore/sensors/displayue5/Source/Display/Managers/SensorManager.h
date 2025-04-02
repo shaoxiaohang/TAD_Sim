@@ -15,10 +15,11 @@ struct FSensorManagerConfig : public FManagerConfig
 
 public:
     TArray<FCameraConfig> cameraArry;
-    // TArray<FCameraConfig> semanticArry;
+    TArray<FCameraConfig> semanticArry;
+    TArray<FCameraConfig> normalArry;
     TArray<FLidarConfig> lidarArry;
     // TArray<FUltrasonicConfig> ultrasonicArry;
-    // TArray<FCameraConfig> depthArry;
+    TArray<FCameraConfig> depthArry;
     TArray<FFisheyeConfig> fisheyeArry;
     // TArray<FCameraConfig> ringArry;
 };

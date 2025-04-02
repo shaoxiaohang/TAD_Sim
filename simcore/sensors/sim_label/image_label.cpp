@@ -12,9 +12,9 @@
 #include <Eigen/Eigen>
 #include "camera_sensor.h"
 #include "catalog.h"
+#include "common/coord_trans.h"
 #include "fisheye_sensor.h"
 #include "visable_calculate.h"
-#include "common/coord_trans.h"
 
 ImageLabel::ImageLabel(const ImagePackage &_info) : info(_info) {}
 
@@ -129,9 +129,15 @@ Json::Value ImageLabel::label(std::string &dir0, std::string &dir1) {
   if (info.type == sim_msg::SensorRaw_Type_TYPE_SEMANTIC) {
     dir0 = "semantic";
     dir1 = "semantic/png";
+  } else if (info.type == sim_msg::SensorRaw_Type_TYPE_DEPTH) {
+    dir0 = "depth";
+    dir1 = "depth/png";
   } else if (info.type == sim_msg::SensorRaw_Type_TYPE_FISHEYE) {
     dir0 = "fisheye";
     dir1 = "fisheye/jpg";
+  } else if (info.type == sim_msg::SensorRaw_Type_TYPE_ULTRASONIC) {
+    dir0 = "normal";
+    dir1 = "normal/png";
   }
 
   Json::Value source;

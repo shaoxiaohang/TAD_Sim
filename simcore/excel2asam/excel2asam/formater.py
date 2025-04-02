@@ -1020,6 +1020,11 @@ class Formater:
 
         # 格式化 地图参数
         self.param_dict = self._format_param(self.param)
+        
+        logger.opt(lazy=True).info(f"define: {self.define}")
+
+        logger.opt(lazy=True).info(f"param_dict: {self.param_dict}")
+        
 
         # 格式化 用户自定义配置
         self.settings_user_dict = self._format_settings_user(self.settings_user)
@@ -1046,7 +1051,31 @@ class Formater:
 
     def _deal_param_name(self, input_str: str, translates: list) -> str:
         # 拆分字符串
+        logger.opt(lazy=True).info(f"_deal_param_name: {input_str}")
+        logger.opt(lazy=True).info(f"_deal_param_name: {translates} length {len(translates)}")
+        
+        logger.opt(lazy=True).info(f"_deal_param_name0: {translates[0]}")
+        logger.opt(lazy=True).info(f"_deal_param_name1: {translates[1]}")
+        logger.opt(lazy=True).info(f"_deal_param_name2: {translates[2]}")
+        logger.opt(lazy=True).info(f"_deal_param_name3: {translates[3]}")
+        logger.opt(lazy=True).info(f"_deal_param_name4: {translates[4]}")
+        logger.opt(lazy=True).info(f"_deal_param_name5: {translates[5]}")
+        logger.opt(lazy=True).info(f"_deal_param_name6: {translates[6]}")
+        logger.opt(lazy=True).info(f"_deal_param_name7: {translates[7]}")
+        logger.opt(lazy=True).info(f"_deal_param_name8: {translates[8]}")
+        logger.opt(lazy=True).info(f"_deal_param_name9: {translates[9]}")
+        logger.opt(lazy=True).info(f"_deal_param_name10: {translates[10]}")
+        logger.opt(lazy=True).info(f"_deal_param_name11: {translates[11]}")
+        logger.opt(lazy=True).info(f"_deal_param_name12: {translates[12]}")
+        logger.opt(lazy=True).info(f"_deal_param_name13: {translates[13]}")
+        logger.opt(lazy=True).info(f"_deal_param_name14: {translates[14]}")
+        
+        
+        
+        
         parts = input_str.split(settings.sys.link_symbol)
+        
+        logger.opt(lazy=True).info(f"_deal_param_name: {parts} length {len(parts)}")
 
         # 处理用户设置地图库地图参数时, 没有 "Lane.Num2" 和 "Lane.Num2Dist" 的情况时,
         # translates 字典移除 "Lane.Num2" 和 "Lane.Num2Dist"

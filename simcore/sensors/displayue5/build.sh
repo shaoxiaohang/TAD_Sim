@@ -58,7 +58,7 @@ function package(){
                          -pak \
                          -prereqs \
                          -archive \
-                         -archivedirectory="$DISPLAY_ROOT/Saved"
+                         -allmaps -archivedirectory="$DISPLAY_ROOT/Saved"
 
 #  info "Deploying Display..."
 

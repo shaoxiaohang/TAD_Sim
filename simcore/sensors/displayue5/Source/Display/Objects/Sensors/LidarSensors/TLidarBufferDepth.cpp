@@ -12,7 +12,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "RHIGPUReadback.h"
 #include "RenderGraphEvent.h"
-#include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Runtime/ImageWrapper/Public/IImageWrapperModule.h"
 #include "Utils/FRDGBuilderHelper.h"
 #include "Utils/ProjectionUtil.h"
@@ -194,20 +194,20 @@ bool ALidarBufferDepth::ReadLidarData_RenderThreadSingleCaptureSVE(TSharedPtr<De
 
 void ALidarBufferDepth::IgnoreActor(AActor* actor)
 {
-    // if (actor)
-    // {
-    //     for (auto& captureComponent : SceneCaptures)
-    //     {
-    //         captureComponent->HiddenActors.Add(actor);
-    //     }
-    //     if (bOutputExtraInfo)
-    //     {
-    //         for (auto& captureComponent : ExtraSceneCaptures)
-    //         {
-    //             captureComponent->HiddenActors.Add(actor);
-    //         }
-    //     }
-    // }
+    if (actor)
+    {
+        for (auto& captureComponent : SceneCaptures)
+        {
+            captureComponent->HiddenActors.Add(actor);
+        }
+        if (bOutputExtraInfo)
+        {
+            for (auto& captureComponent : ExtraSceneCaptures)
+            {
+                captureComponent->HiddenActors.Add(actor);
+            }
+        }
+    }
 }
 
 void ALidarBufferDepth::FetchReadbackBuffer(TSharedPtr<DepthLidarBuffer> buffer)

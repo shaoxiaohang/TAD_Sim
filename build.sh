@@ -58,8 +58,8 @@ TADSIM_BUILD_SCENARIO="$TADSIM_BUILD/scenario"
 
 # ====== Start compiling ======
 #build_project "simapp" "build.sh"
-build_project "common" "build.sh"
-build_project "simcore" "build.sh"
+#build_project "common" "build.sh"
+#build_project "simcore" "build.sh"
 #build_project "co_simulation" "build.sh"
 #build_project "adapter" "build.sh"
 
@@ -99,9 +99,11 @@ cp -rf "$TADSIM_ROOT/simcore/map_server/build/bin/txSimService" "$TADSIM_BUILD_S
 cp -rf "$TADSIM_ROOT/simcore/map_server/build/bin/libscene_wrapper.so" "$TADSIM_BUILD_SERVICE/"
 cp -rf "$TADSIM_ROOT/simcore/map_server/build/bin/libOpenDrivePlugin.so" "$TADSIM_BUILD_SERVICE/"
 cp -rf "$TADSIM_ROOT/common/map_sdk/mapdb/libmapdb.so" "$TADSIM_BUILD/release/linux-unpacked/resources/app/service/simdeps/"
-cp -rf "$TADSIM_ROOT/common/map_sdk/map_engine/libmapengine.so" "$TADSIM_BUILD/release/linux-unpacked/resources/app/service/simdeps/"
-cp -rf "$TADSIM_ROOT/common/map_sdk/datamodel/libdatamodel.so" $TADSIM_BUILD/release/linux-unpacked/resources/app/service/simdeps/
-cp -rf "$TADSIM_ROOT/common/map_sdk/routingmap/libroutingmap.so" $TADSIM_BUILD/release/linux-unpacked/resources/app/service/simdeps/
+cp /usr/local/lib/libopencv_*.so.* "$TADSIM_BUILD/release/linux-unpacked/resources/app/service/simdeps/"
+# cp -rf "$TADSIM_ROOT/common/map_sdk/mapdb/libmapdb.so" "$TADSIM_BUILD/release/linux-unpacked/resources/app/service/simdeps/"
+# cp -rf "$TADSIM_ROOT/common/map_sdk/map_engine/libmapengine.so" "$TADSIM_BUILD/release/linux-unpacked/resources/app/service/simdeps/"
+# cp -rf "$TADSIM_ROOT/common/map_sdk/datamodel/libdatamodel.so" $TADSIM_BUILD/release/linux-unpacked/resources/app/service/simdeps/
+# cp -rf "$TADSIM_ROOT/common/map_sdk/routingmap/libroutingmap.so" $TADSIM_BUILD/release/linux-unpacked/resources/app/service/simdeps/
 
 
 mkdir -p "$TADSIM_BUILD_SERVICE/osi"

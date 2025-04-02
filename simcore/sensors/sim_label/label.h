@@ -48,10 +48,18 @@ class sim_label final : public tx_sim::SimModule {
   std::string config_dir;
   int ego_id = -1;
 
+  int DepthImageIdStart = 100;
+
+  //start generating image from this time
+  // 1000ms
+  int BeginTime = 100;
+
   bool parseImage(const std::string &buf, ImageInfo &info);
   bool parseLidar(const std::string &buf, PcInfo &info);
   bool saveFile(const std::string &fname, const std::string &buf);
+  bool saveOpenCVImage(const std::string &fname, const std::string &buf, int width, int height, sim_msg::SensorRaw_Type type);
   void saveImageLabel(const ImagePackage &info);
+  void saveDepthImageLabel(const ImagePackage &info);
   void savePcdLabel(const PcdPackage &info);
   std::string getUTC();
   bool getSensorConfig(const std::string &buffer, const std::string &groupname);
