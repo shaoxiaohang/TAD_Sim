@@ -126,9 +126,11 @@ void TxCarImp_EV::resetVehicle() {
     m_carParam.init_vy = 0.0;
     m_carParam.init_vz = 0.0;
 
-    // wgs84 to enu
-    coord_trans_api::lonlat2enu(m_carParam.init_x, m_carParam.init_y, m_carParam.init_z, mMapOrigin.x, mMapOrigin.y,
-                                mMapOrigin.z);
+    if(m_carParam.bUseWgs84) {
+      // wgs84 to enu
+      coord_trans_api::lonlat2enu(m_carParam.init_x, m_carParam.init_y, m_carParam.init_z, mMapOrigin.x, mMapOrigin.y,
+                                  mMapOrigin.z);
+    }
     LOG_INFO << "ego statlocation x:" << m_carParam.init_x << ", y:" << m_carParam.init_y << ", z:" << m_carParam.init_z
              << "\n";
 
@@ -187,7 +189,9 @@ void TxCarImp_EV::resetVehicle() {
 
   // flu to frd of init position
   Eigen::Vector3d flu_pos = {m_carParam.init_x, m_carParam.init_y, m_carParam.init_z};
+  LOG_2 << "flu pos x:" << flu_pos[0] << ", y:" << flu_pos[1] << ", z:" << flu_pos[2] << ".\n";
   Eigen::Vector3d frd_pos = m_math.FLU_To_FRD(flu_pos);
+  LOG_2 << "frd pos x:" << frd_pos[0] << ", y:" << frd_pos[1] << ", z:" << frd_pos[2] << ".\n";
   m_carParam.init_x = frd_pos[0];
   m_carParam.init_y = frd_pos[1];
   m_carParam.init_z = frd_pos[2];
@@ -437,6 +441,8 @@ void TxCarImp_EV::controlToVehicle(ExtU_TxCar_EV_T& car_u, const std::string& ct
 void TxCarImp_EV::controlV2ToVehicle(ExtU_TxCar_EV_T& car_u, const std::string& ctrl_payload) {
   sim_msg::Control_V2 ctrl;
   ctrl.ParseFromString(ctrl_payload);
+
+  LOG_2 << ctrl.DebugString();
 
   // acceleration control
   std::string accControlTypeName =

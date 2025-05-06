@@ -37,6 +37,7 @@ struct TxCarInit {
   std::string hadmap_path;
   double mu;
   std::string vehicle_geometory_payload;
+  bool bUseWgs84;
 
   TxCarInit(double x = 0.0, double y = 0.0, double z = 0.0, double vx = 0.0, double vy = 0.0, double vz = 0.0,
             double yaw = 0.0, GearOperator gear_op = GearOperator::Netural);
@@ -61,6 +62,7 @@ const char CONTROL[] = "CONTROL";
 const char CONTROL_V2[] = "CONTROL_V2";
 const char VEHICLE_STATE[] = "VEHICLE_STATE";
 const char LOCATION[] = "LOCATION";
+const char INITIAL_LOCATION[] = "INITIAL_LOCATION";
 }  // namespace topic
 
 // constants

@@ -15,7 +15,7 @@
 #include "boost/variant.hpp"
 #include "osi_datarecording.pb.h"
 #include "sensor_raw.pb.h"
-
+#include "sensor_meta.pb.h"
 struct FileInfo {
   std::int64_t id = 0;
   std::int64_t timestamp = 0;
@@ -48,6 +48,7 @@ struct ImagePackage {
   ImageInfo image;
   sim_msg::SensorRaw_Type type;
   sim_msg::DisplayPose obj;
+  sim_msg::SensorMeta meta;
 };
 struct PcdPackage {
   std::uint64_t frame_c = 0;
@@ -69,9 +70,13 @@ class DataQueue {
   void addDepth(const ImageInfo &info);
   void addNormal(const ImageInfo &info);
   void addFisheye(const ImageInfo &info);
+  void addFisheyeDepth(const ImageInfo &info);
+  void addFisheyeNormal(const ImageInfo &info);
+  void addFisheyeSemantic(const ImageInfo &info);
   void addSenmantic(const ImageInfo &info);
   void addLidar(const PcInfo &info);
   void addObject(const sim_msg::DisplayPose &info);
+  void addSensorMeta(const sim_msg::SensorMeta &info);
 
   /// @brief
   /// @param
@@ -83,8 +88,12 @@ class DataQueue {
   std::map<std::int64_t, std::map<std::int64_t, ImageInfo>> _normals;    // id - [timestmp - info]
   std::map<std::int64_t, std::map<std::int64_t, ImageInfo>> _semantics;  // id - [timestmp - info]
   std::map<std::int64_t, std::map<std::int64_t, ImageInfo>> _fisheyes;   // id - [timestmp - info]
+  std::map<std::int64_t, std::map<std::int64_t, ImageInfo>> _fisheye_depths;   // id - [timestmp - info]
+  std::map<std::int64_t, std::map<std::int64_t, ImageInfo>> _fisheye_normals;   // id - [timestmp - info]
+  std::map<std::int64_t, std::map<std::int64_t, ImageInfo>> _fisheye_semantics;   // id - [timestmp - info]
   std::map<std::int64_t, std::map<std::int64_t, PcInfo>> _lidars;        // id - [timestmp - info]
   std::map<std::int64_t, sim_msg::DisplayPose> _objects;                 // timestmp - info
+  std::map<std::int64_t, sim_msg::SensorMeta> _sensor_metas;              // timestmp - info
   std::function<void(const ImagePackage &)> _callback_image;
   std::function<void(const ImagePackage &)> _callback_depth_image;
   std::function<void(const PcdPackage &)> _callback_pcd;

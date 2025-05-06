@@ -3,17 +3,17 @@ sensors {
   extrinsic {
     InstallSlot: "C0"
     Device: ".0"
-    LocationX: 196.28891066497815
-    LocationY: 2.07575724019208
-    LocationZ: 139.28296539055478
-    RotationX: 0.13089477620071055
-    RotationY: 0.064734810995984368
-    RotationZ: 0.60573419133945938
+    LocationX: 197.03552722930908
+    LocationY: 0.33082005102187395
+    LocationZ: 141.03394746780396
+    RotationX: 0.63731881495580722
+    RotationY: -0.21741399262649727
+    RotationZ: 0.23690409750568733
   }
   intrinsic {
     params {
       key: "Distortion_Parameters"
-      value: "0.763032,0.0985419,-1.97878e-05,5.11288e-06"
+      value: "0.812631,0.11796,0,0"
     }
     params {
       key: "Frequency"
@@ -25,7 +25,7 @@ sensors {
     }
     params {
       key: "Intrinsic_Matrix"
-      value: "1903.79,0,1913.91,0,1903.79,1077.65,0,0,1"
+      value: "1861.83,0,1919.51,0,1861.83,1080.24,0,0,1"
     }
     params {
       key: "Name"
@@ -47,17 +47,17 @@ sensors {
     ID: 1
     InstallSlot: "C0"
     Device: ".0"
-    LocationX: 196.16883492763475
-    LocationY: 7.5865651275536852
-    LocationZ: 136.87615493008695
-    RotationX: 0.73239657801825875
-    RotationY: 0.79456600497628638
-    RotationZ: 1.1539141438513094
+    LocationX: 197.03552722930908
+    LocationY: 3.8308199495077133
+    LocationZ: 141.83489084243774
+    RotationX: 0.39022282122841806
+    RotationY: -0.26711431768934463
+    RotationZ: 0.343011059581409
   }
   intrinsic {
     params {
       key: "Distortion_Parameters"
-      value: "-0.169742,-1.76094,-0.000696736,0.000770681"
+      value: "-0.338731,0.498539,0,0"
     }
     params {
       key: "Frequency"
@@ -69,7 +69,7 @@ sensors {
     }
     params {
       key: "Intrinsic_Matrix"
-      value: "7317.79,0,1886.69,0,7317.79,1046.69,0,0,1"
+      value: "7431.11,0,1891.88,0,7431.11,1078.12,0,0,1"
     }
     params {
       key: "Name"
@@ -91,17 +91,17 @@ sensors {
     ID: 2
     InstallSlot: "C0"
     Device: ".0"
-    LocationX: 207.28590561157461
-    LocationY: 90.369528721485509
-    LocationZ: 109.26889319194797
-    RotationX: 1.4876645629683878
-    RotationY: -0.28237954162232365
-    RotationZ: 50.781648746781336
+    LocationX: 207.18343257904053
+    LocationY: 90.6079649925232
+    LocationZ: 104.34386730194092
+    RotationX: 0.77793245300738889
+    RotationY: -2.6395729219717365
+    RotationZ: 51.115951884493192
   }
   intrinsic {
     params {
       key: "Distortion_Parameters"
-      value: "13.1897,8.10255,2.86297e-05,-7.07011e-05"
+      value: "0.473915,0.0232595,0,0"
     }
     params {
       key: "Frequency"
@@ -113,7 +113,7 @@ sensors {
     }
     params {
       key: "Intrinsic_Matrix"
-      value: "1127.03,0,960.901,0,1127.03,635.764,0,0,1"
+      value: "1112.45,0,962.148,0,1112.45,771.395,0,0,1"
     }
     params {
       key: "Name"
@@ -125,7 +125,7 @@ sensors {
     }
     params {
       key: "Res_Vertical"
-      value: "1280"
+      value: "1536"
     }
   }
 }
@@ -135,17 +135,17 @@ sensors {
     ID: 3
     InstallSlot: "C0"
     Device: ".0"
-    LocationX: 207.49566381725785
-    LocationY: -93.287879611744557
-    LocationZ: 104.28417931501713
-    RotationX: 179.07621130897394
-    RotationY: 179.02823021902674
-    RotationZ: 129.28448057894727
+    LocationX: 207.61573314666748
+    LocationY: -90.002554655075073
+    LocationZ: 104.43768501281738
+    RotationX: 179.21073743709832
+    RotationY: -174.73459222779837
+    RotationZ: 128.21584473258892
   }
   intrinsic {
     params {
       key: "Distortion_Parameters"
-      value: "4.32784,2.17106,0.000185161,-8.6523e-05"
+      value: "0.459851,0.021208,0,0"
     }
     params {
       key: "Frequency"
@@ -157,7 +157,7 @@ sensors {
     }
     params {
       key: "Intrinsic_Matrix"
-      value: "1127.16,0,960.935,0,1127.16,641.467,0,0,1"
+      value: "1114.12,0,966.469,0,1114.12,774.039,0,0,1"
     }
     params {
       key: "Name"
@@ -169,7 +169,7 @@ sensors {
     }
     params {
       key: "Res_Vertical"
-      value: "1280"
+      value: "1536"
     }
   }
 }
@@ -179,17 +179,17 @@ sensors {
     ID: 4
     InstallSlot: "C0"
     Device: ".0"
-    LocationX: 233.09817826390002
-    LocationY: 93.199336687343092
-    LocationZ: 85.688313858192174
-    RotationX: 0.21586441258173258
-    RotationY: -0.15661783159864423
-    RotationZ: 129.83951354350955
+    LocationX: 233.8369607925415
+    LocationY: 94.046956300735474
+    LocationZ: 79.776448011398315
+    RotationX: -0.17825887933255463
+    RotationY: 0.36491078049458553
+    RotationZ: 129.4646751794489
   }
   intrinsic {
     params {
       key: "Distortion_Parameters"
-      value: "10.5554,6.0624,3.1606e-05,-5.60436e-05"
+      value: "0.515459,0.0325476,0,0"
     }
     params {
       key: "Frequency"
@@ -201,7 +201,7 @@ sensors {
     }
     params {
       key: "Intrinsic_Matrix"
-      value: "1125.76,0,962.021,0,1125.76,636.815,0,0,1"
+      value: "1110.58,0,963.36,0,1110.58,773.913,0,0,1"
     }
     params {
       key: "Name"
@@ -213,7 +213,7 @@ sensors {
     }
     params {
       key: "Res_Vertical"
-      value: "1280"
+      value: "1536"
     }
   }
 }
@@ -223,17 +223,17 @@ sensors {
     ID: 5
     InstallSlot: "C0"
     Device: ".0"
-    LocationX: 233.08092457534636
-    LocationY: -93.099127920596828
-    LocationZ: 81.890171761145226
-    RotationX: 0.24792811721396191
-    RotationY: 0.64081032061481125
-    RotationZ: -128.85694580797738
+    LocationX: 233.83843898773193
+    LocationY: -91.937810182571411
+    LocationZ: 83.656406402587891
+    RotationX: -179.713476632567
+    RotationY: 179.90109724665243
+    RotationZ: 51.159652722427239
   }
   intrinsic {
     params {
       key: "Distortion_Parameters"
-      value: "25.5194,16.2616,0.000109423,-9.34953e-05"
+      value: "0.462286,0.0214063,0,0"
     }
     params {
       key: "Frequency"
@@ -245,7 +245,7 @@ sensors {
     }
     params {
       key: "Intrinsic_Matrix"
-      value: "1128.22,0,962.928,0,1128.22,637.229,0,0,1"
+      value: "1113.22,0,962.96,0,1113.22,770.647,0,0,1"
     }
     params {
       key: "Name"
@@ -257,7 +257,7 @@ sensors {
     }
     params {
       key: "Res_Vertical"
-      value: "1280"
+      value: "1536"
     }
   }
 }
@@ -267,17 +267,17 @@ sensors {
     ID: 6
     InstallSlot: "C0"
     Device: ".0"
-    LocationX: -63.588749992589669
-    LocationY: -1.081371667449561
-    LocationZ: 148.78890166803555
-    RotationX: 0.62282068902660537
-    RotationY: -0.44989320790050263
-    RotationZ: -179.02082502153829
+    LocationX: -61.625277996063232
+    LocationY: 0.56438627652823925
+    LocationZ: 146.5862512588501
+    RotationX: 0.2503767790456698
+    RotationY: -0.76128962987759485
+    RotationZ: 178.43303272124723
   }
   intrinsic {
     params {
       key: "Distortion_Parameters"
-      value: "-0.502379,0.28224,0.000523741,-0.000382835"
+      value: "-0.502595,0.27548,0,0"
     }
     params {
       key: "Frequency"
@@ -289,7 +289,7 @@ sensors {
     }
     params {
       key: "Intrinsic_Matrix"
-      value: "1942.44,0,954.805,0,1942.44,635.879,0,0,1"
+      value: "1946.58,0,963.812,0,1946.58,768.344,0,0,1"
     }
     params {
       key: "Name"
@@ -301,7 +301,182 @@ sensors {
     }
     params {
       key: "Res_Vertical"
-      value: "1280"
+      value: "1536"
+    }
+  }
+}
+sensors {
+  type: SENSOR_TYPE_FISHEYE
+  extrinsic {
+    InstallSlot: "C0"
+    Device: ".0"
+    LocationX: 364.54238891601562
+    LocationY: 0.40558972395956516
+    LocationZ: 59.387779235839844
+    RotationX: 0.33130526260234416
+    RotationY: 17.257768966432227
+    RotationZ: 0.38240857788982097
+  }
+  intrinsic {
+    params {
+      key: "Distortion_Parameters"
+      value: "0.148722,-0.0683736,0.0203308,-0.002417"
+    }
+    params {
+      key: "Frequency"
+      value: "10"
+    }
+    params {
+      key: "IntrinsicParamType"
+      value: "0"
+    }
+    params {
+      key: "Intrinsic_Matrix"
+      value: "445.631,0,963.56,0,445.82,763.997,0,0,1"
+    }
+    params {
+      key: "Name"
+      value: "camera_fisheye_front"
+    }
+    params {
+      key: "Res_Horizontal"
+      value: "1920"
+    }
+    params {
+      key: "Res_Vertical"
+      value: "1536"
+    }
+  }
+}
+sensors {
+  type: SENSOR_TYPE_FISHEYE
+  extrinsic {
+    ID: 1
+    InstallSlot: "C0"
+    Device: ".0"
+    LocationX: 194.72513198852539
+    LocationY: 105.81177473068237
+    LocationZ: 106.43539428710938
+    RotationX: 0.38506688217870555
+    RotationY: 28.113695538912594
+    RotationZ: 87.884314483356519
+  }
+  intrinsic {
+    params {
+      key: "Distortion_Parameters"
+      value: "0.151249,-0.0699585,0.0209983,-0.00250035"
+    }
+    params {
+      key: "Frequency"
+      value: "10"
+    }
+    params {
+      key: "IntrinsicParamType"
+      value: "0"
+    }
+    params {
+      key: "Intrinsic_Matrix"
+      value: "446.094,0,964.471,0,445.986,765.617,0,0,1"
+    }
+    params {
+      key: "Name"
+      value: "camera_fisheye_left"
+    }
+    params {
+      key: "Res_Horizontal"
+      value: "1920"
+    }
+    params {
+      key: "Res_Vertical"
+      value: "1536"
+    }
+  }
+}
+sensors {
+  type: SENSOR_TYPE_FISHEYE
+  extrinsic {
+    ID: 2
+    InstallSlot: "C0"
+    Device: ".0"
+    LocationX: 193.08106899261475
+    LocationY: -104.58015203475952
+    LocationZ: 106.92087411880493
+    RotationX: -174.75866224132031
+    RotationY: 154.86916759994244
+    RotationZ: 87.446896262546332
+  }
+  intrinsic {
+    params {
+      key: "Distortion_Parameters"
+      value: "0.148589,-0.0684248,0.0204919,-0.0024761"
+    }
+    params {
+      key: "Frequency"
+      value: "10"
+    }
+    params {
+      key: "IntrinsicParamType"
+      value: "0"
+    }
+    params {
+      key: "Intrinsic_Matrix"
+      value: "445.282,0,963.397,0,445.082,765.566,0,0,1"
+    }
+    params {
+      key: "Name"
+      value: "camera_fisheye_right"
+    }
+    params {
+      key: "Res_Horizontal"
+      value: "1920"
+    }
+    params {
+      key: "Res_Vertical"
+      value: "1536"
+    }
+  }
+}
+sensors {
+  type: SENSOR_TYPE_FISHEYE
+  extrinsic {
+    ID: 3
+    InstallSlot: "C0"
+    Device: ".0"
+    LocationX: -90.208464860916138
+    LocationY: 5.1452208310365677
+    LocationZ: 95.1495110988617
+    RotationX: 179.85590691417482
+    RotationY: 153.84042329017535
+    RotationZ: 0.24197331820559065
+  }
+  intrinsic {
+    params {
+      key: "Distortion_Parameters"
+      value: "0.153006,-0.0730386,0.0226628,-0.00280984"
+    }
+    params {
+      key: "Frequency"
+      value: "10"
+    }
+    params {
+      key: "IntrinsicParamType"
+      value: "0"
+    }
+    params {
+      key: "Intrinsic_Matrix"
+      value: "445.246,0,961.91,0,445.343,766.803,0,0,1"
+    }
+    params {
+      key: "Name"
+      value: "camera_fisheye_rear"
+    }
+    params {
+      key: "Res_Horizontal"
+      value: "1920"
+    }
+    params {
+      key: "Res_Vertical"
+      value: "1536"
     }
   }
 }

@@ -57,6 +57,8 @@ public:
 		SHADER_PARAMETER_SAMPLER(SamplerState, InTextureSampler)
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<unsigned int>, OutTexture)
 		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<FVector2f>, UVMapping)
+		SHADER_PARAMETER(int, CameraIndex)
+		SHADER_PARAMETER_RDG_BUFFER_SRV(StructuredBuffer<unsigned int>, UVCameraMapping)
 	END_SHADER_PARAMETER_STRUCT()
 
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
@@ -104,8 +106,25 @@ void FDistortionUVMappingCSInstance::Dispatch(FRDGBuilder& GraphBuilder, const F
 	PassParameters->InTextureSampler = TStaticSamplerState<SF_Bilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
 	PassParameters->OutTexture = Parameters.OutTexture;
 	PassParameters->UVMapping = Parameters.UVMapping;
+	PassParameters->CameraIndex = Parameters.CameraIndex;
+	PassParameters->UVCameraMapping = Parameters.UVCameraMapping;
 	const TShaderMapRef<FNormalUVMappingCS> ComputeShaderMapRef(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 	const FIntVector GroupCount = FIntVector(FMath::DivideAndRoundUp(Parameters.Width, 32), FMath::DivideAndRoundUp(Parameters.Height, 32), 1);
 	FComputeShaderUtils::AddPass<FNormalUVMappingCS>(GraphBuilder, RDG_EVENT_NAME("NormalUVMapping"), ERDGPassFlags::Compute, ComputeShaderMapRef, PassParameters, GroupCount);
 }
+
+// void FDistortionUVMappingCSInstance::Dispatch(FRDGBuilder& GraphBuilder, const FNormalParameters& Parameters)
+// {
+// 	FNormalUVMappingCS::FParameters* PassParameters = GraphBuilder.AllocParameters<FNormalUVMappingCS::FParameters>();
+// 	PassParameters->Width = Parameters.Width;
+// 	PassParameters->Height = Parameters.Height;
+// 	PassParameters->ScaleFactor = Parameters.ScaleFactor;
+// 	PassParameters->InTexture = Parameters.InTexture;
+// 	PassParameters->InTextureSampler = TStaticSamplerState<SF_Bilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
+// 	PassParameters->OutTexture = Parameters.OutTexture;
+// 	PassParameters->UVMapping = Parameters.UVMapping;
+// 	const TShaderMapRef<FNormalUVMappingCS> ComputeShaderMapRef(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+// 	const FIntVector GroupCount = FIntVector(FMath::DivideAndRoundUp(Parameters.Width, 32), FMath::DivideAndRoundUp(Parameters.Height, 32), 1);
+// 	FComputeShaderUtils::AddPass<FNormalUVMappingCS>(GraphBuilder, RDG_EVENT_NAME("NormalUVMapping"), ERDGPassFlags::Compute, ComputeShaderMapRef, PassParameters, GroupCount);
+// }
 

@@ -308,8 +308,8 @@ bool ALidarBufferDepth::GetPoints(
                 pt.y = p.y;
                 pt.z = p.z;
                 // LIDAR 模型
-                if (lidarMd)
-                    lidarMd->simulator(pt.x, pt.y, pt.z, pt.distance, pt.norinter, pt.instensity);
+                //if (lidarMd)
+                    //lidarMd->simulator(pt.x, pt.y, pt.z, pt.distance, pt.norinter, pt.instensity);
             }
         }
     }

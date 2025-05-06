@@ -15,7 +15,7 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
-extern PROTOBUF_INTERNAL_EXPORT_location_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_Location_location_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_location_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<3> scc_info_Location_location_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_basic_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Vec3_basic_2eproto;
 namespace sim_msg {
 class EgoCarInfoDefaultTypeInternal {

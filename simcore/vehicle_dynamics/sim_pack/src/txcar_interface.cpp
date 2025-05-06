@@ -36,6 +36,7 @@ TxCarInterface::TxCarInterface() {
   m_pubtopics.emplace(tx_car::topic::VEHICLE_STATE);
   m_subtopics.emplace(tx_car::topic::CONTROL_V2);
   m_subtopics.emplace(tx_car::topic::CONTROL);
+  m_subtopics.emplace(tx_car::topic::INITIAL_LOCATION);
 
   FLAGS_v = 0;
   bCloudEnv = false;
@@ -154,6 +155,7 @@ void TxCarInterface::Init(tx_sim::InitHelper& helper) {
   // get switches
   std::string cloudEnv = helper.GetParameter("cloudEnv");
   std::string useCatalog = helper.GetParameter("useCatalog");
+  std::string useWgs84 = helper.GetParameter("useWgs84");
   mCloudDataDir = helper.GetParameter(tx_sim::constant::kInitKeyModuleSharedLibDirectory);
 
   if (cloudEnv.size() > 0) {
@@ -162,7 +164,10 @@ void TxCarInterface::Init(tx_sim::InitHelper& helper) {
   if (useCatalog.size() > 0) {
     bUseCatalog = std::atoi(useCatalog.c_str());
   }
-  VLOG(0) << "bCloudEnv:" << bCloudEnv << ", bUseCatalog:" << bUseCatalog << ".\n";
+  if (useWgs84.size() > 0) {
+    bUseWgs84 = std::atoi(useWgs84.c_str());
+  }
+  VLOG(0) << "bCloudEnv:" << bCloudEnv << ", bUseCatalog:" << bUseCatalog << ", bUseWgs84:" << bUseWgs84 << ".\n";
 
   // mdl init state
   bool mdl_init_state = true;
@@ -172,7 +177,7 @@ void TxCarInterface::Init(tx_sim::InitHelper& helper) {
 
   // param path
   m_carParam.param_path = par_path;
-
+  m_carParam.bUseWgs84 = bUseWgs84;
   // step time
   if (step_time_ms.size() > 0) {
     m_carParam.loops_per_step = 10;
@@ -221,7 +226,7 @@ void TxCarInterface::Reset(tx_sim::ResetHelper& helper) {
     std::vector<std::pair<int64_t, std::string>> measurements;
     m_carParam.vehicle_geometory_payload.clear();
     helper.vehicle_measurements(measurements);
-    if (measurements.size() > 0) m_carParam.vehicle_geometory_payload = measurements.at(0).second;
+    //if (measurements.size() > 0) m_carParam.vehicle_geometory_payload = measurements.at(0).second;
   }
 
   // get map origin and start location
@@ -265,7 +270,7 @@ void TxCarInterface::Reset(tx_sim::ResetHelper& helper) {
   else
     VLOG(0) << "vehicle model created, ptr -> " << m_car.get() << "\n";
 
-  m_car->init(m_carParam);
+  //m_car->init(m_carParam);
 }
 
 void TxCarInterface::Step(tx_sim::StepHelper& helper) {
@@ -277,6 +282,15 @@ void TxCarInterface::Step(tx_sim::StepHelper& helper) {
     // 0. convert to TxCarImp pointer
     auto car_ptr = m_car.get();
     if (car_ptr == nullptr) helper.StopScenario("fail to convert to TxCarImp object.");
+
+
+    VLOG(0) << "TxCarInterface step " << t_ms << ".\n";
+    if(t_ms == 0) {
+      VLOG(0) << "TxCarInterface step 0.\n";
+      std::string init_loc_payload;
+      helper.GetSubscribedMessage(tx_car::topic::INITIAL_LOCATION, init_loc_payload);
+      setInitState(init_loc_payload);
+    }
 
     std::string ctrl_payload, loc_payload, chassis_payload;
 
@@ -315,6 +329,25 @@ void TxCarInterface::Stop(tx_sim::StopHelper& helper) {
 
   g_vehicle_dll.freeVehicleLibrary();
 }
+
+void TxCarInterface::setInitState(const std::string &payload) {
+  m_start_loc_payload = payload;
+  m_carParam.start_loc_payload = payload;
+  sim_msg::Location start_loc;
+  start_loc.ParseFromString(m_start_loc_payload);
+  mMapOrigin.x = start_loc.position().x();
+  mMapOrigin.y = start_loc.position().y();
+  mMapOrigin.z = start_loc.position().z();
+  VLOG(0) << "set init state x:" << mMapOrigin.x << ", y:" << mMapOrigin.y << ", z:" << mMapOrigin.z << ".\n"
+          << "use wgs84:" << m_carParam.bUseWgs84 << ".\n"
+          << "rpy:" << start_loc.rpy().x() << ", " << start_loc.rpy().y() << ", " << start_loc.rpy().z() << ".\n"
+          << "velocity:" << start_loc.velocity().x() << ", " << start_loc.velocity().y() << ", "
+          << start_loc.velocity().z() << ".\n";
+  m_car->init(m_carParam);
+}
+
+
 }  // namespace tx_car
+
 
 TXSIM_MODULE(tx_car::TxCarInterface)

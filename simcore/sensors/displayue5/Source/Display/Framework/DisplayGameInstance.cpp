@@ -180,7 +180,7 @@ void UDisplayGameInstance::OutputData()
         if (sim_msg::Location* Location = UpdateIn->egoData.Find(ModuleGroupName))
         {
             SensorInData.timeStamp_ego = Location->t() * 1000;
-            UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.OUTPUT_SENSOR = %f"), SensorInData.timeStamp_ego);
+            //UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.OUTPUT_SENSOR = %f"), SensorInData.timeStamp_ego);
         }
         if (sim_msg::Location* LocationContainer = UpdateIn->egoContainerData.Find(ModuleGroupName))
         {
@@ -266,14 +266,14 @@ void UDisplayGameInstance::SendSimData()
             // Write output data
             if (currentSimOutData.IsValid())
             {
-                UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.AddSimData = %s %f"),
-                    *currentSimOutData->name, currentSimOutData->timeStamp);
+                // UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.AddSimData = %s %f"),
+                //     *currentSimOutData->name, currentSimOutData->timeStamp);
                 simOutDataArry.Add(currentSimOutData);
             }
             if (currentSimSensorOutData.IsValid())
             {
-                UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.AddSimSensorData = %s %f"),
-                    *currentSimSensorOutData->name, currentSimSensorOutData->timeStamp);
+                // UE_LOG(LogSimGameInstance, Log, TEXT("UDisplayGameInstance.AddSimSensorData = %s %f"),
+                //     *currentSimSensorOutData->name, currentSimSensorOutData->timeStamp);
                 simOutDataArry.Add(currentSimSensorOutData);
             }
 

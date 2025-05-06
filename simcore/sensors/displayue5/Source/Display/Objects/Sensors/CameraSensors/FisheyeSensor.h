@@ -1,20 +1,14 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "Camera/CameraTypes.h"
 #include "CoreMinimal.h"
-#include "CustomMeshComponent.h"
 #include "Materials/Material.h"
 #include "Objects/Sensors/SensorActor.h"
-#include "Runtime/ImageWrapper/Public/IImageWrapper.h"
-#include "SharedMemoryWriter.h"
-#include "Utils/FrustumMeshComponent.h"
-#ifdef _MSC_VER
-#else
-// #include "rdmacopy/client.h"
-#endif
+
 #include "FisheyeSensor.generated.h"
+
+class USceneCaptureComponent2D;
+class FFisheyeSceneViewExtension;
 
 USTRUCT()
 struct FFisheyeConfig : public FSensorConfig
@@ -62,6 +56,14 @@ public:
     double WhiteHint = 0;
     UPROPERTY()
     double Transmittance = 98;
+    UPROPERTY()
+    FString PostProcessMaterial;
+    UPROPERTY()
+    bool bIsRGB = true;
+    UPROPERTY()
+    bool bCaptureEveryFrame = false;
+    UPROPERTY()
+    bool bMultiCapture = false;
 };
 
 USTRUCT()
@@ -79,67 +81,115 @@ public:
     std::vector<uint8> buffer;
 };
 
-/**
- *
- */
 UCLASS()
 class DISPLAY_API AFisheyeSensor : public ASensorActor
 {
     GENERATED_BODY()
+
 public:
     AFisheyeSensor();
-    ~AFisheyeSensor();
+
+    struct FCameraPatch
+    {
+        FIntVector2 LeftTop;
+        FIntVector2 RightBottom;
+    };
+
+    struct FCameraLayout
+    {
+        FQuat Direction;
+        FVector2f LocalFovStart;
+        FVector2f LocalFovEnd;
+        FMatrix ProjectionMatrix;
+        FVector4d Intrinsics;    // cx, cy, fx, fy
+    };
+
+    virtual void Tick(float DeltaSeconds) override;
 
     virtual bool Init(const FSensorConfig& _Config);
+
+    virtual void Update(const FSensorInput& Input, FSensorOutput& Output);
+
     virtual ISimActorInterface* Install(const FSensorConfig& _Config);
-    virtual void Update(const FSensorInput& _Input, FSensorOutput& _Output);
-    virtual bool Save();
+
+    FVector2D imageRes = FVector2D(500, 500);
+
+    bool bIsRGB = true;
+
+	static void SaveDirectionMapToTxt(const TArray<FVector>& DirectionMap, const int& Width, const int& Height);
+
 
 protected:
-    TArray<class ADrawBatch*> labelTypeArry;
-    TArray<FName> onlyShowTypeArry;
-    TArray<FName> ignoreTypeArry;
+    void InitSceneCaptureComponent();
 
-    bool bHasFilterListSet = false;
+    void SetupDistortionMap();
 
-    UCustomMeshComponent* FrustumComponent = nullptr;
-    UMaterial* FrustumMaterial = nullptr;
-    float FrustumFarPlane = 500.0f;
-
-    void DrawFrustum(float UpperFov, float LeftFov);
-
-    void SwitchCamera(const FName& CameraName);
+	void CreateOtherCaptureComponents();
 
     void IgnoreActor(AActor* actor);
 
-public:
-    UMaterialInstanceDynamic* cameraPostProcess;
-    UPROPERTY(/*BlueprintReadOnly*/)
+    bool PublishRGB(FSensorOutput& Output, const std::vector<uint8>& BitData, double timeStamp_ego);
+
+    bool PublishDepth(FSensorOutput& Output, FColor* Pixels, double timeStamp_ego);
+
+    bool PublishDepth2(FSensorOutput& Output, const std::vector<uint8>& BitData, double timeStamp_ego);
+
+    bool PublishSemantic(FSensorOutput& Output, const std::vector<uint8>& BitData, double timeStamp_ego);
+
+    bool PublishNormal(FSensorOutput& Output, const std::vector<uint8>& BitData, double timeStamp_ego);
+
+protected:
+    int id;
+
     FFisheyeConfig sensorConfig;
 
-    class USceneCaptureComponent2D* captureComponent2D = NULL;
-    class UTextureRenderTarget2D* renderTarget2D = NULL;
+    double frequency = 10;
 
-    class USceneCaptureComponentCube* captureComponentCube = NULL;
-    class UTextureRenderTargetCube* renderTargetCube = NULL;
+    TArray<FCameraLayout> CameraLayouts;
 
-    class UCineCameraComponent* previewComponent = NULL;
+    bool bUseMultipleCapture = false;
 
-    // CaptureParameter
-    FString imageName = TEXT("Fisheye");
-    EImageFormat imageFormat = EImageFormat::JPEG;
-    int32 imageQuality = 85;
-    FFisheyeOutput dataBuf;
-    //
+    bool bPublicMsg = false;
+
+    UTextureRenderTarget2D* CaptureRenderTarget = nullptr;
+
+    USceneCaptureComponent2D* CaptureComponent2D = nullptr;
+
+    TArray<USceneCaptureComponent2D*> CaptureComponents;
+
+    // distorted uv --> undistorted uv
+    TArray<FVector2f> UVMapping;
+    TArray<unsigned int> UVCameraMapping;
+
+    friend class FFisheyeSceneViewExtension;
+
+    TSharedPtr<FFisheyeSceneViewExtension> SceneViewExtension;
+
+    float SourceImageScaleFactor = 1;
+
+    bool bCaptureEveryFrame = false;
+    bool bEnablePostProcessingEffects = false;
+
+    float Fx = 0;
+    float Fy = 0;
+    float Cx = 0;
+    float Cy = 0;
+
+    float K1 = 0;
+    float K2 = 0;
+    float K3 = 0;
+    float K4 = 0;
+
+    float Fov_H = 0;
+    float Fov_V = 0;
+
+    int32 ImageQuality = 85;
+
     double timeStamp = -10000;
-    double lastTimeStamp = 0;
-    double targetGamma = 2.2;
-    TSharedPtr<class SharedMemoryWriter> sharedWriter;
-    TSharedPtr<class SharedMemoryWriter> sharedWriterGpu;
-    bool public_msg = false;
 
-    // cuda jpg
-    TSharedPtr<class UTexJpeg> texJpg;
+    UMaterialInstanceDynamic* PostProcessMaterial = nullptr;
 
-    void SetPostProcessSettings(FPostProcessSettings& PostProcessSettings, float screen_scale = 1);
+    FString CameraPostProcess;
+
+    float fov_range_ = 50;
 };

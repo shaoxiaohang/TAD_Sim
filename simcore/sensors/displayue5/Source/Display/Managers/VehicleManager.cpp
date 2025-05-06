@@ -75,7 +75,7 @@ void AVehicleManager::Update(const FManagerIn& Input, FManagerOut& Output)
     const FVehicleManagerIn* TInput = Cast_Data<const FVehicleManagerIn>(Input);
     check(TInput);
 
-    UE_LOG(SimLogVehicleManager, Log, TEXT("AVehicleManager::Update %f"), Input.timeStamp);
+    //UE_LOG(SimLogVehicleManager, Log, TEXT("AVehicleManager::Update %f"), Input.timeStamp);
 
     FVehicleManagerOut* TOutput = Cast_Data<FVehicleManagerOut>(Output);
     check(TOutput);

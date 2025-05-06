@@ -22,7 +22,7 @@ class DISPLAY_API NetworkModule : public tx_sim::SimModule {
 
  private:
   FEvent* threadSuspendedEvent = nullptr;
-  FSimUpdateIn simUpdateIn;
+  //FSimUpdateIn simUpdateIn;
 
   bool asynchronousMode = false;
 

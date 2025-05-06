@@ -344,7 +344,9 @@ class Location :
     kRpyFieldNumber = 5,
     kAccelerationFieldNumber = 6,
     kEgoLaneFieldNumber = 7,
+    kQuatFieldNumber = 9,
     kTFieldNumber = 1,
+    kUseQuatFieldNumber = 8,
   };
   // .sim_msg.Vec3 position = 2;
   bool has_position() const;
@@ -394,10 +396,23 @@ class Location :
   PROTOBUF_DEPRECATED ::sim_msg::Location_EgoLane* mutable_ego_lane();
   PROTOBUF_DEPRECATED void set_allocated_ego_lane(::sim_msg::Location_EgoLane* ego_lane);
 
+  // .sim_msg.Vec4 quat = 9;
+  bool has_quat() const;
+  void clear_quat();
+  const ::sim_msg::Vec4& quat() const;
+  ::sim_msg::Vec4* release_quat();
+  ::sim_msg::Vec4* mutable_quat();
+  void set_allocated_quat(::sim_msg::Vec4* quat);
+
   // double t = 1;
   void clear_t();
   double t() const;
   void set_t(double value);
+
+  // bool use_quat = 8;
+  void clear_use_quat();
+  bool use_quat() const;
+  void set_use_quat(bool value);
 
   // @@protoc_insertion_point(class_scope:sim_msg.Location)
  private:
@@ -410,7 +425,9 @@ class Location :
   ::sim_msg::Vec3* rpy_;
   ::sim_msg::Vec3* acceleration_;
   ::sim_msg::Location_EgoLane* ego_lane_;
+  ::sim_msg::Vec4* quat_;
   double t_;
+  bool use_quat_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_location_2eproto;
 };
@@ -773,6 +790,65 @@ inline void Location::set_allocated_ego_lane(::sim_msg::Location_EgoLane* ego_la
   }
   ego_lane_ = ego_lane;
   // @@protoc_insertion_point(field_set_allocated:sim_msg.Location.ego_lane)
+}
+
+// bool use_quat = 8;
+inline void Location::clear_use_quat() {
+  use_quat_ = false;
+}
+inline bool Location::use_quat() const {
+  // @@protoc_insertion_point(field_get:sim_msg.Location.use_quat)
+  return use_quat_;
+}
+inline void Location::set_use_quat(bool value) {
+  
+  use_quat_ = value;
+  // @@protoc_insertion_point(field_set:sim_msg.Location.use_quat)
+}
+
+// .sim_msg.Vec4 quat = 9;
+inline bool Location::has_quat() const {
+  return this != internal_default_instance() && quat_ != nullptr;
+}
+inline const ::sim_msg::Vec4& Location::quat() const {
+  const ::sim_msg::Vec4* p = quat_;
+  // @@protoc_insertion_point(field_get:sim_msg.Location.quat)
+  return p != nullptr ? *p : *reinterpret_cast<const ::sim_msg::Vec4*>(
+      &::sim_msg::_Vec4_default_instance_);
+}
+inline ::sim_msg::Vec4* Location::release_quat() {
+  // @@protoc_insertion_point(field_release:sim_msg.Location.quat)
+  
+  ::sim_msg::Vec4* temp = quat_;
+  quat_ = nullptr;
+  return temp;
+}
+inline ::sim_msg::Vec4* Location::mutable_quat() {
+  
+  if (quat_ == nullptr) {
+    auto* p = CreateMaybeMessage<::sim_msg::Vec4>(GetArenaNoVirtual());
+    quat_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:sim_msg.Location.quat)
+  return quat_;
+}
+inline void Location::set_allocated_quat(::sim_msg::Vec4* quat) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == nullptr) {
+    delete reinterpret_cast< ::PROTOBUF_NAMESPACE_ID::MessageLite*>(quat_);
+  }
+  if (quat) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
+    if (message_arena != submessage_arena) {
+      quat = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, quat, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  quat_ = quat;
+  // @@protoc_insertion_point(field_set_allocated:sim_msg.Location.quat)
 }
 
 #ifdef __GNUC__

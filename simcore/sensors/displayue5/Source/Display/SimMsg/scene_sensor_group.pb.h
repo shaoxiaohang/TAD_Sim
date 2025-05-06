@@ -97,12 +97,16 @@ enum SensorType : int {
   SENSOR_TYPE_IMU = 9,
   SENSOR_TYPE_GPS = 10,
   SENSOR_TYPE_TRUTH = 11,
+  SENSOR_TYPE_NORMAL = 12,
+  SENSOR_TYPE_FISHEYE_DEPTH = 13,
+  SENSOR_TYPE_FISHEYE_SEMANTIC = 14,
+  SENSOR_TYPE_FISHEYE_NORMAL = 15,
   SensorType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   SensorType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool SensorType_IsValid(int value);
 constexpr SensorType SensorType_MIN = SENSOR_TYPE_USER_DEFINE;
-constexpr SensorType SensorType_MAX = SENSOR_TYPE_TRUTH;
+constexpr SensorType SensorType_MAX = SENSOR_TYPE_FISHEYE_NORMAL;
 constexpr int SensorType_ARRAYSIZE = SensorType_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* SensorType_descriptor();

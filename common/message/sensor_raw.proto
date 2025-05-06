@@ -216,6 +216,10 @@ message SensorRaw {
     TYPE_DEPTH = 4;
     TYPE_SEMANTIC = 5;
     TYPE_FISHEYE = 6;
+    TYPE_FISHEYE_DEPTH = 7;
+    TYPE_FISHEYE_SEMANTIC = 8;
+    TYPE_FISHEYE_NORMAL = 9;
+    TYPE_NORMAL = 10;
   }
 
   message Sensor {

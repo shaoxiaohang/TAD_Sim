@@ -305,25 +305,27 @@ const char descriptor_table_protodef_sensor_5fraw_2eproto[] PROTOBUF_SECTION_VAR
   "ype\032>\n\005Point\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001(\002\022\t\n\001z\030"
   "\003 \001(\002\022\t\n\001i\030\004 \001(\002\022\t\n\001t\030\005 \001(\r\"\?\n\tCoordType"
   "\022\020\n\014COORD_SENSOR\020\000\022\021\n\rCOORD_VEHICLE\020\001\022\r\n"
-  "\tCOORD_ENU\020\002\"\227\002\n\tSensorRaw\022\021\n\ttimestamp\030"
+  "\tCOORD_ENU\020\002\"\364\002\n\tSensorRaw\022\021\n\ttimestamp\030"
   "\001 \001(\001\022)\n\006sensor\030\002 \003(\0132\031.sim_msg.SensorRa"
   "w.Sensor\032H\n\006Sensor\022\n\n\002id\030\001 \001(\005\022%\n\004type\030\002"
   " \001(\0162\027.sim_msg.SensorRaw.Type\022\013\n\003raw\030\003 \001"
-  "(\014\"\201\001\n\004Type\022\017\n\013TYPE_CAMERA\020\000\022\016\n\nTYPE_LID"
+  "(\014\"\336\001\n\004Type\022\017\n\013TYPE_CAMERA\020\000\022\016\n\nTYPE_LID"
   "AR\020\001\022\016\n\nTYPE_RADAR\020\002\022\023\n\017TYPE_ULTRASONIC\020"
   "\003\022\016\n\nTYPE_DEPTH\020\004\022\021\n\rTYPE_SEMANTIC\020\005\022\020\n\014"
-  "TYPE_FISHEYE\020\006\"\265\003\n\013DisplayPose\022\021\n\ttimest"
-  "amp\030\001 \001(\001\022)\n\004egos\030\002 \003(\0132\033.sim_msg.Displa"
-  "yPose.Object\022)\n\004cars\030\003 \003(\0132\033.sim_msg.Dis"
-  "playPose.Object\0224\n\017staticObstacles\030\004 \003(\013"
-  "2\033.sim_msg.DisplayPose.Object\0225\n\020dynamic"
-  "Obstacles\030\005 \003(\0132\033.sim_msg.DisplayPose.Ob"
-  "ject\032\317\001\n\006Object\022\n\n\002id\030\001 \001(\003\022\021\n\ttimestamp"
-  "\030\002 \001(\001\022!\n\004pose\030\003 \001(\0132\023.sim_msg.SensorPos"
-  "e\022\016\n\006length\030\004 \001(\001\022\r\n\005width\030\005 \001(\001\022\016\n\006heig"
-  "ht\030\006 \001(\001\022\014\n\004type\030\007 \001(\t\022\020\n\010raw_type\030\010 \001(\005"
-  "\022\020\n\010center_x\030\t \001(\001\022\020\n\010center_y\030\n \001(\001\022\020\n\010"
-  "center_z\030\013 \001(\001b\006proto3"
+  "TYPE_FISHEYE\020\006\022\026\n\022TYPE_FISHEYE_DEPTH\020\007\022\031"
+  "\n\025TYPE_FISHEYE_SEMANTIC\020\010\022\027\n\023TYPE_FISHEY"
+  "E_NORMAL\020\t\022\017\n\013TYPE_NORMAL\020\n\"\265\003\n\013DisplayP"
+  "ose\022\021\n\ttimestamp\030\001 \001(\001\022)\n\004egos\030\002 \003(\0132\033.s"
+  "im_msg.DisplayPose.Object\022)\n\004cars\030\003 \003(\0132"
+  "\033.sim_msg.DisplayPose.Object\0224\n\017staticOb"
+  "stacles\030\004 \003(\0132\033.sim_msg.DisplayPose.Obje"
+  "ct\0225\n\020dynamicObstacles\030\005 \003(\0132\033.sim_msg.D"
+  "isplayPose.Object\032\317\001\n\006Object\022\n\n\002id\030\001 \001(\003"
+  "\022\021\n\ttimestamp\030\002 \001(\001\022!\n\004pose\030\003 \001(\0132\023.sim_"
+  "msg.SensorPose\022\016\n\006length\030\004 \001(\001\022\r\n\005width\030"
+  "\005 \001(\001\022\016\n\006height\030\006 \001(\001\022\014\n\004type\030\007 \001(\t\022\020\n\010r"
+  "aw_type\030\010 \001(\005\022\020\n\010center_x\030\t \001(\001\022\020\n\010cente"
+  "r_y\030\n \001(\001\022\020\n\010center_z\030\013 \001(\001b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_sensor_5fraw_2eproto_deps[1] = {
 };
@@ -340,7 +342,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_sen
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_sensor_5fraw_2eproto_once;
 static bool descriptor_table_sensor_5fraw_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_sensor_5fraw_2eproto = {
-  &descriptor_table_sensor_5fraw_2eproto_initialized, descriptor_table_protodef_sensor_5fraw_2eproto, "sensor_raw.proto", 1422,
+  &descriptor_table_sensor_5fraw_2eproto_initialized, descriptor_table_protodef_sensor_5fraw_2eproto, "sensor_raw.proto", 1515,
   &descriptor_table_sensor_5fraw_2eproto_once, descriptor_table_sensor_5fraw_2eproto_sccs, descriptor_table_sensor_5fraw_2eproto_deps, 8, 0,
   schemas, file_default_instances, TableStruct_sensor_5fraw_2eproto::offsets,
   file_level_metadata_sensor_5fraw_2eproto, 8, file_level_enum_descriptors_sensor_5fraw_2eproto, file_level_service_descriptors_sensor_5fraw_2eproto,
@@ -385,6 +387,10 @@ bool SensorRaw_Type_IsValid(int value) {
     case 4:
     case 5:
     case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
       return true;
     default:
       return false;
@@ -399,6 +405,10 @@ constexpr SensorRaw_Type SensorRaw::TYPE_ULTRASONIC;
 constexpr SensorRaw_Type SensorRaw::TYPE_DEPTH;
 constexpr SensorRaw_Type SensorRaw::TYPE_SEMANTIC;
 constexpr SensorRaw_Type SensorRaw::TYPE_FISHEYE;
+constexpr SensorRaw_Type SensorRaw::TYPE_FISHEYE_DEPTH;
+constexpr SensorRaw_Type SensorRaw::TYPE_FISHEYE_SEMANTIC;
+constexpr SensorRaw_Type SensorRaw::TYPE_FISHEYE_NORMAL;
+constexpr SensorRaw_Type SensorRaw::TYPE_NORMAL;
 constexpr SensorRaw_Type SensorRaw::Type_MIN;
 constexpr SensorRaw_Type SensorRaw::Type_MAX;
 constexpr int SensorRaw::Type_ARRAYSIZE;

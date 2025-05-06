@@ -24,7 +24,7 @@ extern PROTOBUF_INTERNAL_EXPORT_traffic_2eproto ::PROTOBUF_NAMESPACE_ID::interna
 extern PROTOBUF_INTERNAL_EXPORT_traffic_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Extra_Info_traffic_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_traffic_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_ForwardCollisionWarning_traffic_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_traffic_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_LaneUid_traffic_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_location_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_Location_location_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_location_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<3> scc_info_Location_location_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_traffic_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_ManualVehicleControlInfo_traffic_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_traffic_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_NearestObject_traffic_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_traffic_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_StaticObstacle_traffic_2eproto;

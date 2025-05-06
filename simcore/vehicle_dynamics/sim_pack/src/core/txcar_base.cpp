@@ -31,6 +31,7 @@ TxCarInit::TxCarInit(double x, double y, double z, double vx, double vy, double 
   hadmap_path = "";
   mu = 0.9;
   vehicle_geometory_payload = "";
+  bUseWgs84 = false;
 }
 
 void TxCarInit::clear() {
@@ -52,13 +53,15 @@ void TxCarInit::clear() {
   hadmap_path = "";
   mu = 0.9;
   vehicle_geometory_payload = "";
+  bUseWgs84 = false;
 }
 
 void TxCarInit::debugShow(const TxCarInit& carInit) {
   LOG_0 << "vd | parameter file " << carInit.param_path << "\n";
   LOG_0 << "vd | init x:" << carInit.init_x << ", y:" << carInit.init_y << ", z:" << carInit.init_z
         << ", vx:" << carInit.init_vx << ", vy:" << carInit.init_vy << ", vz:" << carInit.init_vz
-        << ", roll:" << carInit.init_roll << ", pitch:" << carInit.init_pitch << ", yaw:" << carInit.init_yaw << "\n";
+        << ", roll:" << carInit.init_roll << ", pitch:" << carInit.init_pitch << ", yaw:" << carInit.init_yaw
+        << ", bUseWgs84:" << carInit.bUseWgs84 << "\n";
 }
 
 ///////////////////////

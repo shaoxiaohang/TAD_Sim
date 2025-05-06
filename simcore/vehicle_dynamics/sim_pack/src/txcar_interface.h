@@ -28,6 +28,7 @@ class TxCarInterface final : public tx_sim::SimModule {
  protected:
   TxCarBasePtr getVehicleModel(const TxCarInit &carInit, int flags_v);
   void calVehicleDllFullPath();
+  void setInitState(const std::string &payload);
 
  private:
   // vehicle model
@@ -42,6 +43,7 @@ class TxCarInterface final : public tx_sim::SimModule {
   // if run on cloud
   bool bCloudEnv;
   bool bUseCatalog;
+  bool bUseWgs84 = false;
   std::string mCloudDataDir;
 
   // working directory of this dll

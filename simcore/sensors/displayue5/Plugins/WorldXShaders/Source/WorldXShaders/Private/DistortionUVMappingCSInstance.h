@@ -19,6 +19,17 @@ public:
 	};
 	static  void Dispatch(FRDGBuilder& GraphBuilder, const FFisheyeParameters& Parameters);
 
+	// struct FNormalParameters
+	// {
+	// 	int Width;
+	// 	int Height;
+	// 	int ScaleFactor;
+	// 	FRDGTextureSRVRef InTexture;
+	// 	FRDGBufferUAVRef OutTexture;
+	// 	FRDGBufferSRVRef UVMapping;
+	// };
+	// static void Dispatch(FRDGBuilder& GraphBuilder, const FNormalParameters& Parameters);
+
 	struct FNormalParameters
 	{
 		int Width;
@@ -27,6 +38,8 @@ public:
 		FRDGTextureSRVRef InTexture;
 		FRDGBufferUAVRef OutTexture;
 		FRDGBufferSRVRef UVMapping;
+		int CameraIndex;
+		FRDGBufferSRVRef UVCameraMapping;
 	};
 	static void Dispatch(FRDGBuilder& GraphBuilder, const FNormalParameters& Parameters);
 };

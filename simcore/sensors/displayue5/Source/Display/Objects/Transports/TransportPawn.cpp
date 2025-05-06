@@ -181,6 +181,10 @@ void ATransportPawn::Update(const FSimActorInput& _Input, FSimActorOutput& _Outp
             NewTransform = FTransform(TransportIn->rotation, TransportIn->location);
         }
 
+        // UE_LOG(LogTemp, Display, TEXT("TransportPawn UpdateEgo: %f %f %f %f %f %f"), NewTransform.GetLocation().X,
+        //     NewTransform.GetLocation().Y, NewTransform.GetLocation().Z, NewTransform.GetRotation().X,
+        //     NewTransform.GetRotation().Y, NewTransform.GetRotation().Z);
+
         SetActorTransform(NewTransform);
     }
 

@@ -194,7 +194,7 @@ const char descriptor_table_protodef_scene_5fsensor_5fgroup_2eproto[] PROTOBUF_S
   "rinsic.ParamsEntry\032-\n\013ParamsEntry\022\013\n\003key"
   "\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"=\n\013SensorGroup"
   "\022\014\n\004name\030\001 \001(\t\022 \n\007sensors\030\002 \003(\0132\017.sim_ms"
-  "g.Sensor*\267\002\n\nSensorType\022\033\n\027SENSOR_TYPE_U"
+  "g.Sensor*\260\003\n\nSensorType\022\033\n\027SENSOR_TYPE_U"
   "SER_DEFINE\020\000\022\026\n\022SENSOR_TYPE_CAMERA\020\001\022\027\n\023"
   "SENSOR_TYPE_FISHEYE\020\002\022\030\n\024SENSOR_TYPE_SEM"
   "ANTIC\020\003\022\025\n\021SENSOR_TYPE_DEPTH\020\004\022\025\n\021SENSOR"
@@ -202,7 +202,10 @@ const char descriptor_table_protodef_scene_5fsensor_5fgroup_2eproto[] PROTOBUF_S
   "_LIDAR\020\006\022\032\n\026SENSOR_TYPE_ULTRASONIC\020\007\022\023\n\017"
   "SENSOR_TYPE_OBU\020\010\022\023\n\017SENSOR_TYPE_IMU\020\t\022\023"
   "\n\017SENSOR_TYPE_GPS\020\n\022\025\n\021SENSOR_TYPE_TRUTH"
-  "\020\013b\006proto3"
+  "\020\013\022\026\n\022SENSOR_TYPE_NORMAL\020\014\022\035\n\031SENSOR_TYP"
+  "E_FISHEYE_DEPTH\020\r\022 \n\034SENSOR_TYPE_FISHEYE"
+  "_SEMANTIC\020\016\022\036\n\032SENSOR_TYPE_FISHEYE_NORMA"
+  "L\020\017b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_scene_5fsensor_5fgroup_2eproto_deps[1] = {
 };
@@ -216,7 +219,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_sce
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_scene_5fsensor_5fgroup_2eproto_once;
 static bool descriptor_table_scene_5fsensor_5fgroup_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_scene_5fsensor_5fgroup_2eproto = {
-  &descriptor_table_scene_5fsensor_5fgroup_2eproto_initialized, descriptor_table_protodef_scene_5fsensor_5fgroup_2eproto, "scene_sensor_group.proto", 850,
+  &descriptor_table_scene_5fsensor_5fgroup_2eproto_initialized, descriptor_table_protodef_scene_5fsensor_5fgroup_2eproto, "scene_sensor_group.proto", 971,
   &descriptor_table_scene_5fsensor_5fgroup_2eproto_once, descriptor_table_scene_5fsensor_5fgroup_2eproto_sccs, descriptor_table_scene_5fsensor_5fgroup_2eproto_deps, 5, 0,
   schemas, file_default_instances, TableStruct_scene_5fsensor_5fgroup_2eproto::offsets,
   file_level_metadata_scene_5fsensor_5fgroup_2eproto, 5, file_level_enum_descriptors_scene_5fsensor_5fgroup_2eproto, file_level_service_descriptors_scene_5fsensor_5fgroup_2eproto,
@@ -243,6 +246,10 @@ bool SensorType_IsValid(int value) {
     case 9:
     case 10:
     case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
       return true;
     default:
       return false;

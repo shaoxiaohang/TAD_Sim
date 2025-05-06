@@ -153,4 +153,8 @@ public:
 
     // cuda jpg
     TSharedPtr<class UTexJpeg> texJpg;
+
+    bool bCaptureEveryFrame = true;
+
+    AActor* egoActor = nullptr;
 };

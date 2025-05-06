@@ -25,13 +25,12 @@
 #include "fisheye_sensor.h"
 #include "google/protobuf/util/json_util.h"
 #include "image_label.h"
-#include "json/json.h"
 #include "lidar_sensor.h"
 #include "osi_datarecording.pb.h"
 #include "scene.pb.h"
+#include "sensor_meta.pb.h"
 #include "sensor_raw.pb.h"
 #include "visable_calculate.h"
-
 /**
  * @brief define FS_TRY
  * @param f : the function to try
@@ -63,7 +62,7 @@ sim_label::~sim_label() {}
 void sim_label::Init(tx_sim::InitHelper &helper) {
   // subscribe sensor truth
   helper.Subscribe("TXSIM_SENSOR_OBJECT");
-
+  helper.Subscribe("SENSOR_META");
   // choose the device ids to recoard. default all devices are selected.
   device = helper.GetParameter("-device");
   if (device == "all") {
@@ -84,6 +83,16 @@ void sim_label::Init(tx_sim::InitHelper &helper) {
 
   // set the path of the data saved.
   if (!helper.GetParameter("DataSavePath").empty()) savePathBase = helper.GetParameter("DataSavePath");
+  if (!helper.GetParameter("CalibrationPath").empty()) CalibrationPath = helper.GetParameter("CalibrationPath");
+  if (!helper.GetParameter("FramesToSkip").empty())
+    begin_frames_to_skip = std::atoi(helper.GetParameter("FramesToSkip").c_str());
+
+  if (!boost::filesystem::exists(CalibrationPath)) {
+    std::cout << "CalibrationPath " << CalibrationPath << " does not exist" << std::endl;
+    return;
+  }
+  std::cout << "CalibrationPath " << CalibrationPath << " exists" << std::endl;
+  LoadCalibration();
 
   // subcribe display topic from 0 to NumOfDisplay
   for (int i = 0; i < disNum; i++) {
@@ -126,26 +135,26 @@ void sim_label::Reset(tx_sim::ResetHelper &helper) {
   }
   // If the saveScenarioDir flag is set, create a new subdirectory for the
   // scenario
-  if (saveScenarioDir) {
-    auto scenario = boost::filesystem::path(helper.scenario_file_path()).stem().string();
-    savePath += "/";
-    savePath += scenario;
-  }
+  // if (saveScenarioDir) {
+  //   auto scenario = boost::filesystem::path(helper.scenario_file_path()).stem().string();
+  //   savePath += "/";
+  //   savePath += scenario;
+  // }
   // if (boost::filesystem::exists(savePath)) {
   //   FS_TRY(boost::filesystem::rename(savePath,
   //                                    savePath + "_" +
   //                                    std::to_string(rand())));
   // }
   // create ego dir
-  savePath += "/";
-  savePath += helper.group_name();
-  // Create the directories for storing data in the savePath
-  FS_TRY(boost::filesystem::create_directories(savePath + "/lidar/pcd"));
-  FS_TRY(boost::filesystem::create_directories(savePath + "/camera/jpg"));
-  FS_TRY(boost::filesystem::create_directories(savePath + "/semantic/png"));
-  FS_TRY(boost::filesystem::create_directories(savePath + "/fisheye/jpg"));
-  FS_TRY(boost::filesystem::create_directories(savePath + "/depth/png"));
-  FS_TRY(boost::filesystem::create_directories(savePath + "/normal/png"));
+  // savePath += "/";
+  // savePath += helper.group_name();
+  // // Create the directories for storing data in the savePath
+  // FS_TRY(boost::filesystem::create_directories(savePath + "/lidar/pcd"));
+  // FS_TRY(boost::filesystem::create_directories(savePath + "/camera/jpg"));
+  // FS_TRY(boost::filesystem::create_directories(savePath + "/semantic/png"));
+  // FS_TRY(boost::filesystem::create_directories(savePath + "/fisheye/jpg"));
+  // FS_TRY(boost::filesystem::create_directories(savePath + "/depth/png"));
+  // FS_TRY(boost::filesystem::create_directories(savePath + "/normal/png"));
 
   // Output the savePath
   std::cout << "savePath=" << savePath << std::endl;
@@ -156,12 +165,11 @@ void sim_label::Reset(tx_sim::ResetHelper &helper) {
   queues->setImageCallback(std::bind(&sim_label::saveImageLabel, this, std::placeholders::_1));
   queues->setDepthImageCallback(std::bind(&sim_label::saveDepthImageLabel, this, std::placeholders::_1));
 
-
   queues->setPcdCallback(std::bind(&sim_label::savePcdLabel, this, std::placeholders::_1));
 
-  if (!semantics.empty()) {
-    saveMaskJson(savePath + "/semantic/mask.json");
-  }
+  // if (!semantics.empty()) {
+  //   saveMaskJson(savePath + "/semantic/mask.json");
+  // }
 
   ego_id = std::atoi(helper.group_name().substr(helper.group_name().length() - 3).c_str());
   sim_msg::Scene scene;
@@ -169,6 +177,12 @@ void sim_label::Reset(tx_sim::ResetHelper &helper) {
   // std::cout << scene.DebugString();
   Catalog::getInstance().init(scene);
   Catalog::getInstance().load_contour(config_dir);
+
+  cur_clip_id = -1;
+
+  clip_infos.clear();
+  site_name = "";
+  poses.clear();
 }
 
 /**
@@ -211,17 +225,17 @@ void sim_label::Step(tx_sim::StepHelper &helper) {
     if (payload_.empty() || !trafficPose.ParseFromString(payload_)) {
     }
 
-    std::cout << " DISPLAYPOSE " << trafficPose.DebugString() << std::endl;
+    // std::cout << " DISPLAYPOSE " << trafficPose.DebugString() << std::endl;
 
     // Print current simulation timestamp followed by a colon
-    std::cout << helper.timestamp() << ": ";
+    //std::cout << "step timestamp " << helper.timestamp() << ": " << std::endl;
 
     // Update the timestamp field
     trafficPose_all.set_timestamp(trafficPose.timestamp());
     // Extract unique EGO IDs,
     for (const auto &obj : trafficPose.egos()) {
-      // std::cout << " OBJ ID " << obj.id() << std::endl;
-      // std::cout << " EGO ID " << ego_id << std::endl;
+      //std::cout << " OBJ ID " << obj.id() << std::endl;
+      //std::cout << " EGO ID " << ego_id << std::endl;
       if (obj.id() == ego_id) {
         continue;
       }
@@ -253,9 +267,9 @@ void sim_label::Step(tx_sim::StepHelper &helper) {
     }
   }
   // Send processed Display Pose message back out via queue
-  std::cout << "[" << trafficPose_all.timestamp() << ": " << trafficPose_all.egos_size() << " ego | "
-            << trafficPose_all.cars_size() << " car | " << trafficPose_all.staticobstacles_size() << " static | "
-            << trafficPose_all.dynamicobstacles_size() << " dynamic] ";
+  std::cout << "[ traffic pose timestamp " << trafficPose_all.timestamp() << ": " << trafficPose_all.egos_size()
+            << " ego | " << trafficPose_all.cars_size() << " car | " << trafficPose_all.staticobstacles_size()
+            << " static | " << trafficPose_all.dynamicobstacles_size() << " dynamic] " << std::endl;
   queues->addObject(trafficPose_all);
 
   // Handle updates to displayed objects' ids
@@ -266,72 +280,554 @@ void sim_label::Step(tx_sim::StepHelper &helper) {
     sim_msg::SensorRaw sensorraw;
     if (payload_.empty() || !sensorraw.ParseFromString(payload_)) continue;
 
-    std::cout << "sensor timestamp " << sensorraw.timestamp() << std::endl;
+    //std::cout << "sensor timestamp " << sensorraw.timestamp() << std::endl;
 
     // time is not now
-    if (sensorraw.timestamp() == display_timstamp[i]) {
-      continue;
-    }
+    // if (sensorraw.timestamp() == display_timstamp[i]) {
+    //   std::cout << "sensor timestamp is not now " << sensorraw.timestamp() << " " << display_timstamp[i] <<
+    //   std::endl; continue;
+    // }
     display_timstamp[i] = sensorraw.timestamp();
 
-    std::cout << "sensor size " << sensorraw.sensor().size() << std::endl;
+    //std::cout << "sensor size " << sensorraw.sensor().size() << std::endl;
 
-    if(sensorraw.timestamp() <= BeginTime) {
-      std::cout << " skip frames before " << BeginTime << "ms" << std::endl;
+    if (sensorraw.timestamp() < begin_frames_to_skip * 100) {
+      std::cout << " skip first " << begin_frames_to_skip << " frames" << std::endl;
       return;
     }
 
+    if (sensorraw.sensor().size() > 0) {
+      std::string payload;
+      helper.GetSubscribedMessage("SENSOR_META", payload);
+      sim_msg::SensorMeta sensor_meta;
+      if (payload.empty() || !sensor_meta.ParseFromString(payload)) {
+        std::cout << "sensor meta error" << std::endl;
+        return;
+      }
+
+      poses[sensor_meta.clip().id()][sensor_meta.timestamp()] = sensor_meta.pose();
+
+      site_name = sensor_meta.site().name();
+      if (sensor_meta.cur_clip() != cur_clip_id || cur_clip_id == -1) {
+        if (cur_clip_id == -1) {
+          cur_sensor_meta = sensor_meta;
+        } else {
+          std::cout << " clip " << cur_clip_id << " end" << std::endl;
+          WriteClipAttributes(cur_sensor_meta);
+          WriteClipPose(cur_sensor_meta);
+          cur_sensor_meta = sensor_meta;
+        }
+
+        std::cout << " clip " << sensor_meta.clip().id() << " start" << std::endl;
+        std::string clip_record_time = sensor_meta.clip().record_time();
+        savePath = savePathBase + "/" + site_name + "/" + clip_record_time;
+        std::vector<std::string> folders = GetSensorFolders(sensorraw);
+        std::cout << "creatte folders for clip id " << sensor_meta.clip().id() << std::endl;
+        for (const auto &folder : folders) {
+          std::string folder_path = savePath + "/" + folder;
+          std::cout << "create folder " << folder_path << std::endl;
+          FS_TRY(boost::filesystem::create_directories(folder_path));
+        }
+        cur_clip_id = sensor_meta.clip().id();
+      } else {
+        if (sensor_meta.cur_clip() == sensor_meta.site().num_clips() - 1 &&
+            (sensor_meta.cur_frame() == sensor_meta.clip().num_frames() ||
+             sensor_meta.cur_frame() == sensor_meta.clip().num_frames() - 1)) {
+          std::cout << " last frame " << sensor_meta.cur_frame() << " " << sensor_meta.clip().num_frames() << std::endl;
+          std::cout << " last clip " << sensor_meta.cur_clip() << " " << sensor_meta.site().num_clips() << std::endl;
+          WriteClipAttributes(cur_sensor_meta);
+          WriteClipPose(cur_sensor_meta);
+          WriteSiteAttributes();
+        }
+      }
+      //std::cout << "sensor meta " << sensor_meta.DebugString() << std::endl;
+      queues->addSensorMeta(sensor_meta);
+    }
+
     // Output channel index and timestamp
-    std::cout << "display id " << i << ", time stamp " << sensorraw.timestamp() << std::endl;
+    // std::cout << "display id " << i << ", time stamp " << sensorraw.timestamp() << std::endl;
     // Process raw sensor data
     for (const auto &sensor : sensorraw.sensor()) {
-      std::cout << "sensor id " << sensor.id() << std::endl;
-      std::cout << "sensor type " << sensor.type() << std::endl;
+      //std::cout << "sensor id " << sensor.id() << std::endl;
+      //std::cout << "sensor type " << sensor.type() << std::endl;
+      //std::cout << "sensor timestamp " << sensorraw.timestamp() << std::endl;
       // Add parsed image information to queue
       if (sensor.type() == sim_msg::SensorRaw::TYPE_CAMERA) {
         ImageInfo info;
-        if (parseImage(sensor.raw(), info)) {
-          std::cout << "camera(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
+        if (parseImage(sensor, info)) {
+          //std::cout << "camera(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
           queues->addCamera(info);
         }
       } else if (sensor.type() == sim_msg::SensorRaw::TYPE_DEPTH) {
         ImageInfo info;
-        if (parseImage(sensor.raw(), info)) {
-          std::cout << "depth(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
+        if (parseImage(sensor, info)) {
+          //std::cout << "depth(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
           queues->addDepth(info);
         }
       } else if (sensor.type() == sim_msg::SensorRaw::TYPE_SEMANTIC) {
         ImageInfo info;
-        if (parseImage(sensor.raw(), info)) {
-          std::cout << "semantic(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
+        if (parseImage(sensor, info)) {
+          //std::cout << "semantic(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
           queues->addSenmantic(info);
         }
       } else if (sensor.type() == sim_msg::SensorRaw::TYPE_ULTRASONIC) {
         ImageInfo info;
-        if (parseImage(sensor.raw(), info)) {
-          std::cout << "normal(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
+        if (parseImage(sensor, info)) {
+          //std::cout << "normal(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
           queues->addNormal(info);
         }
       } else if (sensor.type() == sim_msg::SensorRaw::TYPE_FISHEYE) {
         ImageInfo info;
-        if (parseImage(sensor.raw(), info)) {
-          std::cout << "fisheye(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
+        if (parseImage(sensor, info)) {
+          //std::cout << "fisheye(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
           queues->addFisheye(info);
+        }
+      } else if (sensor.type() == sim_msg::SensorRaw::TYPE_FISHEYE_DEPTH) {
+        ImageInfo info;
+        if (parseImage(sensor, info)) {
+          //std::cout << "fisheye_depth(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
+          queues->addFisheyeDepth(info);
+        }
+      } else if (sensor.type() == sim_msg::SensorRaw::TYPE_FISHEYE_NORMAL) {
+        ImageInfo info;
+        if (parseImage(sensor, info)) {
+          //std::cout << "fisheye_normal(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
+          queues->addFisheyeNormal(info);
+        }
+      } else if (sensor.type() == sim_msg::SensorRaw::TYPE_FISHEYE_SEMANTIC) {
+        ImageInfo info;
+        if (parseImage(sensor, info)) {
+          //std::cout << "fisheye_semantic(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
+          queues->addFisheyeSemantic(info);
         }
       } else if (sensor.type() == sim_msg::SensorRaw::TYPE_LIDAR) {
         PcInfo info;
         if (parseLidar(sensor.raw(), info)) {
-          std::cout << "ADD LIDAR " << std::endl;
-          std::cout << "lidar(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
+          //std::cout << "ADD LIDAR " << std::endl;
+          //std::cout << "lidar(" << info.id << "," << info.timestamp << ")=" << info.size << std::endl;
           queues->addLidar(info);
         }
       }
     }
     // Close square brackets and comma after processing sensors
+    queues->update();
+    // Clear the output buffer and print newline character
+    std::cout << "\n";
   }
-  queues->update();
-  // Clear the output buffer and print newline character
-  std::cout << "\n";
+}
+
+/**
+ * @brief Get the Sensor Folders
+ *
+ * @param sensors
+ * @return std::vector<std::string>
+ */
+
+std::vector<std::string> sim_label::GetSensorFolders(const sim_msg::SensorRaw &sensors) {
+  std::vector<std::string> folders;
+  for (const auto &sensor : sensors.sensor()) {
+    std::string folder = GetSensorFolder(sensor);
+    folders.push_back(folder);
+  }
+  return folders;
+}
+
+std::string sim_label::GetSensorFolder(const sim_msg::SensorRaw::Sensor &sensor) {
+  if (sensor.type() == sim_msg::SensorRaw::TYPE_CAMERA) {
+    return GetCameraName(sensor.id());
+  }
+  if (sensor.type() == sim_msg::SensorRaw::TYPE_FISHEYE) {
+    return GetFisheyeName(sensor.id());
+  }
+  if (sensor.type() == sim_msg::SensorRaw::TYPE_FISHEYE_DEPTH) {
+    return "depth_" + GetFisheyeName(sensor.id());
+  }
+  if (sensor.type() == sim_msg::SensorRaw::TYPE_FISHEYE_NORMAL) {
+    return "normal_" + GetFisheyeName(sensor.id());
+  }
+  if (sensor.type() == sim_msg::SensorRaw::TYPE_FISHEYE_SEMANTIC) {
+    return "semantic_" + GetFisheyeName(sensor.id());
+  }
+  if (sensor.type() == sim_msg::SensorRaw::TYPE_DEPTH) {
+    return "depth_" + GetCameraName(sensor.id());
+  }
+  if (sensor.type() == sim_msg::SensorRaw::TYPE_ULTRASONIC) {
+    return "normal_" + GetCameraName(sensor.id());
+  }
+  if (sensor.type() == sim_msg::SensorRaw::TYPE_SEMANTIC) {
+    return "semantic_" + GetCameraName(sensor.id());
+  }
+  return "unknown sensor type " + std::to_string(sensor.type());
+}
+
+void sim_label::WriteClipAttributes(sim_msg::SensorMeta sensor_meta) {
+  Json::Value clip_attributes;
+
+  static const std::vector<std::string> sensor_keys = {"camera_front",       "camera_front_30fov", "camera_front_left",
+                                                       "camera_front_right", "camera_rear_left",   "camera_rear_right",
+                                                       "camera_rear",        "fisheye_front",      "fisheye_left",
+                                                       "fisheye_right",      "fisheye_rear"};
+
+  // static const std::string<std::string> calibration_keys = {
+  //     "camera_front",        "camera_front_30fov",   "camera_frontleft",    "camera_frontright",
+  //     "camera_rearleft",     "camera_rearright",     "camera_rear",         "camera_fisheye_front",
+  //     "camera_fisheye_left", "camera_fisheye_right", "camera_fisheye_rear",
+  // };
+
+  static std::map<std::string, std::string> sensor_2_chassis_keys = {
+      {"camera_front", "camera_front"},
+      {"camera_front_30fov", "camera_front_30fov"},
+      {"camera_front_left", "camera_frontleft"},
+      {"camera_front_right", "camera_frontright"},
+      {"camera_rear_left", "camera_rearleft"},
+      {"camera_rear_right", "camera_rearright"},
+      {"camera_rear", "camera_rear"},
+      {"fisheye_front", "camera_fisheye_front"},
+      {"fisheye_left", "camera_fisheye_left"},
+      {"fisheye_right", "camera_fisheye_right"},
+      {"fisheye_rear", "camera_fisheye_rear"}
+  };
+
+  std::string pack_time = getFormattedTimestamp();
+
+  Json::Value info;
+  info["pack"] = pack_time;
+  info["plate"] = sensor_meta.clip().plate();
+  info["status"] = sensor_meta.clip().status();
+  info["start_timestamp"] = sensor_meta.clip().start_timestamp();
+  info["end_timestamp"] = sensor_meta.clip().end_timestamp();
+
+  clip_attributes[pack_time] = info;
+  clip_attributes["calibration"] = Calibration;
+
+  for (const auto& sensor_key : sensor_keys) {
+    std::string sensor_2_chassis_key = sensor_key + "_2_chassis";
+    if (sensor_2_chassis_keys.find(sensor_key) != sensor_2_chassis_keys.end()) {
+      std::cout << "override " << sensor_key << " 2 chassis" << std::endl;
+      Eigen::Matrix4d matrix = camera_to_vcs_map[sensor_2_chassis_keys[sensor_key]].matrix();
+      Json::Value jsonMatrix;
+      for (int row = 0; row < 4; ++row) {
+        Json::Value jsonRow(Json::arrayValue);
+        for (int col = 0; col < 4; ++col) {
+          jsonRow[col] = matrix(row, col);
+          if(sensor_key == "camera_front_2_chassis"){
+            std::cout << "camera_front_2_chassis " << matrix(row, col) << std::endl;
+          }
+        }
+        jsonMatrix[row] = jsonRow;
+      }
+      clip_attributes["calibration"][sensor_2_chassis_key] = jsonMatrix;
+    }else{
+      std::cout << "no override " << sensor_key << " 2 chassis" << std::endl;
+    }
+  }
+
+  Json::Value frames = {};
+
+  for (int time = sensor_meta.clip().start_timestamp(); time <= sensor_meta.clip().end_timestamp(); time += 100) {
+    frames.append(timeStarmString(time));
+  }
+
+  for (const auto &sensor_key : sensor_keys) {
+    clip_attributes["unsync"][sensor_key] = frames;
+    clip_attributes["sync"][sensor_key] = frames;
+  }
+
+  sensor_meta.mutable_clip()->set_pack_time(pack_time);
+
+  clip_infos.push_back(sensor_meta.clip());
+
+  std::string save_path = savePath + "/attribute.json";
+  std::ofstream ofs(save_path);
+  ofs << clip_attributes.toStyledString();
+  ofs.close();
+  std::cout << "write clip attributes " << sensor_meta.clip().id() << " to " << save_path << std::endl;
+}
+
+void sim_label::WriteClipPose(sim_msg::SensorMeta sensor_meta) {
+  std::string pose_path = savePath + "/pose_ue.txt";
+
+  std::ofstream file(pose_path);
+  if (!file.is_open()) {
+    std::cerr << "Failed to open file!" << std::endl;
+    return;
+  }
+  // file << std::fixed << std::setprecision(6);
+
+  int clip_id = sensor_meta.clip().id();
+  for (const auto &pose : poses[clip_id]) {
+    file << std::setw(10) << std::setfill('0') << pose.first;
+    file << " " << pose.second.x() << " " << pose.second.y() << " " << pose.second.z() << " " << pose.second.qx() << " "
+         << pose.second.qy() << " " << pose.second.qz() << " " << pose.second.qw() << std::endl;
+  }
+
+  std::cout << "write clip pose " << clip_id << " to " << pose_path << std::endl;
+
+  file.close();
+}
+
+void sim_label::WriteSiteAttributes() {
+  Json::Value site;
+  Json::Value clips;
+  for (const auto &clip_info : clip_infos) {
+    Json::Value clip;
+    Json::Value clip_info_json;
+    clip["clipid"] = clip_info.id();
+    clip["mapping_type"] = clip_info.mapping_type();
+    clip_info_json["start_timestamp"] = clip_info.start_timestamp();
+    clip_info_json["end_timestamp"] = clip_info.end_timestamp();
+    clip_info_json["pack"] = clip_info.pack_time();
+    clip_info_json["plate"] = clip_info.plate();
+    clip_info_json["status"] = clip_info.status();
+    clip_info_json["tags"] = clip_info.tags();
+
+    clip[clip_info.pack_time()] = clip_info_json;
+    clips[clip_info.record_time()] = clip;
+
+    std::cout << "start_timestamp " << clip_info.start_timestamp();
+    std::cout << "end_timestamp " << clip_info.end_timestamp();
+  }
+  site["clips"] = clips;
+
+  std::string site_path = savePathBase + "/" + site_name + "/attribute.json";
+  std::ofstream ofs(site_path);
+  ofs << site.toStyledString();
+  ofs.close();
+  std::cout << "write site attributes "
+            << " to " << site_path << std::endl;
+}
+
+std::string sim_label::getFormattedTimestamp() {
+  // Get current time with milliseconds precision
+  auto now = std::chrono::system_clock::now();
+  auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
+
+  // Convert to time_t for date components
+  auto now_c = std::chrono::system_clock::to_time_t(now);
+
+  // Convert to tm struct for local time
+  std::tm tm = *std::localtime(&now_c);
+
+  // Get milliseconds component
+  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+
+  // Format the string
+  std::ostringstream oss;
+  oss << std::put_time(&tm, "%Y%m%d-%H%M%S") << "_" << std::setfill('0') << std::setw(3) << ms.count();
+
+  return oss.str();
+}
+
+std::string sim_label::GetCameraName(int id) {
+  static const std::vector<std::string> camera_names = {
+      "camera_front",     "camera_front_30fov", "camera_front_left", "camera_front_right",
+      "camera_rear_left", "camera_rear_right",  "camera_rear",
+  };
+  if (id >= 0 && id < camera_names.size()) {
+    return camera_names[id];
+  }
+  return "unknown camera id " + std::to_string(id);
+}
+
+std::string sim_label::GetFisheyeName(int id) {
+  static const std::vector<std::string> fisheye_names = {"fisheye_front", "fisheye_front_left", "fisheye_front_right",
+                                                         "fisheye_rear"};
+  if (id >= 0 && id < fisheye_names.size()) {
+    return fisheye_names[id];
+  }
+  return "unknown fisheye id " + std::to_string(id);
+}
+
+bool sim_label::LoadCalibration() {
+  std::ifstream ifs(CalibrationPath);
+  if (!ifs.is_open()) {
+    std::cout << "CalibrationPath " << CalibrationPath << " does not exist" << std::endl;
+    return false;
+  }
+  Json::Reader reader;
+  Json::Value root;
+  if (!reader.parse(ifs, root)) {
+    std::cout << "CalibrationPath " << CalibrationPath << " is not a valid json file" << std::endl;
+    return false;
+  }
+
+  std::vector<std::string> in_keys = {"lidar_top_2_camera_front",
+                                      "lidar_top_2_camera_rear",
+                                      "lidar_top_2_camera_frontleft",
+                                      "lidar_top_2_camera_frontright",
+                                      "lidar_top_2_camera_rearleft",
+                                      "lidar_top_2_camera_rearright",
+                                      "lidar_top_2_camera_front_30fov",
+                                      "lidar_top_2_camera_fisheye_front",
+                                      "lidar_top_2_camera_fisheye_rear",
+                                      "lidar_top_2_camera_fisheye_left",
+                                      "lidar_top_2_camera_fisheye_right",
+                                      "lidar_top_2_vcs",
+                                      "falconk_2_vcs",
+                                      "atf_2_vcs",
+                                      "atl_2_vcs",
+                                      "atr_2_vcs",
+                                      "atb_2_vcs",
+                                      "qtb_2_vcs",
+                                      "qtf_2_vcs",
+                                      "qtl_2_vcs",
+                                      "qtr_2_vcs",
+                                      "atx_2_vcs",
+                                      "camera_front_2_chassis",
+                                      "camera_rear_2_chassis",
+                                      "camera_frontleft_2_chassis",
+                                      "camera_frontright_2_chassis",
+                                      "camera_rearleft_2_chassis",
+                                      "camera_rearright_2_chassis",
+                                      "camera_front_30fov_2_chassis",
+                                      "camera_fisheye_front_2_chassis",
+                                      "camera_fisheye_rear_2_chassis",
+                                      "camera_fisheye_left_2_chassis",
+                                      "camera_fisheye_right_2_chassis",
+                                      "camera_front",
+                                      "camera_rear",
+                                      "camera_frontleft",
+                                      "camera_frontright",
+                                      "camera_rearleft",
+                                      "camera_rearright",
+                                      "camera_front_30fov",
+                                      "camera_fisheye_front",
+                                      "camera_fisheye_rear",
+                                      "camera_fisheye_left",
+                                      "camera_fisheye_right"};
+
+  std::vector<std::string> out_keys = {"lidar_top_2_camera_front",
+                                       "lidar_top_2_camera_rear",
+                                       "lidar_top_2_camera_front_left",
+                                       "lidar_top_2_camera_front_right",
+                                       "lidar_top_2_camera_rear_left",
+                                       "lidar_top_2_camera_rear_right",
+                                       "lidar_top_2_camera_front_30fov",
+                                       "lidar_top_2_fisheye_front",
+                                       "lidar_top_2_fisheye_rear",
+                                       "lidar_top_2_fisheye_left",
+                                       "lidar_top_2_fisheye_right",
+                                       "lidar_top_2_chassis",
+                                       "falconk_2_chassis",
+                                       "atf_2_chassis",
+                                       "atl_2_chassis",
+                                       "atr_2_chassis",
+                                       "atb_2_chassis",
+                                       "qtb_2_chassis",
+                                       "qtf_2_chassis",
+                                       "qtl_2_chassis",
+                                       "qtr_2_chassis",
+                                       "atx_2_chassis",
+                                       "camera_front_2_chassis",
+                                       "camera_rear_2_chassis",
+                                       "camera_front_left_2_chassis",
+                                       "camera_front_right_2_chassis",
+                                       "camera_rear_left_2_chassis",
+                                       "camera_rear_right_2_chassis",
+                                       "camera_front_30fov_2_chassis",
+                                       "fisheye_front_2_chassis",
+                                       "fisheye_rear_2_chassis",
+                                       "fisheye_left_2_chassis",
+                                       "fisheye_right_2_chassis",
+                                       "camera_front",
+                                       "camera_rear",
+                                       "camera_front_left",
+                                       "camera_front_right",
+                                       "camera_rear_left",
+                                       "camera_rear_right",
+                                       "camera_front_30fov",
+                                       "fisheye_front",
+                                       "fisheye_rear",
+                                       "fisheye_left",
+                                       "fisheye_right"
+
+  };
+
+  std::cout << "in_keys " << in_keys.size() << std::endl;
+  std::cout << "out_keys " << out_keys.size() << std::endl;
+
+  if (in_keys.size() != out_keys.size()) {
+    std::cout << "in_keys and out_keys size mismatch" << std::endl;
+    return false;
+  }
+
+  std::string distortion_key = "d";
+
+  for (int i = 0; i < in_keys.size(); i++) {
+    std::cout << "in_keys " << in_keys[i] << " out_keys " << out_keys[i] << std::endl;
+    if (root.isMember(in_keys[i])) {
+      auto &node = root[in_keys[i]];
+      if (node.isObject() && node.isMember(distortion_key)) {
+        Json::Value &d_params = node[distortion_key];
+        if (d_params.isArray()) {
+          for (int i = 0; i < d_params.size(); i++) {
+            d_params[i] = 0.0;
+          }
+        }
+      }
+      Calibration[out_keys[i]] = node;
+    } else {
+      std::cout << "in_keys " << in_keys[i] << " not found" << std::endl;
+      return false;
+    }
+  }
+
+  const static std::vector<std::string> camera_names = {
+      "camera_front",        "camera_front_30fov",   "camera_frontleft",   "camera_frontright",
+      "camera_rearleft",     "camera_rearright",     "camera_rear",        "camera_fisheye_front",
+      "camera_fisheye_left", "camera_fisheye_right", "camera_fisheye_rear"};
+
+  for (size_t i = 0; i < camera_names.size(); ++i) {
+    std::string camera_info_key = camera_names[i] + "_json";
+    auto base_calib_info = root[camera_info_key];
+    auto camera_to_local = PoseToAffine(base_calib_info["roll"].asDouble(), base_calib_info["pitch"].asDouble(),
+                                        base_calib_info["yaw"].asDouble(), base_calib_info["camera_x"].asDouble(),
+                                        base_calib_info["camera_y"].asDouble(), base_calib_info["camera_z"].asDouble());
+    auto local_to_vcs = PoseToAffine(
+        base_calib_info["vcs"]["rotation"][0].asDouble(), base_calib_info["vcs"]["rotation"][1].asDouble(),
+        base_calib_info["vcs"]["rotation"][2].asDouble(), base_calib_info["vcs"]["translation"][0].asDouble(),
+        base_calib_info["vcs"]["translation"][1].asDouble(), base_calib_info["vcs"]["translation"][2].asDouble());
+
+    auto camera_to_vcs = local_to_vcs * camera_to_local;
+    camera_to_vcs_map[camera_names[i]] = camera_to_vcs;
+    double x, y, z, roll, pitch, yaw;
+    AffineToPose(camera_to_vcs, x, y, z, roll, pitch, yaw);
+    std::cout << "camera_to_vcs " << camera_names[i] << " " << camera_to_vcs.matrix() << std::endl;
+    std::cout << "camera_to_vcs " << camera_names[i] << " xyz_rpy " << x << " " << y << " " << z << " " << roll << " "
+              << pitch << " " << yaw << std::endl;
+  }
+
+  return true;
+}
+
+Eigen::Affine3d sim_label::PoseToAffine(double roll, double pitch, double yaw, double x, double y, double z) {
+  // Create a quaternion from Euler angles
+  Eigen::Quaterniond q(Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ())*
+                       Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY()) *
+                       Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX())
+                       );
+
+  Eigen::Vector3d translation(x, y, z);
+
+  // Create an Affine3d transformation
+  Eigen::Affine3d transformation = Eigen::Affine3d::Identity();  // Start with an identity matrix
+  transformation.translate(translation);                         // Apply translation
+  transformation.rotate(q);                                      // Apply rotation
+  return transformation;
+}
+
+void sim_label::AffineToPose(const Eigen::Affine3d &affine, double &x, double &y, double &z, double &roll,
+                             double &pitch, double &yaw) {
+  Eigen::Vector3d xyz = affine.translation();
+  Eigen::Vector3d rpy =
+      affine.rotation().eulerAngles(2, 1, 0);
+  x = xyz[0];
+  y = xyz[1];
+  z = xyz[2];
+  //to degree
+  roll = rpy[2] * 180 / M_PI;
+  pitch = rpy[1] * 180 / M_PI;
+  yaw = rpy[0] * 180 / M_PI;
 }
 
 /**
@@ -362,15 +858,18 @@ void sim_label::Stop(tx_sim::StopHelper &helper) {
  * @return true on success
  * @return false
  */
-bool sim_label::parseImage(const std::string &buf, ImageInfo &info) {
+bool sim_label::parseImage(const sim_msg::SensorRaw::Sensor &sensor, ImageInfo &info) {
   // sensor proto
   sim_msg::CameraRaw camera;
-  if (!camera.ParseFromString(buf)) {
+  if (!camera.ParseFromString(sensor.raw())) {
     std::cout << "camera error";
     return false;
   }
+
+  std::string folder = GetSensorFolder(sensor);
+
   // the path to write
-  auto ffnm = timeStarmString(camera.timestamp()) + "_" + std::to_string(camera.id());
+  auto ffnm = folder + "/" + timeStarmString(camera.timestamp());
   if (camera.type() == "JPEG") {
     ffnm += ".jpg";
   } else if (camera.type() == "PNG") {
@@ -381,6 +880,8 @@ bool sim_label::parseImage(const std::string &buf, ImageInfo &info) {
   } else {
     return false;
   }
+
+  // std::cout << "camera raw timestamp " << camera.timestamp() << std::endl;
 
   // the info of image
   info.id = camera.id();
@@ -508,26 +1009,25 @@ bool sim_label::parseLidar(const std::string &buf, PcInfo &info) {
  * @return false
  */
 bool sim_label::saveFile(const std::string &fname, const std::string &buf) {
-  {
-    // Lock save mutex before checking if filename already exists in saved files
-    // set
-    std::unique_lock<std::mutex> lock(save_mutex);
-    if (saved_files.find(fname) != saved_files.end()) {
-      return true;
-    }
-    // Update saved files set after successfully saving file
-    saved_files.insert(fname);
-  }
+  // {
+  //   // Lock save mutex before checking if filename already exists in saved files
+  //   // set
+  //   std::unique_lock<std::mutex> lock(save_mutex);
+  //   if (saved_files.find(fname) != saved_files.end()) {
+  //     return true;
+  //   }
+  //   // Update saved files set after successfully saving file
+  //   saved_files.insert(fname);
+  // }
 
-  std::cout << "save " << fname;
   // Open output stream for writing binary data to disk
-  std::fstream of(savePath + "/" + fname, std::ios::out | std::ios::binary);
+  std::fstream of(fname, std::ios::out | std::ios::binary);
   if (of.is_open()) {
     of.write(buf.c_str(), buf.size());
     of.close();
-    std::cout << " done.";
+    //std::cout << "save " << fname << " done." << std::endl;
   } else {
-    std::cout << " fail.";
+    std::cout << "save " << fname << " failed." << std::endl;
   }
 
   // Log successful save operation
@@ -546,18 +1046,17 @@ bool sim_label::saveFile(const std::string &fname, const std::string &buf) {
 bool sim_label::saveOpenCVImage(const std::string &fname, const std::string &buf, int width, int height,
                                 sim_msg::SensorRaw_Type type) {
   int cv_type = 0;
-  if (type == sim_msg::SensorRaw_Type_TYPE_DEPTH) {
+  if (type == sim_msg::SensorRaw_Type_TYPE_DEPTH || type == sim_msg::SensorRaw_Type_TYPE_FISHEYE_DEPTH) {
     cv_type = CV_16UC1;
   }
-  auto file_path = savePath + "/" + fname;
 
-  cv::Mat mat(height, width , cv_type, const_cast<void *>(reinterpret_cast<const void *>(buf.data())));
+  cv::Mat mat(height, width, cv_type, const_cast<void *>(reinterpret_cast<const void *>(buf.data())));
   static std::vector<int> params = {cv::IMWRITE_PNG_COMPRESSION, 4};
-  if (!cv::imwrite(file_path, mat, params)) {
-    std::cout << "save depth image error " << file_path << std::endl;
+  if (!cv::imwrite(fname, mat, params)) {
+    std::cout << "save depth image error " << fname << std::endl;
     return false;
   }
-  std::cout << "save depth image " << file_path << std::endl;
+  //std::cout << "save depth image " << fname << std::endl;
   return true;
 }
 
@@ -587,70 +1086,62 @@ void sim_label::saveImageLabel(const ImagePackage &info) {
 
   // Define temporary object structure used in saving data
 
-  ImageLabel label(info);
-  label.init(minArea, maxDistance, completeness, fullBox);
+  // ImageLabel label(info);
+  // label.init(minArea, maxDistance, completeness, fullBox);
 
-  std::string dir0, dir1;
-  // Construct JSON source object
-  Json::Value source = label.label(dir0, dir1);
+  // std::string dir0, dir1;
+  // // Construct JSON source object
+  // Json::Value source = label.label(dir0, dir1);
 
   const auto &jpginfo = info.image;
-  threads->enqueue(sfun, dir1 + "/" + jpginfo.fpath, jpginfo.buffer);
+  threads->enqueue(sfun, savePath + "/" + jpginfo.fpath, jpginfo.buffer);
+
   // save json object as string
-  Json::StreamWriterBuilder builder;
-  builder["commentStyle"] = "None";
-  builder["indentation"] = "";
-  const std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
-  std::stringstream oss;
-  writer->write(source, &oss);
-  // save the file in queue
-  threads->enqueue(sfun, dir0 + "/" + tss + "_" + std::to_string(jpginfo.id) + ".json", oss.str());
+  // Json::StreamWriterBuilder builder;
+  // builder["commentStyle"] = "None";
+  // builder["indentation"] = "";
+  // const std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+  // std::stringstream oss;
+  // writer->write(source, &oss);
+  // // save the file in queue
+  // threads->enqueue(sfun, dir0 + "/" + tss + "_" + std::to_string(jpginfo.id) + ".json", oss.str());
 
   // save geojson for debug
   // you can drop geojson in QGIS for a look
-  if (debugFiles) {
-    Json::Value geojson;
-    geojson["type"] = "FeatureCollection";
-    for (const auto &key : source["openlabel"]["objects"].getMemberNames()) {
-      const Json::Value &obj = source["openlabel"]["objects"][key];
-      const Json::Value &odata = obj["object_data"]["poly2d"][0]["val"];
-      Json::Value feature;
-      feature["type"] = "Feature";
-      feature["geometry"]["type"] = "LineString";
-      auto pn = odata.size() / 2;
-      for (std::uint32_t i = 0; i < pn; i++) {
-        Json::Value jp;
-        jp.append(odata[i * 2].asDouble());
-        jp.append(-(odata[i * 2 + 1].asDouble()));
-        feature["geometry"]["coordinates"].append(jp);
-      }
-      geojson["features"].append(feature);
-    }
-    Json::StreamWriterBuilder builder;
-    const std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
-    std::stringstream oss;
-    writer->write(geojson, &oss);
-    threads->enqueue(sfun, dir1 + "/" + jpginfo.fpath + ".json", oss.str());
-  }
+  // if (debugFiles) {
+  //   Json::Value geojson;
+  //   geojson["type"] = "FeatureCollection";
+  //   for (const auto &key : source["openlabel"]["objects"].getMemberNames()) {
+  //     const Json::Value &obj = source["openlabel"]["objects"][key];
+  //     const Json::Value &odata = obj["object_data"]["poly2d"][0]["val"];
+  //     Json::Value feature;
+  //     feature["type"] = "Feature";
+  //     feature["geometry"]["type"] = "LineString";
+  //     auto pn = odata.size() / 2;
+  //     for (std::uint32_t i = 0; i < pn; i++) {
+  //       Json::Value jp;
+  //       jp.append(odata[i * 2].asDouble());
+  //       jp.append(-(odata[i * 2 + 1].asDouble()));
+  //       feature["geometry"]["coordinates"].append(jp);
+  //     }
+  //     geojson["features"].append(feature);
+  //   }
+  //   Json::StreamWriterBuilder builder;
+  //   const std::unique_ptr<Json::StreamWriter> writer(builder.newStreamWriter());
+  //   std::stringstream oss;
+  //   writer->write(geojson, &oss);
+  //   threads->enqueue(sfun, dir1 + "/" + jpginfo.fpath + ".json", oss.str());
+  // }
 }
 
-void sim_label::saveDepthImageLabel(const ImagePackage &info){
+void sim_label::saveDepthImageLabel(const ImagePackage &info) {
   // Get timestamp string and UTC date/time string from image package
   std::string tss = timeStarmString(info.image.timestamp);
   std::string utc = getUTC();
   auto save_opencv_fun = std::bind(&sim_label::saveOpenCVImage, this, std::placeholders::_1, std::placeholders::_2,
                                    std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
-
-
-  ImageLabel label(info);
-  label.init(minArea, maxDistance, completeness, fullBox);
-
-  std::string dir0, dir1;
-  // Construct JSON source object
-  Json::Value source = label.label(dir0, dir1);
-
   const auto &pnginfo = info.image;
-  threads->enqueue(save_opencv_fun, dir1 + "/" + pnginfo.fpath, pnginfo.buffer, pnginfo.width, pnginfo.height,
+  threads->enqueue(save_opencv_fun, savePath + "/" + pnginfo.fpath, pnginfo.buffer, pnginfo.width, pnginfo.height,
                    info.type);
 }
 

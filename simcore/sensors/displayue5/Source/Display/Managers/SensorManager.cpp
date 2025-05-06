@@ -3,8 +3,10 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Objects/Sensors/CameraSensors/CameraSensor.h"
 #include "Objects/Sensors/CameraSensors/DepthSensor.h"
-#include "Objects/Sensors/CameraSensors/SemanticCamera.h"
 #include "Objects/Sensors/CameraSensors/NormalCamera.h"
+#include "Objects/Sensors/CameraSensors/SemanticCamera.h"
+#include "Objects/Sensors/CameraSensors/FisheyeSensor.h"
+#include "Objects/Sensors/CameraSensors/FisheyeSensorNew.h"
 #include "Objects/Sensors/LidarSensors/TLidarSensor.h"
 #include "Objects/Sensors/SensorFactory.h"
 #include "Utils/ProtoUtil.h"
@@ -326,7 +328,7 @@ void ASensorManager::Update(const FManagerIn& _Input, FManagerOut& _Output)
     const FSensorManagerIn* SensorManagerIn = Cast_Data<const FSensorManagerIn>(_Input);
     FSensorManagerOut* SensorManagerOut = Cast_Data<FSensorManagerOut>(_Output);
     SensorManagerOut->outArray.SetNum(0);
-    UE_LOG(SimLogSensorManager, Log, TEXT("SensorManger: update timeStamp:%f"), SensorManagerIn->timeStamp);
+   // UE_LOG(SimLogSensorManager, Log, TEXT("SensorManger: update timeStamp:%f"), SensorManagerIn->timeStamp);
     for (auto& Elem : sensorMap)
     {
         for (auto& Sensor : Elem.Value)
@@ -339,8 +341,8 @@ void ASensorManager::Update(const FManagerIn& _Input, FManagerOut& _Output)
             SensorOut.id = Sensor.Value->configBase.id;
             SensorOut.type = Sensor.Value->configBase.typeName;
             SensorOut.timeStamp = SensorIn.timeStamp;
-            UE_LOG(SimLogSensorManager, Log, TEXT("SensorManger: update %s type %s"), *Sensor.Key,
-                *Sensor.Value->configBase.typeName);
+            //UE_LOG(SimLogSensorManager, Log, TEXT("SensorManger: update %s type %s timestamp %f timestamp_ego %f"),
+              //  *Sensor.Key, *Sensor.Value->configBase.typeName, SensorIn.timeStamp, SensorIn.timeStamp_ego);
             Sensor.Value->Update(SensorIn, SensorOut);
             SensorManagerOut->outArray.Add(SensorOut);
         }
@@ -466,6 +468,10 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
     bool DrawDepthCamera = false;
     bool DrawSemanticCamera = false;
     bool DrawNormalCamera = false;
+    bool CaputreEveryFrame = false;
+    bool FisheyeMultiCapture = false; 
+    GConfig->GetBool(TEXT("Sensor"), TEXT("CaptureEveryFrame"), CaputreEveryFrame, GGameIni);
+    GConfig->GetBool(TEXT("Sensor"), TEXT("FisheyeMultiCapture"), FisheyeMultiCapture, GGameIni);
     GConfig->GetBool(TEXT("Sensor"), TEXT("DrawDepthCamera"), DrawDepthCamera, GGameIni);
     GConfig->GetBool(TEXT("Sensor"), TEXT("DrawSemanticCamera"), DrawSemanticCamera, GGameIni);
     GConfig->GetBool(TEXT("Sensor"), TEXT("DrawNormalCamera"), DrawNormalCamera, GGameIni);
@@ -491,9 +497,36 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
             if (DrawNormalCamera)
             {
                 auto NormalCamera = Sensor;
-                NormalCamera.set_type(sim_msg::SENSOR_TYPE_ULTRASONIC);
+                NormalCamera.set_type(sim_msg::SENSOR_TYPE_NORMAL);
                 UE_LOG(LogTemp, Log, TEXT("SensorManger: Add Normal Camera %d"), NormalCamera.extrinsic().id());
                 NewAddedSensors.push_back(NormalCamera);
+            }
+        }
+        if (Sensor.type() == sim_msg::SENSOR_TYPE_FISHEYE)
+        {
+            if (DrawDepthCamera)
+            {
+                auto FisheyeDepthCamera = Sensor;
+                FisheyeDepthCamera.set_type(sim_msg::SENSOR_TYPE_FISHEYE_DEPTH);
+                UE_LOG(LogTemp, Log, TEXT("SensorManger: Add Fisheye Depth Camera %d"),
+                    FisheyeDepthCamera.extrinsic().id());
+                NewAddedSensors.push_back(FisheyeDepthCamera);
+            }
+            if (DrawSemanticCamera)
+            {
+                auto FisheyeSemanticCamera = Sensor;
+                FisheyeSemanticCamera.set_type(sim_msg::SENSOR_TYPE_FISHEYE_SEMANTIC);
+                UE_LOG(LogTemp, Log, TEXT("SensorManger: Add Fisheye Semantic Camera %d"),
+                    FisheyeSemanticCamera.extrinsic().id());
+                NewAddedSensors.push_back(FisheyeSemanticCamera);
+            }
+            if (DrawNormalCamera)
+            {
+                auto FisheyeNormalCamera = Sensor;
+                FisheyeNormalCamera.set_type(sim_msg::SENSOR_TYPE_FISHEYE_NORMAL);
+                UE_LOG(LogTemp, Log, TEXT("SensorManger: Add Fisheye Normal Camera %d"),
+                    FisheyeNormalCamera.extrinsic().id());
+                NewAddedSensors.push_back(FisheyeNormalCamera);
             }
         }
     }
@@ -771,7 +804,7 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
                                      TEXT("/");    // TODO: set save path in a standardized way
             SensormanagerConfig.semanticArry.Add(NewConfig);
         }
-        else if (sensor.type() == sim_msg::SENSOR_TYPE_ULTRASONIC)
+        else if (sensor.type() == sim_msg::SENSOR_TYPE_NORMAL)
         {
             FCameraConfig NewConfig;
             *(FSensorConfig*) &NewConfig = Base;
@@ -862,6 +895,301 @@ FSensorManagerConfig ASensorManager::ParseSensorString(const std::string& buffer
             {
                 NewConfig.color_gray = 1;
             }
+            NewConfig.bIsRGB = true;
+
+            GetPropValue(Config, FString(TEXT("Frequency")), NewConfig.frequency);
+            GetPropValue(Config, FString(TEXT("ResHorizonal")), NewConfig.res_Horizontal);
+            GetPropValue(Config, FString(TEXT("ResVertial")), NewConfig.res_Vertical);
+            GetPropValue(Config, FString(TEXT("Vignette")), NewConfig.vignette_Intensity);
+            GetPropValue(Config, FString(TEXT("GrainIntensity")), NewConfig.noise_Intensity);
+            GetPropValue(Config, FString(TEXT("MotionBlur")), NewConfig.motionBlur_Amount);
+            GetPropValue(Config, FString(TEXT("LensFlares")), NewConfig.LensFlares);
+            GetPropValue(Config, FString(TEXT("Blur")), NewConfig.blur_Intensity);
+            GetPropValue(Config, FString(TEXT("Exquisite")), NewConfig.Exquisite);
+            GetPropValue(Config, FString(TEXT("Bloom")), NewConfig.Bloom);
+            GetPropValue(Config, FString(TEXT("Compensation")), NewConfig.Compensation);
+            GetPropValue(Config, FString(TEXT("ShutterSpeed")), NewConfig.ShutterSpeed);
+            GetPropValue(Config, FString(TEXT("ISO")), NewConfig.ISO);
+            GetPropValue(Config, FString(TEXT("Aperture")), NewConfig.Aperture);
+            GetPropValue(Config, FString(TEXT("ColorTemperature")), NewConfig.ColorTemperature);
+            GetPropValue(Config, FString(TEXT("WhiteHint")), NewConfig.WhiteHint);
+            GetPropValue(Config, FString(TEXT("Transmittance")), NewConfig.Transmittance);
+            GetPropValue(Config, FString(TEXT("ExposureMode")), NewConfig.Exposure);
+            GetPropValue(Config, FString(TEXT("ColorMode")), NewConfig.color_gray);
+            GetPropValue(Config, FString(TEXT("IntrinsicMat")), Intrinsic_Matrix);
+            GetPropValue(Config, FString(TEXT("Distortion")), distortion_Parameters);
+
+            if (!Intrinsic_Matrix.IsEmpty())
+            {
+                Intrinsic_Matrix = Intrinsic_Matrix.Replace(*FString(" "), *FString(""));    // Remove space
+                FString LeftStr;
+                FString RightStr;
+                while (Intrinsic_Matrix.Split(",", &LeftStr, &RightStr))
+                {
+                    NewConfig.intrinsic_Matrix.Add(FCString::Atof(*LeftStr));
+                    Intrinsic_Matrix = RightStr;
+                }
+                NewConfig.intrinsic_Matrix.Add(FCString::Atof(*Intrinsic_Matrix));
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("SensorManger: Config LabelList is empty!"));
+            }
+
+            if (!distortion_Parameters.IsEmpty())
+            {
+                distortion_Parameters = distortion_Parameters.Replace(*FString(" "), *FString(""));    // Remove space
+                FString LeftStr;
+                FString RightStr;
+                while (distortion_Parameters.Split(",", &LeftStr, &RightStr))
+                {
+                    if (!LeftStr.IsEmpty())
+                    {
+                        NewConfig.distortion_Parameters.Add(FCString::Atof(*LeftStr));
+                    }
+                    distortion_Parameters = RightStr;
+                }
+                NewConfig.distortion_Parameters.Add(FCString::Atof(*distortion_Parameters));
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("SensorManger: Config LabelList is empty!"));
+            }
+
+            // GetPropValue(Config, FString(TEXT("SaveData")), NewCameraConfig.bSaveData);
+            // Save Path
+            FString savestring;
+            GConfig->GetString(TEXT("Sensor"), TEXT("FisheyeSaved"), savestring, GGameIni);
+            if (!BaseSavePath.IsEmpty() && savestring == TEXT("true"))
+                NewConfig.savePath = BaseSavePath + TEXT("FisheyeData/") + TEXT("Fisheye_") +
+                                     FString::FromInt(NewConfig.id) +
+                                     TEXT("/");    // TODO: set save path in a standardized way
+            SensormanagerConfig.fisheyeArry.Add(NewConfig);
+        }
+        else if (sensor.type() == sim_msg::SENSOR_TYPE_FISHEYE_DEPTH)
+        {
+            FFisheyeConfig NewConfig;
+            *(FSensorConfig*) &NewConfig = Base;
+            NewConfig.typeName = TEXT("FisheyeDepth");
+            NewConfig.targetId = EgoId;
+            NewConfig.PostProcessMaterial =
+                TEXT("Material'/Game/SensorSim/Camera/Material/Mat_Camera_Capture_depth1.Mat_Camera_Capture_depth1'");
+            FString Intrinsic_Matrix = TEXT("");
+            FString distortion_Parameters = TEXT("");
+
+            // old
+            GetPropValue(Config, FString(TEXT("Res_Horizontal")), NewConfig.res_Horizontal);
+            GetPropValue(Config, FString(TEXT("Res_Vertical")), NewConfig.res_Vertical);
+            GetPropValue(Config, FString(TEXT("Blur_Intensity")), NewConfig.blur_Intensity);
+            GetPropValue(Config, FString(TEXT("MotionBlur_Amount")), NewConfig.motionBlur_Amount);
+            GetPropValue(Config, FString(TEXT("Noise_Intensity")), NewConfig.noise_Intensity);
+            GetPropValue(Config, FString(TEXT("Vignette_Intensity")), NewConfig.vignette_Intensity);
+            GetPropValue(Config, FString(TEXT("Intrinsic_Matrix")), Intrinsic_Matrix);              ////---
+            GetPropValue(Config, FString(TEXT("Distortion_Parameters")), distortion_Parameters);    /////----
+            GetPropValue(Config, FString(TEXT("DisplayMode")), NewConfig.color_gray);
+            FString dm;
+            GetPropValue(Config, FString(TEXT("DisplayMode")), dm);
+            if (dm == TEXT("Gray"))
+            {
+                NewConfig.color_gray = 1;
+            }
+            NewConfig.bIsRGB = false;
+
+            GetPropValue(Config, FString(TEXT("Frequency")), NewConfig.frequency);
+            GetPropValue(Config, FString(TEXT("ResHorizonal")), NewConfig.res_Horizontal);
+            GetPropValue(Config, FString(TEXT("ResVertial")), NewConfig.res_Vertical);
+            GetPropValue(Config, FString(TEXT("Vignette")), NewConfig.vignette_Intensity);
+            GetPropValue(Config, FString(TEXT("GrainIntensity")), NewConfig.noise_Intensity);
+            GetPropValue(Config, FString(TEXT("MotionBlur")), NewConfig.motionBlur_Amount);
+            GetPropValue(Config, FString(TEXT("LensFlares")), NewConfig.LensFlares);
+            GetPropValue(Config, FString(TEXT("Blur")), NewConfig.blur_Intensity);
+            GetPropValue(Config, FString(TEXT("Exquisite")), NewConfig.Exquisite);
+            GetPropValue(Config, FString(TEXT("Bloom")), NewConfig.Bloom);
+            GetPropValue(Config, FString(TEXT("Compensation")), NewConfig.Compensation);
+            GetPropValue(Config, FString(TEXT("ShutterSpeed")), NewConfig.ShutterSpeed);
+            GetPropValue(Config, FString(TEXT("ISO")), NewConfig.ISO);
+            GetPropValue(Config, FString(TEXT("Aperture")), NewConfig.Aperture);
+            GetPropValue(Config, FString(TEXT("ColorTemperature")), NewConfig.ColorTemperature);
+            GetPropValue(Config, FString(TEXT("WhiteHint")), NewConfig.WhiteHint);
+            GetPropValue(Config, FString(TEXT("Transmittance")), NewConfig.Transmittance);
+            GetPropValue(Config, FString(TEXT("ExposureMode")), NewConfig.Exposure);
+            GetPropValue(Config, FString(TEXT("ColorMode")), NewConfig.color_gray);
+            GetPropValue(Config, FString(TEXT("IntrinsicMat")), Intrinsic_Matrix);
+            GetPropValue(Config, FString(TEXT("Distortion")), distortion_Parameters);
+
+            if (!Intrinsic_Matrix.IsEmpty())
+            {
+                Intrinsic_Matrix = Intrinsic_Matrix.Replace(*FString(" "), *FString(""));    // Remove space
+                FString LeftStr;
+                FString RightStr;
+                while (Intrinsic_Matrix.Split(",", &LeftStr, &RightStr))
+                {
+                    NewConfig.intrinsic_Matrix.Add(FCString::Atof(*LeftStr));
+                    Intrinsic_Matrix = RightStr;
+                }
+                NewConfig.intrinsic_Matrix.Add(FCString::Atof(*Intrinsic_Matrix));
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("SensorManger: Config LabelList is empty!"));
+            }
+
+            if (!distortion_Parameters.IsEmpty())
+            {
+                distortion_Parameters = distortion_Parameters.Replace(*FString(" "), *FString(""));    // Remove space
+                FString LeftStr;
+                FString RightStr;
+                while (distortion_Parameters.Split(",", &LeftStr, &RightStr))
+                {
+                    if (!LeftStr.IsEmpty())
+                    {
+                        NewConfig.distortion_Parameters.Add(FCString::Atof(*LeftStr));
+                    }
+                    distortion_Parameters = RightStr;
+                }
+                NewConfig.distortion_Parameters.Add(FCString::Atof(*distortion_Parameters));
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("SensorManger: Config LabelList is empty!"));
+            }
+
+            // GetPropValue(Config, FString(TEXT("SaveData")), NewCameraConfig.bSaveData);
+            // Save Path
+            FString savestring;
+            GConfig->GetString(TEXT("Sensor"), TEXT("FisheyeSaved"), savestring, GGameIni);
+            if (!BaseSavePath.IsEmpty() && savestring == TEXT("true"))
+                NewConfig.savePath = BaseSavePath + TEXT("FisheyeData/") + TEXT("Fisheye_") +
+                                     FString::FromInt(NewConfig.id) +
+                                     TEXT("/");    // TODO: set save path in a standardized way
+            SensormanagerConfig.fisheyeArry.Add(NewConfig);
+        }
+        else if (sensor.type() == sim_msg::SENSOR_TYPE_FISHEYE_SEMANTIC)
+        {
+            FFisheyeConfig NewConfig;
+            *(FSensorConfig*) &NewConfig = Base;
+            NewConfig.typeName = TEXT("FisheyeSemantic");
+            NewConfig.targetId = EgoId;
+            NewConfig.PostProcessMaterial =
+                TEXT("Material'/Game/SensorSim/Camera/Material/Mat_Camera_Stencil1.Mat_Camera_Stencil1'");
+            FString Intrinsic_Matrix = TEXT("");
+            FString distortion_Parameters = TEXT("");
+
+            // old
+            GetPropValue(Config, FString(TEXT("Res_Horizontal")), NewConfig.res_Horizontal);
+            GetPropValue(Config, FString(TEXT("Res_Vertical")), NewConfig.res_Vertical);
+            GetPropValue(Config, FString(TEXT("Blur_Intensity")), NewConfig.blur_Intensity);
+            GetPropValue(Config, FString(TEXT("MotionBlur_Amount")), NewConfig.motionBlur_Amount);
+            GetPropValue(Config, FString(TEXT("Noise_Intensity")), NewConfig.noise_Intensity);
+            GetPropValue(Config, FString(TEXT("Vignette_Intensity")), NewConfig.vignette_Intensity);
+            GetPropValue(Config, FString(TEXT("Intrinsic_Matrix")), Intrinsic_Matrix);              ////---
+            GetPropValue(Config, FString(TEXT("Distortion_Parameters")), distortion_Parameters);    /////----
+            GetPropValue(Config, FString(TEXT("DisplayMode")), NewConfig.color_gray);
+            FString dm;
+            GetPropValue(Config, FString(TEXT("DisplayMode")), dm);
+            if (dm == TEXT("Gray"))
+            {
+                NewConfig.color_gray = 1;
+            }
+            NewConfig.bIsRGB = false;
+
+            GetPropValue(Config, FString(TEXT("Frequency")), NewConfig.frequency);
+            GetPropValue(Config, FString(TEXT("ResHorizonal")), NewConfig.res_Horizontal);
+            GetPropValue(Config, FString(TEXT("ResVertial")), NewConfig.res_Vertical);
+            GetPropValue(Config, FString(TEXT("Vignette")), NewConfig.vignette_Intensity);
+            GetPropValue(Config, FString(TEXT("GrainIntensity")), NewConfig.noise_Intensity);
+            GetPropValue(Config, FString(TEXT("MotionBlur")), NewConfig.motionBlur_Amount);
+            GetPropValue(Config, FString(TEXT("LensFlares")), NewConfig.LensFlares);
+            GetPropValue(Config, FString(TEXT("Blur")), NewConfig.blur_Intensity);
+            GetPropValue(Config, FString(TEXT("Exquisite")), NewConfig.Exquisite);
+            GetPropValue(Config, FString(TEXT("Bloom")), NewConfig.Bloom);
+            GetPropValue(Config, FString(TEXT("Compensation")), NewConfig.Compensation);
+            GetPropValue(Config, FString(TEXT("ShutterSpeed")), NewConfig.ShutterSpeed);
+            GetPropValue(Config, FString(TEXT("ISO")), NewConfig.ISO);
+            GetPropValue(Config, FString(TEXT("Aperture")), NewConfig.Aperture);
+            GetPropValue(Config, FString(TEXT("ColorTemperature")), NewConfig.ColorTemperature);
+            GetPropValue(Config, FString(TEXT("WhiteHint")), NewConfig.WhiteHint);
+            GetPropValue(Config, FString(TEXT("Transmittance")), NewConfig.Transmittance);
+            GetPropValue(Config, FString(TEXT("ExposureMode")), NewConfig.Exposure);
+            GetPropValue(Config, FString(TEXT("ColorMode")), NewConfig.color_gray);
+            GetPropValue(Config, FString(TEXT("IntrinsicMat")), Intrinsic_Matrix);
+            GetPropValue(Config, FString(TEXT("Distortion")), distortion_Parameters);
+
+            if (!Intrinsic_Matrix.IsEmpty())
+            {
+                Intrinsic_Matrix = Intrinsic_Matrix.Replace(*FString(" "), *FString(""));    // Remove space
+                FString LeftStr;
+                FString RightStr;
+                while (Intrinsic_Matrix.Split(",", &LeftStr, &RightStr))
+                {
+                    NewConfig.intrinsic_Matrix.Add(FCString::Atof(*LeftStr));
+                    Intrinsic_Matrix = RightStr;
+                }
+                NewConfig.intrinsic_Matrix.Add(FCString::Atof(*Intrinsic_Matrix));
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("SensorManger: Config LabelList is empty!"));
+            }
+
+            if (!distortion_Parameters.IsEmpty())
+            {
+                distortion_Parameters = distortion_Parameters.Replace(*FString(" "), *FString(""));    // Remove space
+                FString LeftStr;
+                FString RightStr;
+                while (distortion_Parameters.Split(",", &LeftStr, &RightStr))
+                {
+                    if (!LeftStr.IsEmpty())
+                    {
+                        NewConfig.distortion_Parameters.Add(FCString::Atof(*LeftStr));
+                    }
+                    distortion_Parameters = RightStr;
+                }
+                NewConfig.distortion_Parameters.Add(FCString::Atof(*distortion_Parameters));
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("SensorManger: Config LabelList is empty!"));
+            }
+
+            // GetPropValue(Config, FString(TEXT("SaveData")), NewCameraConfig.bSaveData);
+            // Save Path
+            FString savestring;
+            GConfig->GetString(TEXT("Sensor"), TEXT("FisheyeSaved"), savestring, GGameIni);
+            if (!BaseSavePath.IsEmpty() && savestring == TEXT("true"))
+                NewConfig.savePath = BaseSavePath + TEXT("FisheyeData/") + TEXT("Fisheye_") +
+                                     FString::FromInt(NewConfig.id) +
+                                     TEXT("/");    // TODO: set save path in a standardized way
+            SensormanagerConfig.fisheyeArry.Add(NewConfig);
+        }
+        else if (sensor.type() == sim_msg::SENSOR_TYPE_FISHEYE_NORMAL)
+        {
+            FFisheyeConfig NewConfig;
+            *(FSensorConfig*) &NewConfig = Base;
+            NewConfig.typeName = TEXT("FisheyeNormal");
+            NewConfig.targetId = EgoId;
+            NewConfig.PostProcessMaterial =
+                TEXT("Material'/Game/SensorSim/Camera/Material/Mat_Camera_Capture_normal.Mat_Camera_Capture_normal'");
+            FString Intrinsic_Matrix = TEXT("");
+            FString distortion_Parameters = TEXT("");
+
+            // old
+            GetPropValue(Config, FString(TEXT("Res_Horizontal")), NewConfig.res_Horizontal);
+            GetPropValue(Config, FString(TEXT("Res_Vertical")), NewConfig.res_Vertical);
+            GetPropValue(Config, FString(TEXT("Blur_Intensity")), NewConfig.blur_Intensity);
+            GetPropValue(Config, FString(TEXT("MotionBlur_Amount")), NewConfig.motionBlur_Amount);
+            GetPropValue(Config, FString(TEXT("Noise_Intensity")), NewConfig.noise_Intensity);
+            GetPropValue(Config, FString(TEXT("Vignette_Intensity")), NewConfig.vignette_Intensity);
+            GetPropValue(Config, FString(TEXT("Intrinsic_Matrix")), Intrinsic_Matrix);              ////---
+            GetPropValue(Config, FString(TEXT("Distortion_Parameters")), distortion_Parameters);    /////----
+            GetPropValue(Config, FString(TEXT("DisplayMode")), NewConfig.color_gray);
+            FString dm;
+            GetPropValue(Config, FString(TEXT("DisplayMode")), dm);
+            if (dm == TEXT("Gray"))
+            {
+                NewConfig.color_gray = 1;
+            }
+            NewConfig.bIsRGB = false;
 
             GetPropValue(Config, FString(TEXT("Frequency")), NewConfig.frequency);
             GetPropValue(Config, FString(TEXT("ResHorizonal")), NewConfig.res_Horizontal);

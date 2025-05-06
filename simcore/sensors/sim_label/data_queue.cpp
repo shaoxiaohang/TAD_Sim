@@ -51,10 +51,13 @@ DataQueue::DataQueue() {
             pkg.image = std::move(sem.second);
             pkg.type = sim_msg::SensorRaw_Type_TYPE_SEMANTIC;
             auto timestamp = pkg.image.timestamp;
-            if (this->_objects.find(timestamp) == this->_objects.end()) {
+            if (this->_objects.find(timestamp) == this->_objects.end() ||
+                this->_sensor_metas.find(timestamp) == this->_sensor_metas.end()) {
+              std::cout << "NO OBJECT OR SENSOR META" << std::endl;
               continue;
             }
             pkg.obj = this->_objects.at(timestamp);
+            pkg.meta = this->_sensor_metas.at(timestamp);
             img_pkg.emplace_back(std::move(pkg));
           }
         }
@@ -66,12 +69,15 @@ DataQueue::DataQueue() {
             ImagePackage pkg;
             pkg.frame_c = frameID_image;
             pkg.image = std::move(normal.second);
-            pkg.type = sim_msg::SensorRaw_Type_TYPE_ULTRASONIC;
+            pkg.type = sim_msg::SensorRaw_Type_TYPE_NORMAL;
             auto timestamp = pkg.image.timestamp;
-            if (this->_objects.find(timestamp) == this->_objects.end()) {
+            if (this->_objects.find(timestamp) == this->_objects.end() ||
+                this->_sensor_metas.find(timestamp) == this->_sensor_metas.end()) {
+              std::cout << "NO OBJECT OR SENSOR META" << std::endl;
               continue;
             }
             pkg.obj = this->_objects.at(timestamp);
+            pkg.meta = this->_sensor_metas.at(timestamp);
             img_pkg.emplace_back(std::move(pkg));
           }
         }
@@ -85,10 +91,13 @@ DataQueue::DataQueue() {
             pkg.image = std::move(sem.second);
             pkg.type = sim_msg::SensorRaw_Type_TYPE_CAMERA;
             auto timestamp = pkg.image.timestamp;
-            if (this->_objects.find(timestamp) == this->_objects.end()) {
+            if (this->_objects.find(timestamp) == this->_objects.end() ||
+                this->_sensor_metas.find(timestamp) == this->_sensor_metas.end()) {
+              std::cout << "NO OBJECT OR SENSOR META" << std::endl;
               continue;
             }
             pkg.obj = this->_objects.at(timestamp);
+            pkg.meta = this->_sensor_metas.at(timestamp);
             img_pkg.emplace_back(std::move(pkg));
           }
         }
@@ -101,10 +110,13 @@ DataQueue::DataQueue() {
             pkg.image = std::move(sem.second);
             pkg.type = sim_msg::SensorRaw_Type_TYPE_DEPTH;
             auto timestamp = pkg.image.timestamp;
-            if (this->_objects.find(timestamp) == this->_objects.end()) {
+            if (this->_objects.find(timestamp) == this->_objects.end() ||
+                this->_sensor_metas.find(timestamp) == this->_sensor_metas.end()) {
+              std::cout << "NO OBJECT OR SENSOR META" << std::endl;
               continue;
             }
             pkg.obj = this->_objects.at(timestamp);
+            pkg.meta = this->_sensor_metas.at(timestamp);
             depth_pkg.emplace_back(std::move(pkg));
           }
         }
@@ -117,14 +129,76 @@ DataQueue::DataQueue() {
             pkg.image = std::move(sem.second);
             pkg.type = sim_msg::SensorRaw_Type_TYPE_FISHEYE;
             auto timestamp = pkg.image.timestamp;
-            if (this->_objects.find(timestamp) == this->_objects.end()) {
+            if (this->_objects.find(timestamp) == this->_objects.end() ||
+                this->_sensor_metas.find(timestamp) == this->_sensor_metas.end()) {
+              std::cout << "NO OBJECT OR SENSOR META" << std::endl;
               continue;
             }
             pkg.obj = this->_objects.at(timestamp);
+            pkg.meta = this->_sensor_metas.at(timestamp);
             img_pkg.emplace_back(std::move(pkg));
           }
         }
         this->_fisheyes.clear();
+        // handle fisheye depth
+        for (auto &depths : this->_fisheye_depths) {
+          for (auto &sem : depths.second) {
+            ImagePackage pkg;
+            pkg.frame_c = frameID_image;
+            pkg.image = std::move(sem.second);
+            pkg.type = sim_msg::SensorRaw_Type_TYPE_FISHEYE_DEPTH;
+            auto timestamp = pkg.image.timestamp;
+            if (this->_objects.find(timestamp) == this->_objects.end() ||
+                this->_sensor_metas.find(timestamp) == this->_sensor_metas.end()) {
+              std::cout << "NO OBJECT OR SENSOR META" << std::endl;
+              continue;
+            }
+            pkg.obj = this->_objects.at(timestamp);
+            pkg.meta = this->_sensor_metas.at(timestamp);
+            //std::cout << "add fisheye depth" << std::endl;
+            depth_pkg.emplace_back(std::move(pkg));
+            //img_pkg.emplace_back(std::move(pkg));
+          }
+        }
+        this->_fisheye_depths.clear();
+        // handle fisheye normal
+        for (auto &normals : this->_fisheye_normals) {
+          for (auto &normal : normals.second) {
+            ImagePackage pkg;
+            pkg.frame_c = frameID_image;
+            pkg.image = std::move(normal.second);
+            pkg.type = sim_msg::SensorRaw_Type_TYPE_FISHEYE_NORMAL;
+            auto timestamp = pkg.image.timestamp;
+            if (this->_objects.find(timestamp) == this->_objects.end() ||
+                this->_sensor_metas.find(timestamp) == this->_sensor_metas.end()) {
+              std::cout << "NO OBJECT OR SENSOR META" << std::endl;
+              continue;
+            }
+            pkg.obj = this->_objects.at(timestamp);
+            pkg.meta = this->_sensor_metas.at(timestamp);
+            img_pkg.emplace_back(std::move(pkg));
+          }
+        }
+        this->_fisheye_normals.clear();
+        // handle fisheye semantic
+        for (auto &semantics : this->_fisheye_semantics) {
+          for (auto &sem : semantics.second) {
+            ImagePackage pkg;
+            pkg.frame_c = frameID_image;
+            pkg.image = std::move(sem.second);
+            pkg.type = sim_msg::SensorRaw_Type_TYPE_FISHEYE_SEMANTIC;
+            auto timestamp = pkg.image.timestamp;
+            if (this->_objects.find(timestamp) == this->_objects.end() ||
+                this->_sensor_metas.find(timestamp) == this->_sensor_metas.end()) {
+              std::cout << "NO OBJECT OR SENSOR META" << std::endl;
+              continue;
+            }
+            pkg.obj = this->_objects.at(timestamp);
+            pkg.meta = this->_sensor_metas.at(timestamp);
+            img_pkg.emplace_back(std::move(pkg));
+          }
+        }
+        this->_fisheye_semantics.clear();
         // handle lidar
         for (auto &lidars : this->_lidars) {
           for (auto &lid : lidars.second) {
@@ -133,8 +207,8 @@ DataQueue::DataQueue() {
             pkg.lidar = std::move(lid.second);
             auto timestamp = lid.second.timestamp;
             if (this->_objects.size() == 0) {
-                std::cout << "NO OBJECT" << std::endl;
-                continue;
+              std::cout << "NO OBJECT" << std::endl;
+              continue;
             }
             std::cout << "HANDLE LIDAR " << timestamp << std::endl;
             auto fd = this->_objects.find(timestamp);
@@ -214,7 +288,7 @@ void DataQueue::setImageCallback(const std::function<void(const ImagePackage &)>
  *
  * @param callback the callback function
  */
-void DataQueue::setDepthImageCallback(const std::function<void(const ImagePackage &)> &callback){
+void DataQueue::setDepthImageCallback(const std::function<void(const ImagePackage &)> &callback) {
   std::unique_lock<std::mutex> lock(_mutex);
   _callback_depth_image = callback;
 }
@@ -244,11 +318,10 @@ void DataQueue::addCamera(const ImageInfo &info) {
  *
  * @param info the depth camera information
  */
-void DataQueue::addDepth(const ImageInfo &info){
+void DataQueue::addDepth(const ImageInfo &info) {
   std::unique_lock<std::mutex> lock(_mutex);
   _depths[info.id][info.timestamp] = std::move(info);
 }
-
 
 /**
  * @brief add fisheye info
@@ -258,6 +331,36 @@ void DataQueue::addDepth(const ImageInfo &info){
 void DataQueue::addFisheye(const ImageInfo &info) {
   std::unique_lock<std::mutex> lock(_mutex);
   _fisheyes[info.id][info.timestamp] = std::move(info);
+}
+
+/**
+ * @brief add fisheye depth info
+ *
+ * @param info the fisheye depth information
+ */
+void DataQueue::addFisheyeDepth(const ImageInfo &info) {
+  std::unique_lock<std::mutex> lock(_mutex);
+  _fisheye_depths[info.id][info.timestamp] = std::move(info);
+}
+
+/**
+ * @brief add fisheye normal info
+ *
+ * @param info the fisheye normal information
+ */
+void DataQueue::addFisheyeNormal(const ImageInfo &info) {
+  std::unique_lock<std::mutex> lock(_mutex);
+  _fisheye_normals[info.id][info.timestamp] = std::move(info);
+}
+
+/**
+ * @brief add fisheye semantic info
+ *
+ * @param info the fisheye semantic information
+ */
+void DataQueue::addFisheyeSemantic(const ImageInfo &info) {
+  std::unique_lock<std::mutex> lock(_mutex);
+  _fisheye_semantics[info.id][info.timestamp] = std::move(info);
 }
 
 /**
@@ -298,6 +401,16 @@ void DataQueue::addObject(const sim_msg::DisplayPose &info) {
   std::int64_t t = static_cast<std::int64_t>(info.timestamp());
   std::unique_lock<std::mutex> lock(_mutex);
   _objects[t] = std::move(info);
+}
+
+/**
+ * @brief add sensor meta info
+ *
+ * @param info the sensor meta information
+ */
+void DataQueue::addSensorMeta(const sim_msg::SensorMeta &info) {
+  std::unique_lock<std::mutex> lock(_mutex);
+  _sensor_metas[info.timestamp()] = std::move(info);
 }
 
 /**

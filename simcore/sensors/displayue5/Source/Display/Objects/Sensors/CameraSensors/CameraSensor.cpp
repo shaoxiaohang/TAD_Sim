@@ -2,10 +2,16 @@
 
 #include "CineCameraComponent.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Framework/DisplayGameInstance.h"
+#include "Framework/SaveDataThread.h"
 #include "HadMap/Public/HadmapManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Objects/Transports/TransportPawn.h"
 #include "Runtime/Engine/Classes/Components/PostProcessComponent.h"
 #include "Runtime/Engine/Classes/Components/SceneCaptureComponent2D.h"
+#include "Runtime/ImageWrapper/Public/IImageWrapperModule.h"
+#include "SimMsg/sensor_raw.pb.h"
 #include "TexJpeg.h"
 #include "Utils/ProjectionUtil.h"
 
@@ -91,9 +97,9 @@ ISimActorInterface* ACameraSensor::Install(const FSensorConfig& _Config)
     /* Install previewCamera */
     if (SimActor)
     {
-        AActor* Ego = Cast<AActor>(SimActor);
-        UE_LOG(LogTemp, Log, TEXT("ACameraSensor: Ignore Ego %s"), *Ego->GetName());
-        IgnoreActor(Ego);
+        egoActor = Cast<AActor>(SimActor);
+        UE_LOG(LogTemp, Log, TEXT("ACameraSensor: Ignore Ego %s"), *egoActor->GetName());
+        IgnoreActor(egoActor);
         // TODO: All simActors support install camera
         ATransportPawn* Transport = Cast<ATransportPawn>(SimActor);
         if (Transport)
@@ -349,8 +355,8 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
         // 将场景捕获组件附加到根组件上
         captureComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
         // 设置场景捕获组件是否每帧进行捕获
-        captureComponent->bCaptureEveryFrame = true;
-        //captureComponent->bCaptureOnMovement = false;
+        captureComponent->bCaptureEveryFrame = bCaptureEveryFrame;
+        captureComponent->bCaptureOnMovement = bCaptureEveryFrame;
         // 设置场景捕获组件自动激活
         captureComponent->bAutoActivate = true;
         captureComponent->SetActive(true);
@@ -362,30 +368,29 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
         // 设置场景捕获组件的近裁剪平面和远裁剪平面
         captureComponent->OrthoWidth = 20000.f;
         // 使用自定义投影矩阵
-        captureComponent->bUseCustomProjectionMatrix = true;
         captureComponent->ShowFlags.SetMotionBlur(true);
         captureComponent->ShowFlags.SetAmbientOcclusion(false);
 
-		// ApplyDefaultPostProcessSetting(Sensor->PostProcessSettings);
-		// Sensor->PostProcessSettings = PPSettings;
+        // ApplyDefaultPostProcessSetting(Sensor->PostProcessSettings);
+        // Sensor->PostProcessSettings = PPSettings;
 
-		// captureComponent->PostProcessSettings.bOverride_DynamicGlobalIlluminationMethod = true;
-		// captureComponent->PostProcessSettings.DynamicGlobalIlluminationMethod = EDynamicGlobalIlluminationMethod::Lumen;
-		// captureComponent->PostProcessSettings.bOverride_ReflectionMethod = true;
-		// captureComponent->PostProcessSettings.ReflectionMethod = EReflectionMethod::Lumen;
+        // captureComponent->PostProcessSettings.bOverride_DynamicGlobalIlluminationMethod = true;
+        // captureComponent->PostProcessSettings.DynamicGlobalIlluminationMethod =
+        // EDynamicGlobalIlluminationMethod::Lumen; captureComponent->PostProcessSettings.bOverride_ReflectionMethod =
+        // true; captureComponent->PostProcessSettings.ReflectionMethod = EReflectionMethod::Lumen;
 
-		// captureComponent->PostProcessSettings.bOverride_AutoExposureMethod = true;
-		// captureComponent->PostProcessSettings.AutoExposureMethod = EAutoExposureMethod::AEM_Histogram;
-		// captureComponent->PostProcessSettings.bOverride_AutoExposureBias = true;
-		// captureComponent->PostProcessSettings.AutoExposureBias = 0;
+        // captureComponent->PostProcessSettings.bOverride_AutoExposureMethod = true;
+        // captureComponent->PostProcessSettings.AutoExposureMethod = EAutoExposureMethod::AEM_Histogram;
+        // captureComponent->PostProcessSettings.bOverride_AutoExposureBias = true;
+        // captureComponent->PostProcessSettings.AutoExposureBias = 0;
 
-		// captureComponent->PostProcessSettings.bOverride_DynamicGlobalIlluminationMethod = true;
-		// captureComponent->PostProcessSettings.DynamicGlobalIlluminationMethod = EDynamicGlobalIlluminationMethod::Lumen;
-		// captureComponent->PostProcessSettings.bOverride_ReflectionMethod = true;
-		// captureComponent->PostProcessSettings.ReflectionMethod = EReflectionMethod::Lumen;
+        // captureComponent->PostProcessSettings.bOverride_DynamicGlobalIlluminationMethod = true;
+        // captureComponent->PostProcessSettings.DynamicGlobalIlluminationMethod =
+        // EDynamicGlobalIlluminationMethod::Lumen; captureComponent->PostProcessSettings.bOverride_ReflectionMethod =
+        // true; captureComponent->PostProcessSettings.ReflectionMethod = EReflectionMethod::Lumen;
 
-		// captureComponent->PostProcessSettings.bOverride_LumenSurfaceCacheResolution = true;
-		// captureComponent->PostProcessSettings.LumenSurfaceCacheResolution = 0.001;
+        // captureComponent->PostProcessSettings.bOverride_LumenSurfaceCacheResolution = true;
+        // captureComponent->PostProcessSettings.LumenSurfaceCacheResolution = 0.001;
 
         // if ((int32) ERHIZBuffer::IsInverted)
         // {
@@ -398,6 +403,7 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
         //     captureComponent->CustomProjectionMatrix = FPerspectiveMatrix(FMath::DegreesToRadians(NewFov_H * 0.5f),
         //         FMath::DegreesToRadians(NewFov_V * 0.5f), 1.f, 1.f, GNearClippingPlane, GNearClippingPlane);
         // }
+        captureComponent->bUseCustomProjectionMatrix = true;
         captureComponent->CustomProjectionMatrix =
             util::CalcProjectionMatrix(fx, fy, cx, cy, imageRes.X, imageRes.Y, GNearClippingPlane);
         captureComponent->FOVAngle = NewFov_H;
@@ -440,8 +446,7 @@ bool ACameraSensor::Init(const FSensorConfig& _Config)
     if (texJpg)
         UE_LOG(LogTemp, Log, TEXT("CameraSensor: texJpg is ok"));
 
-    //UseLitShowFlags(captureComponent->ShowFlags);
-
+    UseLitShowFlags(captureComponent->ShowFlags);
 
     return true;
 }
@@ -456,9 +461,9 @@ void ACameraSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
     // 频率限制
     if (frequency > 0 && (CameraInput->timeStamp - timeStamp) < 999.9999999 / frequency)
     {
-        // UE_LOG(LogTemp, Warning, TEXT("%s: Camera frequency async, has return, Frequency %f
-        // TimeStamp is: %f Camera TimeStamp %f"), *this->GetName(), frequency, timeStamp,
-        // CameraInput->timeStamp);
+        // UE_LOG(LogTemp, Warning,
+        //     TEXT("%s: Camera frequency async, has return, Frequency %f TimeStamp is: %f Camera TimeStamp %f"),
+        //     *this->GetName(), frequency, timeStamp, CameraInput->timeStamp);
         return;
     }
     timeStamp = CameraInput->timeStamp;
@@ -469,6 +474,20 @@ void ACameraSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
     {
         cuda = texJpg->Copy2Cuda();
     }
+
+    // if (egoActor)
+    // {
+    //     FTransform transform = egoActor->GetActorTransform();
+    //     FVector location = transform.GetLocation();
+    //     location /= 100;
+    //     FQuat quat = FQuat::MakeFromEuler(FVector(
+    //         transform.GetRotation().Euler().X, transform.GetRotation().Euler().Y, -transform.GetRotation().Euler().Z));
+    //     FString posedata = FString::Printf(TEXT("%f %f %f %f %f %f %f %f\n"), timeStamp, location.X, location.Y,
+    //         location.Z, quat.X, quat.Y, quat.Z, quat.W);
+    //     FString poseFile = TEXT("/home/aaa/workspace/hsim/pose.txt");
+    //     FFileHelper::SaveStringToFile(
+    //         posedata, *poseFile, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), FILEWRITE_Append);
+    // }
 
     std::vector<uint8>& BitData = dataBuf.buffer;
     BitData.clear();
@@ -488,9 +507,12 @@ void ACameraSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
         }
         else
         {
-            // captureComponent->CaptureScene();
-            // captureComponent->MarkRenderStateDirty();
-            // FlushRenderingCommands();
+            if (!bCaptureEveryFrame)
+            {
+                UE_LOG(LogTemp, Log, TEXT("CameraSensor: CaptureScene"));
+                captureComponent->CaptureScene();
+                FlushRenderingCommands();
+            }
 
             FReadSurfaceDataFlags ReadPixelFlags(RCM_UNorm);
             FTextureRenderTarget2DResource* RTResource =
@@ -607,7 +629,7 @@ void ACameraSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
                         UE_LOG(LogTemp, Warning, TEXT("CameraSensor: encode jpeg faild."));
                     }
                 }
-                else if (imageName == TEXT("Depth") || imageName == TEXT("Semantic"))
+                else if (imageName == TEXT("Semantic"))
                 {
                     TArray<uint8_t> BitMap;
                     BitMap.SetNum(dataBuf.buffer.size() / 4);
@@ -621,6 +643,15 @@ void ACameraSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
                         imgbuf = ImageWrapper->GetCompressed();
                     }
                 }
+                // else if (imageName == TEXT("Semantic"))
+                // {
+                //     TArray<uint8_t> BitMap;
+                //     BitMap.SetNum(dataBuf.buffer.size() / 4);
+                //     for (int i = 0; i < BitMap.Num(); i++)
+                //     {
+                //         BitMap[i] = dataBuf.buffer[i * 4];
+                //     }
+                // }
                 else
                 {
                     UE_LOG(LogTemp, Warning, TEXT("CameraSensor: imageName is not supported: %s"), *imageName);
@@ -725,6 +756,8 @@ void ACameraSensor::Update(const FSensorInput& _Input, FSensorOutput& _Output)
             sim_msg::CameraRaw craw;
             craw.set_id(id);
             craw.set_timestamp(timeStamp_ego);
+            UE_LOG(
+                LogTemp, Display, TEXT("CameraSensor: public camera raw %s timestamp %f"), *imageName, timeStamp_ego);
             if (imgbuf.Num() > 0)
             {
                 if (imageFormat == EImageFormat::JPEG)

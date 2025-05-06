@@ -32,6 +32,7 @@ public class Display : ModuleRules
 				"WorldXShaders",
 				"Renderer",
 				"UMG",
+				"Eigen",
 				"CustomMeshComponent"
 			}
 			);
@@ -44,6 +45,8 @@ public class Display : ModuleRules
     PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "SimMsg"));
 
     PublicIncludePaths.Add(ModuleDirectory);
+
+    PublicDefinitions.Add("EIGEN_MPL2_ONLY");
 
     RuntimeDependencies.Add(Path.Combine(ModuleDirectory, "../../Config", "DefaultAutoRoad.ini"));
 

@@ -358,9 +358,18 @@ void ADisplayGameModeBase::ConvertData_SimToLocal(const FSimData& _SimData, FLoc
 
             // Rotation
             FRotator egoVehicleRotation(ForceInit);
-            EgoInput.rotation.Roll = (float) (Location.rpy().x() * 180 / PI);
-            EgoInput.rotation.Pitch = (float) (-Location.rpy().y() * 180 / PI);
-            EgoInput.rotation.Yaw = (float) (-Location.rpy().z() * 180 / PI + 90);
+
+            if(Location.use_quat())
+            {
+                FQuat quat = FQuat(Location.quat().x(), Location.quat().y(), Location.quat().z(), Location.quat().w());
+                EgoInput.rotation = quat.Rotator();
+            }
+            else
+            {
+                EgoInput.rotation.Roll = (float) (Location.rpy().x() * 180 / PI);
+                EgoInput.rotation.Pitch = (float) (-Location.rpy().y() * 180 / PI);
+                EgoInput.rotation.Yaw = (float) (-Location.rpy().z() * 180 / PI + 90);
+            }
             // Velocity
             FVector Velocity = FVector(Location.velocity().x(), -Location.velocity().y(), Location.velocity().z());
             EgoInput.velocity = Velocity;
@@ -564,8 +573,8 @@ void ADisplayGameModeBase::ConvertData_LocalToSim(const FLocalData& _LocalData, 
                     const auto& out = UpdateInPtr->transportManager.vehicleManagerOut.egoOutArry[i];
                     double Px, Py, Pz = 0.0;
                     hadmapue4::HadmapManager::Get()->LocalToLonLat(out.locPose, Px, Py, Pz);
-                    UE_LOG(LogTemp, Warning, TEXT("SEND POSE: %f %f %f %f %f %f"), out.locPose.X, out.locPose.Y,
-                        out.locPose.Z, Px, Py, Pz);
+                    //UE_LOG(LogTemp, Display, TEXT("add ego pose: %f %f %f %f %f %f"), out.locPose.X, out.locPose.Y,
+                        //out.locPose.Z, Px, Py, Pz);
                     auto* object = SimUpdateInPtr->trafficPose.add_egos();
                     object->set_id(out.id + 1);
                     object->set_timestamp(out.timeStamp0);
@@ -648,7 +657,7 @@ void ADisplayGameModeBase::ConvertData_LocalToSim(const FLocalData& _LocalData, 
             auto* sensor = SimUpdateInPtr->sensorData.add_sensor();
             sensor->set_id(senbuf.id);
             sensor->set_raw(senbuf.serialize_string);
-            UE_LOG(LogSimSystem, Display, TEXT("Add Sensor %s"), *senbuf.type);
+            //UE_LOG(LogSimSystem, Display, TEXT("Add Sensor %s to output"), *senbuf.type);
             if (senbuf.type == "Lidar")
             {
                 sensor->set_type(sim_msg::SensorRaw_Type_TYPE_LIDAR);
@@ -672,6 +681,18 @@ void ADisplayGameModeBase::ConvertData_LocalToSim(const FLocalData& _LocalData, 
             else if (senbuf.type == "Fisheye")
             {
                 sensor->set_type(sim_msg::SensorRaw_Type_TYPE_FISHEYE);
+            }
+            else if (senbuf.type == "FisheyeDepth")
+            {
+                sensor->set_type(sim_msg::SensorRaw_Type_TYPE_FISHEYE_DEPTH);
+            }
+            else if (senbuf.type == "FisheyeNormal")
+            {
+                sensor->set_type(sim_msg::SensorRaw_Type_TYPE_FISHEYE_NORMAL);
+            }
+            else if (senbuf.type == "FisheyeSemantic")
+            {
+                sensor->set_type(sim_msg::SensorRaw_Type_TYPE_FISHEYE_SEMANTIC);
             }
         }
         _SimData.name = _LocalData.name;

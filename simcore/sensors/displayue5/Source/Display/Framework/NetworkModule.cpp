@@ -168,7 +168,7 @@ void NetworkModule::Reset(tx_sim::ResetHelper& helper)
 void NetworkModule::Step(tx_sim::StepHelper& helper)
 {
     double timestamp = helper.timestamp();
-    UE_LOG(SimLogNet, Log, TEXT("NetworkModule Step %f"), timestamp);
+    //UE_LOG(SimLogNet, Log, TEXT("NetworkModule Step %f"), timestamp);
     double bei = realstep > 0 ? ((timestamp - time0) / realstep) : 1.0;
     if (bei < 0 || FMath::Modf(bei, &bei) > 1e-4)
     {
@@ -182,7 +182,7 @@ void NetworkModule::Step(tx_sim::StepHelper& helper)
 
     {
         FScopeLock ScopeLock(&mutex_Input);
-        simUpdateIn.timeStamp = timestamp;
+        //simUpdateIn.timeStamp = timestamp;
 
         std::string strUnionLocation;
         helper.GetSubscribedMessage(TCHAR_TO_ANSI(*(UnionPrefixStr + LocationTopic)), strUnionLocation);
@@ -230,15 +230,15 @@ void NetworkModule::Step(tx_sim::StepHelper& helper)
             {
                 NewInPtr->egoData.Emplace(UTF8_TO_TCHAR(groupname.c_str()), locationMsg);
             }
-            UE_LOG(SimLogNet, Log, TEXT("LOCATION %s time %f x %.8f y %.8f z %.8f %s"),
-                UTF8_TO_TCHAR(groupname.c_str()), timestamp, locationMsg.position().x(), locationMsg.position().y(),
-                locationMsg.position().z(), UTF8_TO_TCHAR(locationMsg.DebugString().c_str()));
+            //UE_LOG(SimLogNet, Log, TEXT("Union Location %s time %f x %.8f y %.8f z %.8f %s"),
+            //    UTF8_TO_TCHAR(groupname.c_str()), timestamp, locationMsg.position().x(), locationMsg.position().y(),
+            //    locationMsg.position().z(), UTF8_TO_TCHAR(locationMsg.DebugString().c_str()));
         }
         NewInPtr->trafficData.ParseFromString(strTraffic);
         // UE_LOG(SimLogNet, Log, TEXT("TRAFFIC %f %s"), timestamp,
         // UTF8_TO_TCHAR(NewInPtr->trafficData.DebugString().c_str()));
         myGameInstance->simInDataArry.Add(NewInPtr);
-        UE_LOG(SimLogNet, Log, TEXT("ADD SIMDATA %s %f "), *NewInPtr->name, timestamp);
+        //UE_LOG(SimLogNet, Log, TEXT("ADD SIMDATA %s %f "), *NewInPtr->name, timestamp);
         myGameInstance->bSimInDataRefreshed = true;
     }
 
@@ -276,7 +276,7 @@ FEvent* NetworkModule::getThreadSuspendedEvent()
 void NetworkModule::PublicUpdateMessage(tx_sim::StepHelper& helper)
 {
     FScopeLock ScopeLock(&mutex_Output);
-    UE_LOG(SimLogNet, Log, TEXT("PublicUpdateMessage Size: %d"), myGameInstance->simOutDataArry.Num());
+    //UE_LOG(SimLogNet, Log, TEXT("PublicUpdateMessage Size: %d"), myGameInstance->simOutDataArry.Num());
     for (const auto& sout : myGameInstance->simOutDataArry)
     {
         if (sout->datatype == 1)
@@ -288,7 +288,7 @@ void NetworkModule::PublicUpdateMessage(tx_sim::StepHelper& helper)
             {
                 // UE_LOG(SimLogNet, Log, TEXT("PublictrafficPose %s"),
                 //     ANSI_TO_TCHAR(simOut->trafficPose.DebugString().c_str()));
-                UE_LOG(SimLogNet, Log, TEXT("Send trafficPose: %f"), simOut->trafficPose.timestamp());
+               // UE_LOG(SimLogNet, Log, TEXT("Send DisplayPose: %f"), simOut->trafficPose.timestamp());
                 helper.PublishMessage(std::string(TCHAR_TO_ANSI(*PoseTopic)), payload_);
             }
         }
@@ -300,7 +300,7 @@ void NetworkModule::PublicUpdateMessage(tx_sim::StepHelper& helper)
             {
                 helper.PublishMessage(std::string(TCHAR_TO_ANSI(*SensorTopic)), payload_);
             }
-            UE_LOG(SimLogNet, Log, TEXT("Send SensorData: %f"), simSenOut->sensorData.timestamp());
+            //UE_LOG(SimLogNet, Log, TEXT("Send SensorRaw timestamp: %f"), simSenOut->sensorData.timestamp());
         }
     }
     myGameInstance->simOutDataArry.SetNum(0);

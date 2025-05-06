@@ -3,7 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/PostProcessVolume.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Kismet/GameplayStatics.h"
+
 #include "DataFunctionLibrary.generated.h"
 
 class UDataTable;
@@ -44,4 +47,14 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "Utils | Config")
     static bool CompareTexture(UTexture2D* Tex1, UTexture2D* Tex2);
+
+    static APostProcessVolume* GetGlobalPostProcess(const UObject* WorldContextObject)
+    {
+        AActor* GlobalPostProcess =
+            UGameplayStatics::GetActorOfClass(WorldContextObject, APostProcessVolume::StaticClass());
+        if (GlobalPostProcess != nullptr)
+            return Cast<APostProcessVolume>(GlobalPostProcess);
+        else
+            return nullptr;
+    };
 };

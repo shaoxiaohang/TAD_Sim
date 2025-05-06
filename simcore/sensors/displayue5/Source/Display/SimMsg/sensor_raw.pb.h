@@ -127,12 +127,16 @@ enum SensorRaw_Type : int {
   SensorRaw_Type_TYPE_DEPTH = 4,
   SensorRaw_Type_TYPE_SEMANTIC = 5,
   SensorRaw_Type_TYPE_FISHEYE = 6,
+  SensorRaw_Type_TYPE_FISHEYE_DEPTH = 7,
+  SensorRaw_Type_TYPE_FISHEYE_SEMANTIC = 8,
+  SensorRaw_Type_TYPE_FISHEYE_NORMAL = 9,
+  SensorRaw_Type_TYPE_NORMAL = 10,
   SensorRaw_Type_SensorRaw_Type_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   SensorRaw_Type_SensorRaw_Type_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool SensorRaw_Type_IsValid(int value);
 constexpr SensorRaw_Type SensorRaw_Type_Type_MIN = SensorRaw_Type_TYPE_CAMERA;
-constexpr SensorRaw_Type SensorRaw_Type_Type_MAX = SensorRaw_Type_TYPE_FISHEYE;
+constexpr SensorRaw_Type SensorRaw_Type_Type_MAX = SensorRaw_Type_TYPE_NORMAL;
 constexpr int SensorRaw_Type_Type_ARRAYSIZE = SensorRaw_Type_Type_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* SensorRaw_Type_descriptor();
@@ -1181,6 +1185,14 @@ class SensorRaw :
     SensorRaw_Type_TYPE_SEMANTIC;
   static constexpr Type TYPE_FISHEYE =
     SensorRaw_Type_TYPE_FISHEYE;
+  static constexpr Type TYPE_FISHEYE_DEPTH =
+    SensorRaw_Type_TYPE_FISHEYE_DEPTH;
+  static constexpr Type TYPE_FISHEYE_SEMANTIC =
+    SensorRaw_Type_TYPE_FISHEYE_SEMANTIC;
+  static constexpr Type TYPE_FISHEYE_NORMAL =
+    SensorRaw_Type_TYPE_FISHEYE_NORMAL;
+  static constexpr Type TYPE_NORMAL =
+    SensorRaw_Type_TYPE_NORMAL;
   static inline bool Type_IsValid(int value) {
     return SensorRaw_Type_IsValid(value);
   }

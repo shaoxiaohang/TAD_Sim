@@ -67,6 +67,8 @@ protobuf_generate_cpp(PROTO_SRC_TFC PROTO_HDR_CLR ../../../common/message/visual
 # ego_group
 protobuf_generate_cpp(PROTO_SRC_TFC PROTO_HDR_CLR ../../../common/message/union.proto)
 protobuf_generate_cpp(PROTO_SRC_TFC PROTO_HDR_CLR ../../../common/message/egoMapData.proto)
+protobuf_generate_cpp(PROTO_SRC_TFC PROTO_HDR_CLR ../../../common/message/sensor_meta.proto)
+
 
 SET(project_SOURCES
   "traffic.pb.cc"
@@ -115,6 +117,7 @@ SET(project_SOURCES
   # ego_group
   "union.pb.cc"
   "egoMapData.pb.cc"
+  "sensor_meta.pb.cc"
 )
 
 SET(project_HEADERS
@@ -164,6 +167,7 @@ SET(project_HEADERS
   # ego_group
   "union.pb.h"
   "egoMapData.pb.h"
+  "sensor_meta.pb.h"
 )
 add_library(txProtoBuf ${project_SOURCES} ${project_HEADERS})
 

@@ -127,9 +127,11 @@ void TxCarImp_ICE::resetVehicle() {
     mCarInitState.init_vz = 0.0;
 
     // wgs84 to enu
-    coord_trans_api::lonlat2enu(mCarInitState.init_x, mCarInitState.init_y, mCarInitState.init_z, mMapOrigin.x,
-                                mMapOrigin.y, mMapOrigin.z);
-    LOG_INFO << "ego statlocation x:" << mCarInitState.init_x << ", y:" << mCarInitState.init_y
+    if (mCarInitState.bUseWgs84) {
+      coord_trans_api::lonlat2enu(mCarInitState.init_x, mCarInitState.init_y, mCarInitState.init_z, mMapOrigin.x,
+                                  mMapOrigin.y, mMapOrigin.z);
+    }
+    LOG_INFO << "ego start location x:" << mCarInitState.init_x << ", y:" << mCarInitState.init_y
              << ", z:" << mCarInitState.init_z << "\n";
 
     // use vehicle geometory

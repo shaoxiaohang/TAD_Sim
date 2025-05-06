@@ -47,13 +47,14 @@ public:
 		ShowFlags.SetEyeAdaptation(false);
 	}
 
-	static void UseLitShowFlags(FEngineShowFlags& ShowFlags)
+	static void UseLitShowFlags(FEngineShowFlags& ShowFlags, bool enableAA = true)
 	{
 		ShowFlags = FEngineShowFlags(ESFIM_All0);
 
+
 		ShowFlags.SetRendering(true);
 
-		// Assets
+		//Assets
 		ShowFlags.SetMaterials(true);
 		ShowFlags.SetSkeletalMeshes(true);
 		ShowFlags.SetStaticMeshes(true);
@@ -109,7 +110,7 @@ public:
 		ShowFlags.SetPostProcessMaterial(true);
 		ShowFlags.SetPostProcessing(true);
 		ShowFlags.SetAntiAliasing(true);
-		ShowFlags.SetTemporalAA(true);
+		ShowFlags.SetTemporalAA(enableAA);
 		ShowFlags.SetToneCurve(true);
 		ShowFlags.SetTonemapper(true);
 		ShowFlags.SetColorGrading(true);

@@ -42,8 +42,8 @@ class CTerrainInterface final {
   // terrain based on hdmap
   terrain::TerrainMapPtr m_terrain_map_ptr;
 
-  bool m_use_map_terrain;
-  bool m_use_crg;
+  bool m_use_map_terrain = false;
+  bool m_use_crg = false;
 
   // last terrain ego location
   terrain::Vector3d m_ego_last_enu;

@@ -91,7 +91,8 @@ protobuf_generate_cpps(PROTO_SRC PROTO_HDR
   ../../../common/message/settings.proto
   ../../../common/message/environment.proto
   ../../../common/message/vehicle_interaction.proto
-  ../../../common/message/scene_sensor_group.proto)
+  ../../../common/message/scene_sensor_group.proto
+  ../../../common/message/sensor_meta.proto)
 
 file(GLOB SRC
   "*.h"

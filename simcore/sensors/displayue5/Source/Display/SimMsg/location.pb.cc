@@ -17,6 +17,7 @@
 #include <google/protobuf/port_def.inc>
 extern PROTOBUF_INTERNAL_EXPORT_location_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Location_EgoLane_location_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_basic_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Vec3_basic_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_basic_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Vec4_basic_2eproto;
 namespace sim_msg {
 class Location_EgoLaneDefaultTypeInternal {
  public:
@@ -38,10 +39,11 @@ static void InitDefaultsscc_info_Location_location_2eproto() {
   ::sim_msg::Location::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_Location_location_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 2, InitDefaultsscc_info_Location_location_2eproto}, {
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<3> scc_info_Location_location_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 3, InitDefaultsscc_info_Location_location_2eproto}, {
       &scc_info_Vec3_basic_2eproto.base,
-      &scc_info_Location_EgoLane_location_2eproto.base,}};
+      &scc_info_Location_EgoLane_location_2eproto.base,
+      &scc_info_Vec4_basic_2eproto.base,}};
 
 static void InitDefaultsscc_info_Location_EgoLane_location_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -83,6 +85,8 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_location_2eproto::offsets[] PR
   PROTOBUF_FIELD_OFFSET(::sim_msg::Location, rpy_),
   PROTOBUF_FIELD_OFFSET(::sim_msg::Location, acceleration_),
   PROTOBUF_FIELD_OFFSET(::sim_msg::Location, ego_lane_),
+  PROTOBUF_FIELD_OFFSET(::sim_msg::Location, use_quat_),
+  PROTOBUF_FIELD_OFFSET(::sim_msg::Location, quat_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::sim_msg::Location_EgoLane)},
@@ -95,16 +99,17 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 };
 
 const char descriptor_table_protodef_location_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\016location.proto\022\007sim_msg\032\013basic.proto\"\326"
-  "\002\n\010Location\022\t\n\001t\030\001 \001(\001\022\037\n\010position\030\002 \001(\013"
+  "\n\016location.proto\022\007sim_msg\032\013basic.proto\"\205"
+  "\003\n\010Location\022\t\n\001t\030\001 \001(\001\022\037\n\010position\030\002 \001(\013"
   "2\r.sim_msg.Vec3\022\037\n\010velocity\030\003 \001(\0132\r.sim_"
   "msg.Vec3\022\036\n\007angular\030\004 \001(\0132\r.sim_msg.Vec3"
   "\022\032\n\003rpy\030\005 \001(\0132\r.sim_msg.Vec3\022#\n\014accelera"
   "tion\030\006 \001(\0132\r.sim_msg.Vec3\022/\n\010ego_lane\030\007 "
-  "\001(\0132\031.sim_msg.Location.EgoLaneB\002\030\001\032k\n\007Eg"
-  "oLane\022\024\n\010lanepkid\030\001 \001(\003B\002\030\001\022\027\n\013sectionpk"
-  "id\030\002 \001(\004B\002\030\001\022\024\n\010roadpkid\030\003 \001(\004B\002\030\001\022\033\n\017di"
-  "st_2_ref_line\030\004 \001(\001B\002\030\001b\006proto3"
+  "\001(\0132\031.sim_msg.Location.EgoLaneB\002\030\001\022\020\n\010us"
+  "e_quat\030\010 \001(\010\022\033\n\004quat\030\t \001(\0132\r.sim_msg.Vec"
+  "4\032k\n\007EgoLane\022\024\n\010lanepkid\030\001 \001(\003B\002\030\001\022\027\n\013se"
+  "ctionpkid\030\002 \001(\004B\002\030\001\022\024\n\010roadpkid\030\003 \001(\004B\002\030"
+  "\001\022\033\n\017dist_2_ref_line\030\004 \001(\001B\002\030\001b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_location_2eproto_deps[1] = {
   &::descriptor_table_basic_2eproto,
@@ -116,7 +121,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_loc
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_location_2eproto_once;
 static bool descriptor_table_location_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_location_2eproto = {
-  &descriptor_table_location_2eproto_initialized, descriptor_table_protodef_location_2eproto, "location.proto", 391,
+  &descriptor_table_location_2eproto_initialized, descriptor_table_protodef_location_2eproto, "location.proto", 438,
   &descriptor_table_location_2eproto_once, descriptor_table_location_2eproto_sccs, descriptor_table_location_2eproto_deps, 2, 1,
   schemas, file_default_instances, TableStruct_location_2eproto::offsets,
   file_level_metadata_location_2eproto, 2, file_level_enum_descriptors_location_2eproto, file_level_service_descriptors_location_2eproto,
@@ -517,6 +522,8 @@ void Location::InitAsDefaultInstance() {
       ::sim_msg::Vec3::internal_default_instance());
   ::sim_msg::_Location_default_instance_._instance.get_mutable()->ego_lane_ = const_cast< ::sim_msg::Location_EgoLane*>(
       ::sim_msg::Location_EgoLane::internal_default_instance());
+  ::sim_msg::_Location_default_instance_._instance.get_mutable()->quat_ = const_cast< ::sim_msg::Vec4*>(
+      ::sim_msg::Vec4::internal_default_instance());
 }
 class Location::_Internal {
  public:
@@ -526,6 +533,7 @@ class Location::_Internal {
   static const ::sim_msg::Vec3& rpy(const Location* msg);
   static const ::sim_msg::Vec3& acceleration(const Location* msg);
   static const ::sim_msg::Location_EgoLane& ego_lane(const Location* msg);
+  static const ::sim_msg::Vec4& quat(const Location* msg);
 };
 
 const ::sim_msg::Vec3&
@@ -551,6 +559,10 @@ Location::_Internal::acceleration(const Location* msg) {
 const ::sim_msg::Location_EgoLane&
 Location::_Internal::ego_lane(const Location* msg) {
   return *msg->ego_lane_;
+}
+const ::sim_msg::Vec4&
+Location::_Internal::quat(const Location* msg) {
+  return *msg->quat_;
 }
 void Location::clear_position() {
   if (GetArenaNoVirtual() == nullptr && position_ != nullptr) {
@@ -581,6 +593,12 @@ void Location::clear_acceleration() {
     delete acceleration_;
   }
   acceleration_ = nullptr;
+}
+void Location::clear_quat() {
+  if (GetArenaNoVirtual() == nullptr && quat_ != nullptr) {
+    delete quat_;
+  }
+  quat_ = nullptr;
 }
 Location::Location()
   : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
@@ -621,15 +639,22 @@ Location::Location(const Location& from)
   } else {
     ego_lane_ = nullptr;
   }
-  t_ = from.t_;
+  if (from.has_quat()) {
+    quat_ = new ::sim_msg::Vec4(*from.quat_);
+  } else {
+    quat_ = nullptr;
+  }
+  ::memcpy(&t_, &from.t_,
+    static_cast<size_t>(reinterpret_cast<char*>(&use_quat_) -
+    reinterpret_cast<char*>(&t_)) + sizeof(use_quat_));
   // @@protoc_insertion_point(copy_constructor:sim_msg.Location)
 }
 
 void Location::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Location_location_2eproto.base);
   ::memset(&position_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&t_) -
-      reinterpret_cast<char*>(&position_)) + sizeof(t_));
+      reinterpret_cast<char*>(&use_quat_) -
+      reinterpret_cast<char*>(&position_)) + sizeof(use_quat_));
 }
 
 Location::~Location() {
@@ -644,6 +669,7 @@ void Location::SharedDtor() {
   if (this != internal_default_instance()) delete rpy_;
   if (this != internal_default_instance()) delete acceleration_;
   if (this != internal_default_instance()) delete ego_lane_;
+  if (this != internal_default_instance()) delete quat_;
 }
 
 void Location::SetCachedSize(int size) const {
@@ -685,7 +711,13 @@ void Location::Clear() {
     delete ego_lane_;
   }
   ego_lane_ = nullptr;
-  t_ = 0;
+  if (GetArenaNoVirtual() == nullptr && quat_ != nullptr) {
+    delete quat_;
+  }
+  quat_ = nullptr;
+  ::memset(&t_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&use_quat_) -
+      reinterpret_cast<char*>(&t_)) + sizeof(use_quat_));
   _internal_metadata_.Clear();
 }
 
@@ -743,6 +775,20 @@ const char* Location::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::i
       case 7:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
           ptr = ctx->ParseMessage(mutable_ego_lane(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // bool use_quat = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 64)) {
+          use_quat_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // .sim_msg.Vec4 quat = 9;
+      case 9:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 74)) {
+          ptr = ctx->ParseMessage(mutable_quat(), ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -855,6 +901,30 @@ bool Location::MergePartialFromCodedStream(
         break;
       }
 
+      // bool use_quat = 8;
+      case 8: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (64 & 0xFF)) {
+
+          DO_((::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &use_quat_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // .sim_msg.Vec4 quat = 9;
+      case 9: {
+        if (static_cast< ::PROTOBUF_NAMESPACE_ID::uint8>(tag) == (74 & 0xFF)) {
+          DO_(::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::ReadMessage(
+               input, mutable_quat()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -923,6 +993,17 @@ void Location::SerializeWithCachedSizes(
       7, _Internal::ego_lane(this), output);
   }
 
+  // bool use_quat = 8;
+  if (this->use_quat() != 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBool(8, this->use_quat(), output);
+  }
+
+  // .sim_msg.Vec4 quat = 9;
+  if (this->has_quat()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteMessageMaybeToArray(
+      9, _Internal::quat(this), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -981,6 +1062,18 @@ void Location::SerializeWithCachedSizes(
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
         7, _Internal::ego_lane(this), target);
+  }
+
+  // bool use_quat = 8;
+  if (this->use_quat() != 0) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(8, this->use_quat(), target);
+  }
+
+  // .sim_msg.Vec4 quat = 9;
+  if (this->has_quat()) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        9, _Internal::quat(this), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1046,9 +1139,21 @@ size_t Location::ByteSizeLong() const {
         *ego_lane_);
   }
 
+  // .sim_msg.Vec4 quat = 9;
+  if (this->has_quat()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *quat_);
+  }
+
   // double t = 1;
   if (!(this->t() <= 0 && this->t() >= 0)) {
     total_size += 1 + 8;
+  }
+
+  // bool use_quat = 8;
+  if (this->use_quat() != 0) {
+    total_size += 1 + 1;
   }
 
   int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
@@ -1096,8 +1201,14 @@ void Location::MergeFrom(const Location& from) {
   if (from.has_ego_lane()) {
     mutable_ego_lane()->::sim_msg::Location_EgoLane::MergeFrom(from.ego_lane());
   }
+  if (from.has_quat()) {
+    mutable_quat()->::sim_msg::Vec4::MergeFrom(from.quat());
+  }
   if (!(from.t() <= 0 && from.t() >= 0)) {
     set_t(from.t());
+  }
+  if (from.use_quat() != 0) {
+    set_use_quat(from.use_quat());
   }
 }
 
@@ -1128,7 +1239,9 @@ void Location::InternalSwap(Location* other) {
   swap(rpy_, other->rpy_);
   swap(acceleration_, other->acceleration_);
   swap(ego_lane_, other->ego_lane_);
+  swap(quat_, other->quat_);
   swap(t_, other->t_);
+  swap(use_quat_, other->use_quat_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Location::GetMetadata() const {

@@ -47,7 +47,9 @@ void UBasicInfoComp::Update(const FSimActorInput& _InData)
     double DeltaTimeStampInSecond = (_InData.timeStamp - timeStamp);
     if (DeltaTimeStampInSecond <= 0.0001 && DeltaTimeStampInSecond >= -0.0001)
     {
-        UE_LOG(LogTemp, Error, TEXT("Updating TimeStamp Is Repeat! Name: %s, Id: %d"), *typeName, id);
+        UE_LOG(LogTemp, Display,
+            TEXT("Updating TimeStamp Is Repeat! Name: %s, Id: %d, timeStamp: %f in_timestamp: %f "), *typeName, id,
+            timeStamp, _InData.timeStamp);
     }
     // else
     //{

@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package sim_msg;
+
+
+message UnrealPose{
+
+    double x = 1;
+
+    double y = 2;
+
+    double z = 3;
+
+    double qx = 4;
+
+    double qy = 5;
+
+    double qz = 6;
+
+    double qw = 7;
+}
+
+message SiteInfo{
+
+    string name = 1;
+
+    uint64 start_timestamp = 2;
+
+    uint64 end_timestamp = 3;
+
+    int32 num_clips = 4;
+}
+
+message ClipInfo{
+
+    string record_time = 1;
+
+    string pack_time = 2;
+
+    int32 id = 3;
+
+    int32 num_frames = 4;
+
+    uint64 start_timestamp = 5;
+
+    uint64 end_timestamp = 6;
+
+    string plate = 7;
+
+    string status = 8;
+
+    string mapping_type = 9;
+
+    string tags = 10;
+
+}
+
+message SensorMeta{
+
+    double timestamp = 1;
+
+    SiteInfo site = 2;
+
+    ClipInfo clip = 3;
+
+    int32 cur_clip = 4;
+
+    int32 cur_frame = 5;
+
+    UnrealPose pose = 6;
+}

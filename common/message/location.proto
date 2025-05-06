@@ -149,4 +149,18 @@ message Location {
   // 不在维护, 目前始终为无效值.
   //
   EgoLane ego_lane = 7 [deprecated=true];
+
+  // Whether to use quaternion to represent the ego vehicle's orientation.
+  // 是否使用四元数表示主车的姿态.
+  //
+  // Unit: bool, Range: [true, false], Default: false
+  //
+  bool use_quat = 8;
+
+  // Current quaternion of the ego vehicle.
+  // 主车当前姿态四元数.
+  //
+  // Unit: N/A, Range: [-inf..inf], Default: 0.0
+  //
+  Vec4 quat = 9;
 }

@@ -2,6 +2,9 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 TADSIM_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd -P )"
 
+
+
+
 TADSIM_BUILD_DIR="$TADSIM_ROOT/build"
 TADSIM_SERVICE_DIR="$TADSIM_BUILD_DIR/release/linux-unpacked/resources/app/service"
 TADSIM_DEPENDENCIES_DIR="$TADSIM_SERVICE_DIR/simdeps"
@@ -20,7 +23,19 @@ DISPLAY_UNREAL_ROOT=$TADSIM_DISPLAY_DIR
 UE_LIBRARY_PATH=$DISPLAY_UNREAL_ROOT/Binaries/Linux/ubuntu18_20
 OPENCV_LIBRARY_PATH=$UE5_ROOT/Engine/Plugins/Runtime/OpenCV/Binaries/ThirdParty/Linux/
 
+TADSIM_COORDINATOR_LOG_DIR=$TADSIM_LOG_DIR/tadsim/coordinator
+TADSIM_MAP_LOG_DIR=$TADSIM_LOG_DIR/tadsim/map
 
+
+# echo "TADSIM_ROOT: $TADSIM_ROOT"
+# echo "TADSIM_DEV_SERVICE_DIR: $TADSIM_DEV_SERVICE_DIR"
+# echo "TADSIM_BUILD_DIR: $TADSIM_BUILD_DIR"
+# echo "TADSIM_SERVICE_DIR: $TADSIM_SERVICE_DIR"
+# echo "TADSIM_DEPENDENCIES_DIR: $TADSIM_DEPENDENCIES_DIR"
+# echo "TADSIM_LOG_DIR: $TADSIM_LOG_DIR"
+# echo "TADSIM_CONFIG_DIR: $TADSIM_CONFIG_DIR"
+# echo "TADSIM_BUILD_LOG_DIR: $TADSIM_BUILD_LOG_DIR"
+# echo "TADSIM_TEST_LOG_DIR: $TADSIM_TEST_LOG_DIR"
 
 export LD_LIBRARY_PATH="$TADSIM_DEPENDENCIES_DIR:$OPENCV_LIBRARY_PATH:$LD_LIBRARY_PATH"
 
@@ -60,6 +75,8 @@ function create_symlink_if_not_exists() {
 mkdir -p "$TADSIM_BUILD_LOG_DIR"
 mkdir -p "$TADSIM_TEST_LOG_DIR"
 mkdir -p "$TADSIM_DEV_LOG_DIR"
+mkdir -p $TADSIM_COORDINATOR_LOG_DIR
+mkdir -p $TADSIM_MAP_LOG_DIR
 
 create_symlink_if_not_exists $TADSIM_CONFIG_DIR/cache/debug_log/txsim-local-service.ERROR $TADSIM_DEV_LOG_DIR/txsim-local-service.ERROR
 create_symlink_if_not_exists $TADSIM_CONFIG_DIR/cache/debug_log/txsim-local-service.INFO $TADSIM_DEV_LOG_DIR/txsim-local-service.INFO

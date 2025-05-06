@@ -1,0 +1,59 @@
+FROM hub.hobot.cc/imagesys/4dlabel:tadsim-desktop-ubuntu20.04
+
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
+    build-essential pkg-config libgtk2.0-dev \
+    libavcodec-dev libavformat-dev libswscale-dev libtiff5-dev \
+    libjpeg-dev libpng-dev libv4l-dev libxvidcore-dev libx264-dev \
+    libatlas-base-dev gfortran libegl1 libxext6 vulkan-tools 
+
+RUN mkdir -p /opt/vulkan
+
+COPY vulkansdk-linux-x86_64-1.3.280.0.tar.xz  /build/apps/vulkansdk-linux-x86_64-1.3.280.0.tar.xz
+
+RUN tar -xvf /build/apps/vulkansdk-linux-x86_64-1.3.280.0.tar.xz -C /opt/vulkan
+
+
+ENV VULKAN_SDK=/opt/vulkan/1.3.280.0/x86_64
+ENV PATH=$VULKAN_SDK/bin:$PATH
+ENV LD_LIBRARY_PATH=
+ENV LD_LIBRARY_PATH=$VULKAN_SDK/lib:$LD_LIBRARY_PATH
+
+COPY opencv-4.9.0.zip  /build/apps/opencv-4.9.0.zip
+
+WORKDIR /build/apps
+
+RUN unzip opencv-4.9.0.zip && mv opencv-4.9.0 opencv \
+    && mkdir -p /build/apps/opencv/build
+
+WORKDIR /build/apps/opencv/build
+
+RUN cmake ../ \
+    -D CMAKE_BUILD_TYPE=RELEASE \
+    -D BUILD_SHARED_LIBS=ON \
+    -D BUILD_opencv_world=OFF \
+    -D BUILD_LIST=core,imgproc,imgcodecs \
+    -D WITH_GTK=OFF \
+    -D WITH_QT=OFF \
+    -D WITH_OPENGL=OFF \
+    -D WITH_FFMPEG=OFF \
+    -D WITH_V4L=OFF \
+    -D BUILD_DOCS=OFF \
+    -D BUILD_TESTS=OFF \
+    -D BUILD_EXAMPLES=OFF \
+    -D ENABLE_FAST_MATH=ON \
+    -D OPENCV_ENABLE_NONFREE=OFF \
+    -D WITH_JPEG=ON \
+    -D WITH_PNG=ON \
+    -D WITH_TIFF=ON \
+    -D WITH_WEBP=OFF \
+    -D WITH_OPENEXR=OFF \
+    && make -j$(nproc) && \
+    make install && \
+    ldconfig
+
+RUN rm -rf /build/apps
+
+
+

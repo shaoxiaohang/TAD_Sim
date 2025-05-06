@@ -52,6 +52,13 @@ function build_sim_label() {
   popd > /dev/null
 }
 
+function build_vehicle_dynamics() {
+  pushd $TADSIM_ROOT/simcore > /dev/null
+  build_project vehicle_dynamics build.sh
+  cp ./vehicle_dynamics/build/lib/* $TADSIM_DEV_SERVICE_DIR/vehicle_dynamics
+  popd > /dev/null
+}
+
 function build_map_test() {
   pushd $TADSIM_ROOT/common/map_sdk/test > /dev/null
   rm -rf build
@@ -124,6 +131,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     excel2asam)
       build_excel2asam
+      shift
+      ;;
+    vehicle)
+      build_vehicle_dynamics
       shift
       ;;
     *)

@@ -1014,8 +1014,8 @@ uint32_t Coordinator::Step(CommandStatus& status, const CommandInfo& cmd_info) {
                 // whose request is already sent out, but no new requests anymore.
       ModuleStepRequest req;
       LoadModuleStepRequest(req, event.module_name);
-      LOG(INFO) << "module step: " << event.module_name << "  " << sim_time_ << " max_sim_time " << max_sim_time_
-                << " sModuleGroupName " << sModuleGroupName << " group " << req.group;
+      //LOG(INFO) << "module step: " << event.module_name << "  " << sim_time_ << " max_sim_time " << max_sim_time_
+      //          << " sModuleGroupName " << sModuleGroupName << " group " << req.group;
       AddSystemTime(req);
       req.group = sModuleGroupName;
       hdl.has_outstanding_step_request = hdl.conn->Send(req);  // should always return true.
@@ -1302,7 +1302,7 @@ void Coordinator::LoadModuleStepRequest(ModuleStepRequest& req, const std::strin
     m_highlight_group_msg.rebuild(highlightGroup.ByteSizeLong());
     highlightGroup.SerializeToArray(m_highlight_group_msg.data(), m_highlight_group_msg.size());
     req.messages[kTopicHightLightGroup].copy(m_highlight_group_msg);
-    LOG(INFO) << "highlight_group  " << highlight_group_;
+    //LOG(INFO) << "highlight_group  " << highlight_group_;
   }
   // loading message of each topic.
   for (const TopicMeta& tm : hdl.sub_topics) {
@@ -1472,15 +1472,15 @@ void Coordinator::HandleMessageLoading(const SimTopic& topic, ModulePlayContext&
       pair->set_groupname(compose.first);
       pair->set_content(msg_payload);
 
-      if (topic.sim_name == "EgoUnion/LOCATION") {
-        sim_msg::Location loc;
-        loc.ParseFromString(msg_payload);
-        LOG(INFO) << " SEGOS " << loc.t() << " " << loc.position().x() << " " << loc.position().y() << " "
-                  << loc.position().z();
-      }
+      // if (topic.sim_name == "EgoUnion/LOCATION") {
+      //   sim_msg::Location loc;
+      //   loc.ParseFromString(msg_payload);
+      //   LOG(INFO) << " SEGOS " << loc.t() << " " << loc.position().x() << " " << loc.position().y() << " "
+      //             << loc.position().z();
+      // }
 
-      LOG(INFO) << "module " << module.config.name << " loading union message: " << compose.first << "("
-                << compose.second.size() << " bytes)";
+      //LOG(INFO) << "module " << module.config.name << " loading union message: " << compose.first << "("
+      //          << compose.second.size() << " bytes)";
     }
     std::string union_payload;
     union_msg.SerializeToString(&union_payload);
@@ -1542,7 +1542,7 @@ void Coordinator::HandleMessageUnloading(const SimTopic& topic, ModulePlayContex
         topic_display_name = topic_result[1];
         ego_group_name = topic_result[0];
       }
-      LOG(INFO) << "module_group_name empty " << module.config.name << " " << ego_group_name << " " << topic_name;
+      //LOG(INFO) << "module_group_name empty " << module.config.name << " " << ego_group_name << " " << topic_name;
     }
   }
 
